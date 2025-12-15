@@ -15,7 +15,7 @@ const routes: RouteRecordRaw[] = [
       {
         path: '/conversations',
         name: 'conversations',
-        component: () => import('@/views/DashboardView.vue'), // Placeholder
+        component: () => import('@/views/ConversationsView.vue'),
       },
       {
         path: '/flows',
