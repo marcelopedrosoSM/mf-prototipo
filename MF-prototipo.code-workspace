@@ -1,0 +1,14 @@
+{
+	"folders": [
+		{
+			"path": "."
+		},
+		{
+			"path": "../myflows-base"
+		},
+		{
+			"path": "../painel-base"
+		}
+	],
+	"settings": {}
+}
