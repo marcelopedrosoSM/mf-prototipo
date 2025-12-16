@@ -29,15 +29,12 @@ interface Props {
   chat: ChatSession;
   recentMessage: Message;
   isInHistory?: boolean;
+  searchQuery?: string;
 }
 
 const props = withDefaults(defineProps<Props>(), {
   isInHistory: false,
-});
-
-const sidebarSearch = defineModel<string>({
-  required: false,
-  default: '',
+  searchQuery: '',
 });
 
 const getInitials = (name: string): string => {
@@ -67,11 +64,11 @@ const formatDate = (timestamp: string): string => {
 const highlightContactName = computed(() => {
   const contactName = props.chat.sender.name;
 
-  if (!sidebarSearch.value) {
+  if (!props.searchQuery) {
     return contactName;
   }
 
-  const searchTerm = sidebarSearch.value.toLowerCase();
+  const searchTerm = props.searchQuery.toLowerCase();
   const nameLower = contactName.toLowerCase();
 
   if (nameLower.includes(searchTerm)) {

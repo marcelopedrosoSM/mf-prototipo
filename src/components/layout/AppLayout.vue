@@ -14,30 +14,28 @@
       />
 
       <!-- Content Area -->
-      <ScrollArea
+      <div
         :class="cn(
-          'flex-1 transition-all duration-300',
+          'flex-1 transition-all duration-300 overflow-hidden',
           isConversationsRoute && (isSidebarCollapsed ? 'ml-[64px]' : 'ml-[256px]')
         )"
       >
         <slot />
-      </ScrollArea>
+      </div>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, computed, provide } from 'vue';
+import { ref, computed } from 'vue';
 import { useRoute } from 'vue-router';
 import { cn } from '@/lib/utils';
-import { ScrollArea } from '@/components/ui/scroll-area';
 import AppHeader from './AppHeader.vue';
 import AppSidebar from './AppSidebar.vue';
 import { SidebarStatusType } from '@/types/conversations';
 
 const route = useRoute();
 const isSidebarCollapsed = ref(false);
-const selectedStatus = ref<SidebarStatusType>(SidebarStatusType.ALL_CHATS);
 
 // Verifica se a rota atual é /conversations
 const isConversationsRoute = computed(() => {
@@ -49,10 +47,8 @@ function toggleSidebar() {
 }
 
 function handleStatusSelect(status: SidebarStatusType) {
-  selectedStatus.value = status;
+  console.log('Status selecionado no layout:', status);
+  // Aqui você pode emitir um evento ou usar um store para comunicar com a view
 }
-
-// Provide status para componentes filhos
-provide('sidebarStatus', selectedStatus);
 </script>
 

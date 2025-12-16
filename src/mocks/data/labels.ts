@@ -8,27 +8,27 @@ export const MOCK_LABELS: Label[] = [
   {
     id: '1',
     name: 'Importante',
-    color: '#FF6B6B',
+    color: '#FF6B6B', // Vermelho coral
   },
   {
     id: '2',
     name: 'Cliente VIP',
-    color: '#4ECDC4',
+    color: '#8B5CF6', // Roxo (primary)
   },
   {
     id: '3',
     name: 'Follow-up',
-    color: '#FFE66D',
+    color: '#F97316', // Laranja
   },
   {
     id: '4',
     name: 'Urgente',
-    color: '#FF4757',
+    color: '#EF4444', // Vermelho
   },
   {
     id: '5',
     name: 'Vendas',
-    color: '#5352ED',
+    color: '#6366F1', // Índigo
   },
 ];
 
@@ -39,6 +39,7 @@ export function getLabels(): Label[] {
 export function getLabelById(id: string): Label | undefined {
   return MOCK_LABELS.find((label) => label.id === id);
 }
+
 
 
 

@@ -1,9 +1,10 @@
 import { http, HttpResponse } from 'msw';
 import { faker } from '@faker-js/faker';
 import { MOCK_CREDENTIALS, MOCK_USER } from './data/auth';
-import { MOCK_CHAT_SESSIONS } from './data/chatSessions';
+import { MOCK_CHAT_SESSIONS, getChatSessionById } from './data/chatSessions';
 import { MOCK_INBOXES } from './data/inboxes';
 import { MOCK_LABELS } from './data/labels';
+import type { Message } from '@/types/conversations';
 
 // Example API handlers
 export const handlers = [
@@ -118,6 +119,72 @@ export const handlers = [
     return HttpResponse.json({
       data: MOCK_LABELS,
     });
+  }),
+
+  // Buscar mensagens de uma conversa
+  http.get('/api/chat/conversations/:id/messages', ({ params }) => {
+    const conversationId = params.id as string;
+    const chatSession = getChatSessionById(conversationId);
+
+    if (!chatSession) {
+      return HttpResponse.json(
+        { error: 'Conversa não encontrada' },
+        { status: 404 }
+      );
+    }
+
+    return HttpResponse.json({
+      data: chatSession.messages,
+      total: chatSession.messages.length,
+    });
+  }),
+
+  // Enviar mensagem
+  http.post('/api/chat/conversations/:id/messages', async ({ params, request }) => {
+    const conversationId = params.id as string;
+    const body = (await request.json()) as { content: string; type?: string };
+
+    const chatSession = getChatSessionById(conversationId);
+
+    if (!chatSession) {
+      return HttpResponse.json(
+        { error: 'Conversa não encontrada' },
+        { status: 404 }
+      );
+    }
+
+    // Criar nova mensagem
+    const newMessage: Message = {
+      id: `msg-${Date.now()}-${faker.string.alphanumeric(6)}`,
+      conversationId,
+      content: body.content,
+      type: (body.type as any) || 'text',
+      status: 'sent',
+      senderId: 'current-user',
+      senderName: 'Você',
+      senderType: 'user',
+      timestamp: new Date().toISOString(),
+      date: new Date().toLocaleDateString('pt-BR'),
+      hour: new Date().toLocaleTimeString('pt-BR', {
+        hour: '2-digit',
+        minute: '2-digit',
+      }),
+    };
+
+    // Adicionar mensagem à conversa (em produção, isso seria feito no backend)
+    chatSession.messages.push(newMessage);
+    chatSession.lastActivityAt = new Date().toISOString();
+    chatSession.lastActivityUserAt = new Date().toISOString();
+
+    // Simular delay de rede
+    await new Promise((resolve) => setTimeout(resolve, 300));
+
+    return HttpResponse.json(
+      {
+        data: newMessage,
+      },
+      { status: 201 }
+    );
   }),
 ];
 

@@ -1,12 +1,11 @@
 <template>
   <div
     :class="[
-      'py-2 px-3 cursor-pointer transition-colors',
+      'py-3 px-4 cursor-pointer transition-colors border-b border-border',
       isSelected 
-        ? 'bg-background border-l-[1.5px] border-l-primary border-t-[1.5px] border-b-[1.5px] border-r-[1.5px]' 
-        : 'bg-white hover:bg-muted/50 border-t-[1.5px] border-b-[1.5px] border-r-[1.5px]',
-      isOnWaitingQueue && !isLast ? 'border-b-[1.5px]' : '',
-      isInHistory && 'border-[1.5px] rounded-lg bg-muted/30 mb-2',
+        ? 'bg-muted/50' 
+        : 'bg-background hover:bg-muted/30',
+      isInHistory && 'bg-muted/20',
     ]"
     @click="handleClick"
   >
@@ -15,7 +14,7 @@
         :chat="chat"
         :recent-message="recentMessage"
         :is-in-history="isInHistory"
-        v-model="sidebarSearch"
+        :search-query="props.searchQuery"
       />
       <div
         v-if="recentMessage.id"
@@ -47,6 +46,7 @@ interface Props {
   isOnWaitingQueue?: boolean;
   isLast?: boolean;
   isInHistory?: boolean;
+  searchQuery?: string;
 }
 
 const props = withDefaults(defineProps<Props>(), {
@@ -54,16 +54,12 @@ const props = withDefaults(defineProps<Props>(), {
   isOnWaitingQueue: false,
   isLast: false,
   isInHistory: false,
+  searchQuery: '',
 });
 
 const emit = defineEmits<{
   'select-chat': [chat: ChatSession];
 }>();
-
-const sidebarSearch = defineModel<string>({
-  required: false,
-  default: '',
-});
 
 const recentMessage = computed<Message>(() => {
   const lastMsg = props.chat.messages[props.chat.messages.length - 1];
