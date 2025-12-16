@@ -61,7 +61,7 @@ import { Button } from '@/components/ui/button';
 import ContactFormGeneral from './ContactFormGeneral.vue';
 import ContactFormCommunication from './ContactFormCommunication.vue';
 import ContactFormAddress from './ContactFormAddress.vue';
-import { DEFAULT_CONTACT, type Contact, type PhoneNumberContact } from '@/types/contacts';
+import type { Contact, PhoneNumberContact } from '@/types/contacts';
 import { z } from 'zod';
 
 interface Props {

@@ -3,7 +3,7 @@
     <Input
       :type="showPassword ? 'text' : 'password'"
       :model-value="modelValue"
-      @update:model-value="$emit('update:modelValue', $event)"
+      @update:model-value="$emit('update:modelValue', String($event ?? ''))"
       :class="cn('pr-10', error ? 'border-destructive' : '', $attrs.class)"
       v-bind="$attrs"
     />

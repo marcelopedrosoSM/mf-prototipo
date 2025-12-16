@@ -3,6 +3,8 @@ import App from './App.vue';
 import router from './router';
 import pinia from './stores';
 import './assets/index.css';
+import '@vue-flow/core/dist/style.css';
+
 
 // Initialize theme synchronously before first render to prevent flash
 function initializeTheme() {
@@ -10,13 +12,13 @@ function initializeTheme() {
 
   const THEME_STORAGE_KEY = 'myflows-theme';
   const stored = localStorage.getItem(THEME_STORAGE_KEY);
-  
+
   const getSystemTheme = (): 'light' | 'dark' => {
     return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
   };
 
   const root = document.documentElement;
-  
+
   if (stored === 'dark') {
     root.classList.add('dark');
   } else if (stored === 'light') {
@@ -36,6 +38,7 @@ function initializeTheme() {
 initializeTheme();
 
 // Initialize MSW in development
+/*
 async function initMocks() {
   if (import.meta.env.DEV && import.meta.env.VITE_USE_MSW !== 'false') {
     try {
@@ -49,9 +52,11 @@ async function initMocks() {
     }
   }
 }
+*/
 
 async function bootstrap() {
-  await initMocks();
+  // MSW disabled as we are using direct mock data imports
+  // await initMocks();
 
   const app = createApp(App);
   app.use(pinia);

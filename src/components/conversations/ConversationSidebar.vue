@@ -27,102 +27,105 @@
               <Filter class="h-4 w-4" />
             </Button>
           </PopoverTrigger>
-          <PopoverContent class="w-80 p-0" align="end">
-            <div class="h-[500px] overflow-hidden">
+          <PopoverContent class="w-80 p-0 flex flex-col h-[650px] max-h-[650px]" align="end">
+            <div class="p-4 border-b border-border flex-shrink-0">
+              <h3 class="text-sm font-semibold text-foreground">Filtros</h3>
+            </div>
+            <div class="flex-1 min-h-0 overflow-hidden">
               <ScrollArea class="h-full">
-                <div class="p-4 space-y-4 pr-4">
-                <h3 class="text-sm font-semibold text-foreground mb-3">Filtros</h3>
-              
-                <!-- Filtro por Agentes -->
-                <div class="space-y-2">
-                  <label class="text-xs font-medium text-muted-foreground">Agentes</label>
-                  <div class="max-h-48 overflow-hidden">
-                    <ScrollArea class="h-full">
-                      <div class="space-y-2 pr-4">
-                        <label
-                          v-for="agent in agents"
-                          :key="agent.id"
-                          class="flex items-center gap-2 px-2 py-1.5 rounded-md hover:bg-muted cursor-pointer"
-                        >
-                          <Checkbox
-                            :checked="selectedAgentIds.includes(agent.id)"
-                            @update:checked="(checked) => toggleAgent(agent.id, checked)"
-                          />
-                          <span class="text-sm text-foreground">{{ agent.nome }}</span>
-                        </label>
-                      </div>
-                    </ScrollArea>
+                <div class="p-4 space-y-4">
+                  <!-- Filtro por Agentes -->
+                  <div class="space-y-2">
+                    <label class="text-xs font-medium text-muted-foreground">Agentes</label>
+                    <div class="h-40 overflow-hidden">
+                      <ScrollArea class="h-full">
+                        <div class="space-y-2 pr-4">
+                          <label
+                            v-for="agent in agents"
+                            :key="agent.id"
+                            class="flex items-center gap-2 px-2 py-1.5 rounded-md hover:bg-muted cursor-pointer"
+                          >
+                            <Checkbox
+                              :checked="selectedAgentIds.includes(agent.id)"
+                              @update:checked="(checked) => toggleAgent(agent.id, checked)"
+                            />
+                            <span class="text-sm text-foreground">{{ agent.nome }}</span>
+                          </label>
+                        </div>
+                      </ScrollArea>
+                    </div>
                   </div>
-                </div>
 
-                <!-- Filtro por Times -->
-                <div class="space-y-2">
-                  <label class="text-xs font-medium text-muted-foreground">Times</label>
-                  <div class="max-h-48 overflow-hidden">
-                    <ScrollArea class="h-full">
-                      <div class="space-y-2 pr-4">
-                        <label
-                          v-for="team in teams"
-                          :key="team.id"
-                          class="flex items-center gap-2 px-2 py-1.5 rounded-md hover:bg-muted cursor-pointer"
-                        >
-                          <Checkbox
-                            :checked="selectedTeamIds.includes(team.id)"
-                            @update:checked="(checked) => toggleTeam(team.id, checked)"
-                          />
-                          <span class="text-sm text-foreground">{{ team.nome }}</span>
-                        </label>
-                      </div>
-                    </ScrollArea>
+                  <!-- Filtro por Times -->
+                  <div class="space-y-2">
+                    <label class="text-xs font-medium text-muted-foreground">Times</label>
+                    <div class="h-40 overflow-hidden">
+                      <ScrollArea class="h-full">
+                        <div class="space-y-2 pr-4">
+                          <label
+                            v-for="team in teams"
+                            :key="team.id"
+                            class="flex items-center gap-2 px-2 py-1.5 rounded-md hover:bg-muted cursor-pointer"
+                          >
+                            <Checkbox
+                              :checked="selectedTeamIds.includes(team.id)"
+                              @update:checked="(checked) => toggleTeam(team.id, checked)"
+                            />
+                            <span class="text-sm text-foreground">{{ team.nome }}</span>
+                          </label>
+                        </div>
+                      </ScrollArea>
+                    </div>
                   </div>
-                </div>
 
-                <!-- Filtro por Etiquetas -->
-                <div class="space-y-2">
-                  <label class="text-xs font-medium text-muted-foreground">Etiquetas</label>
-                  <div class="flex flex-wrap gap-2">
-                    <button
-                      v-for="label in labels"
-                      :key="label.id"
-                      :class="[
-                        'px-2 py-1 text-xs font-medium rounded-md transition-colors border',
-                        selectedLabelIds.includes(label.id)
-                          ? 'text-foreground border-2'
-                          : 'bg-background text-foreground border-border hover:bg-muted',
-                      ]"
-                      :style="selectedLabelIds.includes(label.id) ? {
-                        backgroundColor: `${label.color}20`,
-                        borderColor: label.color,
-                        color: label.color,
-                      } : {}"
-                      @click="toggleLabel(label.id)"
-                    >
-                      {{ label.name }}
-                    </button>
-                  </div>
-                </div>
-
-                  <!-- Botão Limpar Filtros -->
-                  <div class="flex justify-end pt-2 border-t border-border">
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      @click="clearAllFilters"
-                      :disabled="!hasActiveFilters"
-                    >
-                      Limpar filtros
-                    </Button>
+                  <!-- Filtro por Etiquetas -->
+                  <div class="space-y-2">
+                    <label class="text-xs font-medium text-muted-foreground">Etiquetas</label>
+                    <div class="flex flex-wrap gap-2">
+                      <button
+                        v-for="label in labels"
+                        :key="label.id"
+                        :class="[
+                          'px-2 py-1 text-xs font-medium rounded-md transition-colors border',
+                          selectedLabelIds.includes(label.id)
+                            ? 'text-foreground border-2'
+                            : 'bg-background text-foreground border-border hover:bg-muted',
+                        ]"
+                        :style="selectedLabelIds.includes(label.id) ? {
+                          backgroundColor: `${label.color}20`,
+                          borderColor: label.color,
+                          color: label.color,
+                        } : {}"
+                        @click="toggleLabel(label.id)"
+                      >
+                        {{ label.name }}
+                      </button>
+                    </div>
                   </div>
                 </div>
               </ScrollArea>
+            </div>
+            <!-- Botão Limpar Filtros -->
+            <div class="p-4 border-t border-border flex-shrink-0">
+              <Button
+                variant="ghost"
+                size="sm"
+                class="w-full"
+                @click="clearAllFilters"
+                :disabled="!hasActiveFilters"
+              >
+                Limpar filtros
+              </Button>
             </div>
           </PopoverContent>
         </Popover>
 
         <!-- Botão Novo Chat -->
-        <Button variant="ghost" size="icon">
-          <MessageSquarePlus class="h-4 w-4" />
-        </Button>
+        <StartConversationPopover :inboxes="inboxes" @conversation-created="handleNewConversationCreated">
+          <Button variant="ghost" size="icon">
+            <MessageSquarePlus class="h-4 w-4" />
+          </Button>
+        </StartConversationPopover>
       </div>
     </div>
 
@@ -223,7 +226,7 @@
     </div>
 
     <!-- Lista de Conversas -->
-    <ScrollArea class="flex-1">
+    <ScrollArea class="flex-1 bg-background">
       <div class="flex flex-col">
         <ChatCard
           v-for="(chat, index) in filteredConversations"
@@ -244,19 +247,18 @@
             Nenhuma conversa encontrada
           </p>
         </div>
+        <!-- Indicador de todas as conversas carregadas -->
+        <div
+          v-if="filteredConversations.length > 0 && !loading"
+          class="p-3 bg-background border-t border-border text-center"
+        >
+          <p class="text-xs text-muted-foreground flex items-center justify-center gap-1">
+            <span>Todas as conversas carregadas</span>
+            <span>🎉</span>
+          </p>
+        </div>
       </div>
     </ScrollArea>
-
-    <!-- Footer -->
-    <div
-      v-if="filteredConversations.length > 0"
-      class="p-3 bg-background border-t border-border text-center"
-    >
-      <p class="text-xs text-muted-foreground flex items-center justify-center gap-1">
-        <span>Todas as conversas carregadas</span>
-        <span>🎉</span>
-      </p>
-    </div>
   </div>
 </template>
 
@@ -276,14 +278,18 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { Checkbox } from '@/components/ui/checkbox';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import ChatCard from './ChatCard.vue';
-import api from '@/services/api';
+import StartConversationPopover from './StartConversationPopover.vue';
 import type { ChatSession, Inbox, Label } from '@/types/conversations';
+import { SidebarStatusType } from '@/types/conversations';
 import { MOCK_AGENTES, type Agente } from '@/mocks/data/agentes';
 import { MOCK_TIMES, type Time } from '@/mocks/data/times';
 import { MOCK_LABELS } from '@/mocks/data/labels';
+import { MOCK_CHAT_SESSIONS } from '@/mocks/data/chatSessions';
+import { MOCK_INBOXES } from '@/mocks/data/inboxes';
 
 interface Props {
   selectedChatId?: string;
+  statusFilter?: SidebarStatusType;
 }
 
 const props = defineProps<Props>();
@@ -325,6 +331,30 @@ const selectedInbox = computed(() => {
 
 const filteredConversations = computed(() => {
   let filtered = [...conversations.value];
+
+  // Filtrar por status do AppSidebar
+  if (props.statusFilter && props.statusFilter !== SidebarStatusType.ALL_CHATS) {
+    switch (props.statusFilter) {
+      case SidebarStatusType.WITHOUT_TEAM:
+        // Sem time atribuído
+        filtered = filtered.filter((chat) => !chat.assignedUser?.team);
+        break;
+      case SidebarStatusType.IN_SERVICE:
+        // Em atendimento (conversas abertas com usuário atribuído)
+        filtered = filtered.filter(
+          (chat) => chat.status === 'open' && chat.assignedUser?.user
+        );
+        break;
+      case SidebarStatusType.MENTION:
+        // Menções
+        filtered = filtered.filter((chat) => chat.mentioned === true);
+        break;
+      case SidebarStatusType.FINISHED:
+        // Finalizadas
+        filtered = filtered.filter((chat) => chat.status === 'closed');
+        break;
+    }
+  }
 
   // Filtrar por busca
   if (searchQuery.value.trim()) {
@@ -392,8 +422,8 @@ const filteredConversations = computed(() => {
 
 async function fetchInboxes() {
   try {
-    const response = await api.get<{ data: Inbox[] }>('/inboxes');
-    inboxes.value = response.data.data;
+    // Use mock data directly
+    inboxes.value = MOCK_INBOXES;
     if (inboxes.value.length > 0 && !selectedInboxId.value) {
       selectedInboxId.value = inboxes.value[0].id;
     }
@@ -405,19 +435,27 @@ async function fetchInboxes() {
 async function fetchConversations() {
   loading.value = true;
   try {
-    const params: Record<string, string> = {};
+    // Simulate API delay
+    await new Promise(resolve => setTimeout(resolve, 300));
+
+    let results = [...MOCK_CHAT_SESSIONS];
+
+    // Filter by Inbox (Server-side simulation)
     if (selectedInboxId.value) {
-      params.inboxId = selectedInboxId.value;
-    }
-    if (searchQuery.value.trim()) {
-      params.search = searchQuery.value.trim();
+      results = results.filter(chat => chat.inbox.id === selectedInboxId.value);
     }
 
-    const response = await api.get<{ data: ChatSession[]; total: number }>(
-      '/chat/conversations',
-      { params }
-    );
-    conversations.value = response.data.data;
+    // Filter by Search (Server-side simulation - optional since client also does it, but consistent)
+    if (searchQuery.value.trim()) {
+      const query = searchQuery.value.toLowerCase();
+      results = results.filter(
+        (chat) =>
+          chat.sender.name.toLowerCase().includes(query) ||
+          chat.sender.phoneNumber.includes(query)
+      );
+    }
+
+    conversations.value = results;
   } catch (error) {
     console.error('Error fetching conversations:', error);
   } finally {
@@ -530,6 +568,19 @@ function clearAllFilters() {
   selectedTeamIds.value = [];
   selectedLabelIds.value = [];
   activeFilters.value.clear();
+}
+
+function handleNewConversationCreated(conversation: ChatSession) {
+  // Adicionar a nova conversa à lista
+  conversations.value.unshift(conversation);
+  
+  // Selecionar a nova conversa automaticamente
+  emit('select-chat', conversation);
+  
+  // Atualizar a caixa selecionada se necessário
+  if (conversation.inbox.id !== selectedInboxId.value) {
+    selectedInboxId.value = conversation.inbox.id;
+  }
 }
 
 // Expor função para componentes pais adicionarem filtros

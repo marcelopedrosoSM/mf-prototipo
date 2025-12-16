@@ -2,8 +2,6 @@
  * Types for conversations feature
  */
 
-import type { User } from '.';
-
 export enum SidebarStatusType {
   ALL_CHATS = 'all_chats',
   WITHOUT_TEAM = 'without_team',

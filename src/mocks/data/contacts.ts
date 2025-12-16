@@ -1,4 +1,6 @@
-import type { Contact, PhoneNumberContact, EmailContact } from '@/types/contacts';
+import type { Contact } from '@/types/contacts';
+
+export type { Contact };
 
 // Dados mock de estados brasileiros
 export const BRAZILIAN_STATES = [
@@ -133,12 +135,60 @@ const initialContacts: Contact[] = [
     createdAt: '2024-02-15T16:00:00Z',
     updatedAt: '2024-02-15T16:00:00Z',
   },
+  {
+    id: 6,
+    accountId: 1,
+    name: 'Marcelo Pedroso',
+    emails: [
+      { id: 7, contactId: 6, email: 'marcelo.pedroso@example.com' },
+    ],
+    phoneNumbers: [
+      { id: 9, contactId: 6, phoneNumber: '+55 (45) 99921-0256', label: 'whatsapp' },
+    ],
+    city: 'Foz do Iguaçu',
+    state: 'PR',
+    notes: '',
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
+  },
+  {
+    id: 7,
+    accountId: 1,
+    name: 'Juliana Alves',
+    emails: [
+      { id: 8, contactId: 7, email: 'juliana.alves@example.com' },
+    ],
+    phoneNumbers: [
+      { id: 10, contactId: 7, phoneNumber: '+55 (11) 98765-1234', label: 'whatsapp' },
+    ],
+    city: 'São Paulo',
+    state: 'SP',
+    notes: '',
+    createdAt: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(),
+    updatedAt: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(),
+  },
+  {
+    id: 8,
+    accountId: 1,
+    name: 'Roberto Lima',
+    emails: [
+      { id: 9, contactId: 8, email: 'roberto.lima@example.com' },
+    ],
+    phoneNumbers: [
+      { id: 11, contactId: 8, phoneNumber: '+55 (21) 99876-5432', label: 'whatsapp' },
+    ],
+    city: 'Rio de Janeiro',
+    state: 'RJ',
+    notes: '',
+    createdAt: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toISOString(),
+    updatedAt: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toISOString(),
+  },
 ];
 
 // Estado mutável para permitir alterações durante a sessão
 export const mockContactsState = {
   contacts: [...initialContacts],
-  nextId: 6,
+  nextId: 9,
 };
 
 // Funções auxiliares para manipular o estado mockado

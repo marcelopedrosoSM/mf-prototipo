@@ -76,7 +76,7 @@ const settingsItems: SidebarItem[] = [
   },
 ];
 
-const handleItemClick = (item: SidebarItem) => {
+const handleItemClick = (_item: SidebarItem) => {
   // Router-link já cuida da navegação
 };
 </script>

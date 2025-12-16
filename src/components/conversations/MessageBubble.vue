@@ -1,5 +1,17 @@
 <template>
+  <!-- Mensagem do Sistema -->
   <div
+    v-if="isSystem"
+    class="flex w-full justify-center my-2"
+  >
+    <div class="px-3 py-1 rounded-full bg-muted/50 text-xs text-muted-foreground italic">
+      {{ message.content }}
+    </div>
+  </div>
+
+  <!-- Mensagem Normal -->
+  <div
+    v-else
     :class="[
       'flex w-full',
       isSent ? 'justify-end' : 'justify-start',
@@ -154,6 +166,10 @@ interface Props {
 }
 
 const props = defineProps<Props>();
+
+const isSystem = computed(() => {
+  return props.message.senderType === 'system';
+});
 
 const isSent = computed(() => {
   return props.message.senderType === 'user';

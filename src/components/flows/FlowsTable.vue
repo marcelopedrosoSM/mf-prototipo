@@ -10,7 +10,7 @@
         <p class="text-sm text-muted-foreground mb-4">
           Comece criando seu primeiro fluxo
         </p>
-        <Button v-if="onCreate" @click="onCreate">
+        <Button @click="handleCreate">
           <Plus class="mr-2 h-4 w-4" />
           Adicionar Primeiro Fluxo
         </Button>
@@ -33,14 +33,14 @@
             </TableRow>
           </TableHeader>
           <TableBody>
-            <TableRow v-for="flow in paginatedFlows" :key="flow.id">
+            <TableRow 
+              v-for="flow in paginatedFlows" 
+              :key="flow.id"
+              class="cursor-pointer hover:bg-muted/50"
+              @click="handleRowClick(flow)"
+            >
             <TableCell class="font-medium">
-              <button
-                @click="handleEdit(flow)"
-                class="text-left hover:text-primary transition-colors cursor-pointer"
-              >
-                {{ flow.nome }}
-              </button>
+              {{ flow.nome }}
             </TableCell>
             <TableCell>
               <span class="text-muted-foreground">
@@ -57,7 +57,7 @@
                 {{ formatDate(flow.updatedAt) }}
               </span>
             </TableCell>
-            <TableCell class="text-right">
+            <TableCell class="text-right" @click.stop>
               <DropdownMenu>
                 <DropdownMenuTrigger as-child>
                   <Button variant="ghost" size="icon">
@@ -94,6 +94,7 @@
 
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue';
+import { useRouter } from 'vue-router';
 import { Plus, Workflow, Loader2, MoreVertical, Edit, Trash2 } from 'lucide-vue-next';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
@@ -122,12 +123,15 @@ import type { Flow } from '@/mocks/data/flows';
 interface Props {
   flows: Flow[];
   loading?: boolean;
+  onCreate?: () => void;
 }
 
 const props = withDefaults(defineProps<Props>(), {
   loading: false,
+  onCreate: undefined,
 });
 
+const router = useRouter();
 const currentPage = ref(1);
 const pageSize = ref(10);
 
@@ -210,6 +214,10 @@ function getStatusLabel(status: string): string {
 }
 
 
+function handleRowClick(flow: Flow) {
+  router.push(`/fluxos/${flow.id}`);
+}
+
 function handleEdit(flow: Flow) {
   emit('edit', flow);
 }
@@ -218,9 +226,16 @@ function handleDelete(flow: Flow) {
   emit('delete', flow);
 }
 
-// Expose onCreate for parent
+function handleCreate() {
+  if (props.onCreate) {
+    props.onCreate();
+  }
+  emit('create');
+}
+
+// Expose onCreate for parent (for backward compatibility)
 defineExpose({
-  onCreate: () => emit('create'),
+  onCreate: handleCreate,
 });
 </script>
 

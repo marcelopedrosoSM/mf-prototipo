@@ -116,7 +116,6 @@ import {
 import {
   Dialog,
   DialogContent,
-  DialogDescription,
   DialogFooter,
   DialogHeader,
   DialogTitle,
@@ -203,7 +202,10 @@ function handleSave(data: MensagemRapidaFormData) {
     }
   } else {
     // Create
-    const newMensagem = addMensagemRapida(data);
+    const newMensagem = addMensagemRapida({
+      title: data.title,
+      content: data.content,
+    });
     mensagens.value.push(newMensagem);
     toast.success('Mensagem criada', `${data.title} foi criada com sucesso.`);
   }

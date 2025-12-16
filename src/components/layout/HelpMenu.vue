@@ -5,7 +5,7 @@
         class="flex items-center justify-center rounded-md p-2 interactive"
         title="Ajuda"
       >
-        <HelpCircle class="h-5 w-5" />
+        <HelpCircle class="h-4 w-4" />
       </button>
     </DropdownMenuTrigger>
     <DropdownMenuContent align="end" class="w-56">

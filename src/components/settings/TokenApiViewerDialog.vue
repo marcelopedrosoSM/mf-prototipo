@@ -53,7 +53,6 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue';
 import { Copy as CopyIcon } from 'lucide-vue-next';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';

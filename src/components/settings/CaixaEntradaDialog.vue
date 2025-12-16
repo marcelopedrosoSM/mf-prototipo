@@ -135,7 +135,7 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 
-import { caixaEntradaSchema, type CaixaEntradaFormData } from '@/schemas/caixas-entrada';
+import type { CaixaEntradaFormData } from '@/schemas/caixas-entrada';
 import type { CaixaEntrada } from '@/types/caixas-entrada';
 
 interface Props {

@@ -84,7 +84,7 @@
                     <TableCell>
                       <RadioGroup
                         :model-value="getSelectedPermissionId(group.name)"
-                        @update:model-value="(value) => handlePermissionChange(group.name, value as number)"
+                        @update:model-value="(value) => handlePermissionChange(group.name, Number(value))"
                         class="flex flex-col gap-2"
                       >
                         <div

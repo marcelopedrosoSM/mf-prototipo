@@ -16,7 +16,7 @@
               type="email"
               placeholder="Informe o e-mail"
               :class="getEmailError(index) ? 'border-destructive' : ''"
-              @update:model-value="(value) => updateEmail(index, value)"
+              @update:model-value="(value) => updateEmail(index, String(value))"
             />
             <p v-if="getEmailError(index)" class="text-sm text-destructive mt-1">
               {{ getEmailError(index) }}
@@ -57,7 +57,7 @@
             <Select
               :model-value="phone.label"
               :disabled="isPhoneDisabled(index)"
-              @update:model-value="(value) => updatePhoneLabel(index, value)"
+              @update:model-value="(value) => updatePhoneLabel(index, value as 'whatsapp' | 'comercial' | 'pessoal')"
             >
               <SelectTrigger :class="getPhoneError(index, 'label') ? 'border-destructive' : ''">
                 <SelectValue placeholder="Selecione o tipo" />
@@ -75,7 +75,7 @@
                 placeholder="+55 (00) 0 0000 0000"
                 :disabled="isPhoneDisabled(index)"
                 :class="getPhoneError(index, 'phoneNumber') ? 'border-destructive' : ''"
-                @update:model-value="(value) => updatePhoneNumber(index, value)"
+                @update:model-value="(value) => updatePhoneNumber(index, String(value))"
               />
               <p v-if="getPhoneError(index, 'phoneNumber')" class="text-sm text-destructive mt-1">
                 {{ getPhoneError(index, 'phoneNumber') }}
@@ -129,11 +129,10 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref } from 'vue';
+import { computed } from 'vue';
 import { Plus, Trash2 } from 'lucide-vue-next';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import {
   Select,

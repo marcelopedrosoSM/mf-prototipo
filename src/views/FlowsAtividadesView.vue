@@ -81,6 +81,7 @@ import FlowsTable from '@/components/flows/FlowsTable.vue';
 import FlowDialog from '@/components/flows/FlowDialog.vue';
 import { MOCK_FLOWS_ATIVIDADES, type Flow } from '@/mocks/data/flows';
 import { useToast } from '@/composables/useToast';
+import { generateFlowId } from '@/utils/idGenerator';
 
 const toast = useToast();
 const flows = ref<Flow[]>([]);
@@ -104,13 +105,13 @@ function loadFlows() {
 }
 
 function handleCreate() {
-  selectedFlow.value = null;
-  dialogOpen.value = true;
+  // TODO: Implementar criação de fluxo
+  // router.push('/flows/atividades/novo');
 }
 
-function handleEdit(flow: Flow) {
-  selectedFlow.value = { ...flow };
-  dialogOpen.value = true;
+function handleEdit(_flow: Flow) {
+  // TODO: Implementar edição de fluxo
+  // router.push(`/flows/atividades/${_flow.id}`);
 }
 
 function handleDelete(flow: Flow) {
@@ -151,12 +152,15 @@ function handleSave(data: Omit<Flow, 'id' | 'createdAt' | 'updatedAt'>) {
     // Create
     const newFlow: Flow = {
       ...data,
-      id: String(Date.now()),
+      id: generateFlowId(),
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
     };
     flows.value.push(newFlow);
     toast.success('Fluxo criado', `${data.nome} foi criado com sucesso.`);
+    // TODO: Implementar navegação para o flow builder
+    // router.push(`/flows/atividades/${newFlow.id}`);
+    return;
   }
   dialogOpen.value = false;
   selectedFlow.value = null;

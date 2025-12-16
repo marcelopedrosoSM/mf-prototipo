@@ -1,19 +1,17 @@
 <template>
-  <div
-    v-if="isInHistory"
-    class="flex justify-center items-start border-[1.5px] border-success/75 px-2 mt-1 rounded-lg mb-1"
-  >
-    <span class="text-xs text-success font-medium">Finalizada</span>
-  </div>
   <div class="flex justify-between items-center">
     <div class="flex items-center min-w-0 flex-1">
       <div class="h-6 w-6 rounded-full bg-primary flex items-center justify-center flex-shrink-0">
         <span class="text-xs font-bold text-primary-foreground">{{ getInitials(chat.sender.name) }}</span>
       </div>
       <span
-        class="text-sm font-bold text-muted-foreground truncate ml-2 max-w-[250px]"
+        class="text-sm font-semibold text-foreground truncate ml-2 max-w-[250px]"
         v-html="highlightContactName"
       ></span>
+      <CheckCircle2
+        v-if="chat.status === 'closed'"
+        class="h-4 w-4 text-success ml-1.5 flex-shrink-0"
+      />
     </div>
       <span class="text-xs text-muted-foreground flex-shrink-0 ml-2">
         {{ recentMessage.date || formatDate(recentMessage.timestamp) }}
@@ -23,6 +21,7 @@
 
 <script setup lang="ts">
 import { computed } from 'vue';
+import { CheckCircle2 } from 'lucide-vue-next';
 import type { ChatSession, Message } from '@/types/conversations';
 
 interface Props {

@@ -6,7 +6,7 @@
       class="h-4 w-4 text-primary mr-1 flex-shrink-0"
     />
     <component v-if="hasAttachments" :is="attachmentIcon" class="h-5 w-5 flex-shrink-0" />
-    <span class="truncate max-w-[280px] leading-[100%]">{{ messageText }}</span>
+    <span class="truncate max-w-[280px] leading-normal">{{ messageText }}</span>
   </div>
 </template>
 

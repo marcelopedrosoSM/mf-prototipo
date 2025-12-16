@@ -5,7 +5,7 @@
         class="flex items-center justify-center rounded-md p-2 interactive"
         title="Buscar"
       >
-        <Search class="h-5 w-5" />
+        <Search class="h-4 w-4" />
       </button>
     </PopoverTrigger>
     <PopoverContent align="end" class="w-80 p-4">

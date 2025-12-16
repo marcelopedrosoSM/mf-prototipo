@@ -1,7 +1,7 @@
 <template>
   <aside
     :class="cn(
-      'fixed left-0 top-16 z-40 h-[calc(100vh-4rem)] border-r bg-background transition-all duration-300',
+      'fixed left-0 top-16 z-50 h-[calc(100vh-4rem)] border-r bg-background transition-all duration-300',
       collapsed ? 'w-16' : 'w-64'
     )"
   >
@@ -13,8 +13,8 @@
           class="flex h-10 w-10 items-center justify-center rounded-md p-2 interactive flex-shrink-0"
           :title="collapsed ? 'Expandir menu' : 'Recolher menu'"
         >
-          <PanelLeftOpen v-if="collapsed" class="h-5 w-5" />
-          <PanelLeftClose v-else class="h-5 w-5" />
+          <PanelLeftOpen v-if="collapsed" class="h-4 w-4" />
+          <PanelLeftClose v-else class="h-4 w-4" />
         </button>
         <span v-if="!collapsed" class="text-base font-semibold truncate">
           {{ title }}
@@ -35,7 +35,20 @@
           }"
           :title="collapsed ? item.label : undefined"
         >
-          <component :is="item.icon" class="h-4 w-4 flex-shrink-0" />
+          <div class="relative flex-shrink-0">
+            <component :is="item.icon" class="h-4 w-4" />
+            <span
+              v-if="collapsed && item.badge && item.badge > 0"
+              :class="[
+                'absolute bottom-0 right-0 h-5 min-w-5 px-1 text-[11px] font-bold rounded-full flex items-center justify-center border-2 translate-x-1/2 translate-y-1/2',
+                isItemActive(item)
+                  ? 'bg-primary-foreground border-primary'
+                  : 'bg-muted text-muted-foreground border-background',
+              ]"
+            >
+              {{ item.badge > 9 ? '9+' : item.badge }}
+            </span>
+          </div>
           <span v-if="!collapsed" class="truncate flex-1 min-w-0 text-left">{{ item.label }}</span>
           <span
             v-if="!collapsed"
@@ -43,7 +56,7 @@
               'h-5 min-w-5 px-1.5 text-xs rounded-full flex items-center justify-center ml-auto flex-shrink-0',
               item.badge && item.badge > 0
                 ? isItemActive(item)
-                  ? 'bg-primary-foreground/20 text-primary-foreground'
+                  ? 'bg-primary-foreground'
                   : 'bg-muted text-muted-foreground'
                 : 'opacity-0 pointer-events-none',
             ]"
@@ -63,7 +76,20 @@
           :title="collapsed ? item.label : undefined"
           @click="handleItemClick(item)"
         >
-          <component :is="item.icon" class="h-4 w-4 flex-shrink-0" />
+          <div class="relative flex-shrink-0">
+            <component :is="item.icon" class="h-4 w-4" />
+            <span
+              v-if="collapsed && item.badge && item.badge > 0"
+              :class="[
+                'absolute bottom-0 right-0 h-5 min-w-5 px-1 text-[11px] font-bold rounded-full flex items-center justify-center border-2 translate-x-1/2 translate-y-1/2',
+                isItemActive(item)
+                  ? 'bg-primary-foreground border-primary'
+                  : 'bg-muted text-muted-foreground border-background',
+              ]"
+            >
+              {{ item.badge > 9 ? '9+' : item.badge }}
+            </span>
+          </div>
           <span v-if="!collapsed" class="truncate flex-1 min-w-0 text-left">{{ item.label }}</span>
           <span
             v-if="!collapsed"
@@ -71,7 +97,7 @@
               'h-5 min-w-5 px-1.5 text-xs rounded-full flex items-center justify-center ml-auto flex-shrink-0',
               item.badge && item.badge > 0
                 ? isItemActive(item)
-                  ? 'bg-primary-foreground/20 text-primary-foreground'
+                  ? 'bg-primary-foreground'
                   : 'bg-muted text-muted-foreground'
                 : 'opacity-0 pointer-events-none',
             ]"

@@ -1,3 +1,5 @@
+import { initializeFlowIdCounter } from '@/utils/idGenerator';
+
 export type FlowType = 'atendimento' | 'atividades';
 
 export type FlowStatus = 'ativo' | 'inativo' | 'rascunho';
@@ -73,4 +75,9 @@ export const MOCK_FLOWS_ATIVIDADES: Flow[] = [
     updatedAt: '2024-01-20T13:20:00Z',
   },
 ];
+
+// Inicializar contador de IDs baseado nos mocks existentes
+const allFlows = [...MOCK_FLOWS_ATENDIMENTO, ...MOCK_FLOWS_ATIVIDADES];
+const maxId = Math.max(...allFlows.map(f => parseInt(f.id) || 0), 0);
+initializeFlowIdCounter(maxId);
 

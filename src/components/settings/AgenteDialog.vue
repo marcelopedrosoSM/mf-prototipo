@@ -123,7 +123,6 @@
 <script setup lang="ts">
 import { ref, watch, computed, nextTick } from 'vue';
 import { Loader2, ChevronsUpDown } from 'lucide-vue-next';
-import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -216,10 +215,10 @@ const selectedTimes = computed(() => {
   return props.times.filter(time => formData.value.timesIds?.includes(time.id) || false);
 });
 
-function isTimeSelected(timeId: string): boolean {
-  if (!formData.value.timesIds) return false;
-  return formData.value.timesIds.includes(timeId);
-}
+// function isTimeSelected(timeId: string): boolean {
+//   if (!formData.value.timesIds) return false;
+//   return formData.value.timesIds.includes(timeId);
+// }
 
 function setTimesPopoverOpen(open: boolean) {
   timesPopoverOpen.value = open;
@@ -235,27 +234,27 @@ function setTimesPopoverOpen(open: boolean) {
   }
 }
 
-function toggleTime(timeId: string) {
-  // Garantir que timesIds existe e é um array
-  if (!formData.value.timesIds) {
-    formData.value.timesIds = [];
-  }
-  
-  // Criar uma cópia do array atual
-  const currentValues = [...formData.value.timesIds];
-  const index = currentValues.indexOf(timeId);
-  
-  if (index > -1) {
-    // Remover se já existe
-    currentValues.splice(index, 1);
-  } else {
-    // Adicionar se não existe
-    currentValues.push(timeId);
-  }
-  
-  // Atualizar com novo array para garantir reatividade
-  formData.value.timesIds = currentValues;
-}
+// function toggleTime(timeId: string) {
+//   // Garantir que timesIds existe e é um array
+//   if (!formData.value.timesIds) {
+//     formData.value.timesIds = [];
+//   }
+//   
+//   // Criar uma cópia do array atual
+//   const currentValues = [...formData.value.timesIds];
+//   const index = currentValues.indexOf(timeId);
+//   
+//   if (index > -1) {
+//     // Remover se já existe
+//     currentValues.splice(index, 1);
+//   } else {
+//     // Adicionar se não existe
+//     currentValues.push(timeId);
+//   }
+//   
+//   // Atualizar com novo array para garantir reatividade
+//   formData.value.timesIds = currentValues;
+// }
 
 function handleCheckboxUpdate(timeId: string, checked: boolean) {
   // Garantir que timesIds existe e é um array

@@ -1,6 +1,6 @@
 <template>
   <div class="flex items-center justify-between gap-1 mt-1 flex-nowrap">
-    <!-- Lado Esquerdo: Badge WhatsApp, Labels, Time -->
+    <!-- Lado Esquerdo: Badge WhatsApp, Labels -->
     <div class="flex items-center gap-1 flex-1 min-w-0">
       <!-- Badge WhatsApp (Canal) -->
       <div class="flex items-center justify-center h-5 w-5 rounded-full bg-success/20 border border-success/50 flex-shrink-0">
@@ -32,37 +32,29 @@
       >
         +{{ remainingLabelsCount }}
       </div>
-      
-      <!-- Avatar do Time (se em histórico) -->
+    </div>
+
+    <!-- Lado Direito: Avatar do Time e Usuário -->
+    <div class="flex items-center gap-1 flex-shrink-0 ml-2">
+      <!-- Avatar do Time (se houver) -->
       <div
-        v-if="isInHistory && chat.assignedUser?.team"
+        v-if="chat.assignedUser?.team"
         class="h-[25px] w-[25px] rounded-full border border-white/75 bg-muted flex items-center justify-center flex-shrink-0 -mr-[12px] z-10"
+        :title="chat.assignedUser.team.name"
       >
-        <span class="text-xs font-bold text-foreground">
+        <span class="text-[10px] font-bold text-foreground">
           {{ getInitials(chat.assignedUser.team.name) }}
         </span>
       </div>
-    </div>
-
-    <!-- Lado Direito: Avatar do Usuário ou Ícone de Adicionar -->
-    <div class="flex items-center flex-shrink-0">
       <!-- Avatar do Usuário -->
       <div
         v-if="chat.assignedUser?.user"
         class="h-[25px] w-[25px] rounded-full border border-muted bg-primary/10 flex items-center justify-center flex-shrink-0"
         :title="chat.assignedUser.user.name"
       >
-        <span class="text-xs font-bold text-primary">
+        <span class="text-[10px] font-bold text-primary">
           {{ getInitials(chat.assignedUser.user.name) }}
         </span>
-      </div>
-      <!-- Ícone de Adicionar Usuário (quando não há usuário atribuído) -->
-      <div
-        v-else
-        class="h-[25px] w-[25px] rounded-full border border-dashed border-muted-foreground/40 bg-transparent flex items-center justify-center flex-shrink-0"
-        title="Atribuir usuário"
-      >
-        <UserPlus class="h-3.5 w-3.5 text-muted-foreground" />
       </div>
     </div>
   </div>
@@ -70,7 +62,7 @@
 
 <script setup lang="ts">
 import { computed } from 'vue';
-import { MessageCircle, UserPlus } from 'lucide-vue-next';
+import { MessageCircle } from 'lucide-vue-next';
 import type { ChatSession } from '@/types/conversations';
 
 interface Props {
@@ -90,7 +82,7 @@ const getInitials = (name: string): string => {
   return name.substring(0, 2).toUpperCase();
 };
 
-// Limitar labels visíveis (mostrar até 2-3 labels)
+// Limitar labels visíveis (mostrar até 2 labels)
 const visibleLabels = computed(() => {
   if (!props.chat.labels || props.chat.labels.length === 0) return [];
   return props.chat.labels.slice(0, 2);

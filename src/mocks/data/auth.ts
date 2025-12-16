@@ -5,7 +5,7 @@
 
 export const MOCK_CREDENTIALS = {
   email: 'user@myflows.com.br',
-  password: '123456',
+  password: 'M1nh4S3nh4!',
 } as const;
 
 export const MOCK_USER = {

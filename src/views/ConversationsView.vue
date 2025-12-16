@@ -1,10 +1,11 @@
 <template>
-  <AppLayout>
+  <AppLayout v-slot="{ selectedStatus }">
     <div class="flex h-full overflow-hidden max-h-full">
       <!-- Sidebar de Conversas -->
       <div class="w-[400px] flex-shrink-0 border-r border-border">
         <ConversationSidebar
           :selected-chat-id="selectedChat?.id"
+          :status-filter="selectedStatus"
           @select-chat="handleSelectChat"
           @inbox-change="handleInboxChange"
         />
@@ -15,6 +16,7 @@
         <ChatView
           :chat="selectedChat"
           @send-message="handleSendMessage"
+          @labels-changed="handleLabelsChanged"
         />
       </div>
     </div>
@@ -26,7 +28,7 @@ import { ref } from 'vue';
 import AppLayout from '@/components/layout/AppLayout.vue';
 import ConversationSidebar from '@/components/conversations/ConversationSidebar.vue';
 import ChatView from '@/components/conversations/ChatView.vue';
-import type { ChatSession } from '@/types/conversations';
+import type { ChatSession, Label } from '@/types/conversations';
 
 const selectedChat = ref<ChatSession | null>(null);
 
@@ -61,6 +63,13 @@ function handleSendMessage(message: string) {
   selectedChat.value.messages.push(newMessage);
   selectedChat.value.lastActivityAt = new Date().toISOString();
   selectedChat.value.lastActivityUserAt = new Date().toISOString();
+}
+
+function handleLabelsChanged(labels: Label[]) {
+  if (!selectedChat.value) return;
+
+  // Atualizar labels da conversa
+  selectedChat.value.labels = labels;
 }
 </script>
 

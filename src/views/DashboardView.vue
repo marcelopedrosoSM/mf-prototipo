@@ -291,7 +291,6 @@ import { MOCK_USER } from '@/mocks/data/auth';
 import { MOCK_FLOWS_ATENDIMENTO, MOCK_FLOWS_ATIVIDADES, type Flow } from '@/mocks/data/flows';
 import {
   getOpenConversations,
-  getConversationsToday,
   getTotalMessagesToday,
   type Conversation,
 } from '@/mocks/data/conversations';
@@ -449,8 +448,10 @@ function navigateToFlows() {
   router.push('/flows');
 }
 
-function navigateToFlow(id: string) {
-  router.push(`/flows/${id}`);
+function navigateToFlow(_id: string) {
+  // TODO: Implementar navegação para detalhes do fluxo
+  // router.push(`/flows/${_id}`);
+  router.push('/flows');
 }
 
 let timeInterval: ReturnType<typeof setInterval> | null = null;

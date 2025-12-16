@@ -23,26 +23,16 @@
 
       <!-- Ações -->
       <div class="flex items-center gap-2 flex-shrink-0">
-        <!-- Adicionar Etiqueta -->
-        <Button variant="ghost" size="icon" title="Adicionar etiqueta">
-          <Tag class="h-4 w-4" />
-        </Button>
+        <!-- Gerenciar Etiquetas -->
+        <LabelsManager :chat="chat" @labels-changed="handleLabelsChanged" />
 
         <!-- Buscar -->
         <Button variant="ghost" size="icon" title="Buscar">
           <Search class="h-4 w-4" />
         </Button>
 
-        <!-- Atribuir -->
-        <div class="relative">
-          <Button variant="ghost" size="icon" title="Atribuir">
-            <Users class="h-4 w-4" />
-          </Button>
-          <div
-            v-if="chat.assignedUser"
-            class="absolute -bottom-1 -right-1 h-3 w-3 rounded-full bg-success border-2 border-background"
-          />
-        </div>
+        <!-- Gerenciar Atribuição -->
+        <AssignmentManager :chat="chat" @assigned="handleAssigned" @unassigned="handleUnassigned" />
 
         <!-- Finalizar -->
         <Button variant="default" class="bg-primary text-primary-foreground" title="Finalizar">
@@ -55,20 +45,6 @@
           <MoreVertical class="h-4 w-4" />
         </Button>
       </div>
-    </div>
-
-    <!-- Banner de Atribuição -->
-    <div
-      v-if="chat.assignedUser"
-      class="px-4 py-2 bg-muted/50 border-b border-border text-center"
-    >
-      <p class="text-xs text-muted-foreground">
-        Conversa atribuída a
-        <span class="font-semibold">{{ chat.assignedUser.user.name }}</span>
-        <span v-if="chat.assignedUser.team">
-          do time <span class="font-semibold">{{ chat.assignedUser.team.name }}</span>
-        </span>
-      </p>
     </div>
 
     <!-- Área de Mensagens -->
@@ -101,12 +77,13 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue';
-import { Tag, Search, Users, Check, MoreVertical, MessageCircle } from 'lucide-vue-next';
+import { Search, Check, MoreVertical, MessageCircle } from 'lucide-vue-next';
 import { Button } from '@/components/ui/button';
 import MessageList from './MessageList.vue';
 import ChatInput from './ChatInput.vue';
-import type { ChatSession, Message } from '@/types/conversations';
+import LabelsManager from './LabelsManager.vue';
+import AssignmentManager from './AssignmentManager.vue';
+import type { ChatSession, Label } from '@/types/conversations';
 
 interface Props {
   chat: ChatSession | null;
@@ -116,6 +93,7 @@ const props = defineProps<Props>();
 
 const emit = defineEmits<{
   'send-message': [message: string];
+  'labels-changed': [labels: Label[]];
 }>();
 
 function getInitials(name: string): string {
@@ -128,6 +106,18 @@ function getInitials(name: string): string {
 
 function handleSendMessage(message: string) {
   emit('send-message', message);
+}
+
+function handleLabelsChanged(labels: Label[]) {
+  emit('labels-changed', labels);
+}
+
+function handleAssigned() {
+  // Conversa foi atribuída
+}
+
+function handleUnassigned() {
+  // Atribuição foi removida
 }
 </script>
 

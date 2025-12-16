@@ -4,6 +4,8 @@
 
 import type { TokenAPI, PermissionGroup } from '@/types/tokens-api';
 
+export type { PermissionGroup };
+
 export const MOCK_TOKENS_API: TokenAPI[] = [
   {
     id: '1',

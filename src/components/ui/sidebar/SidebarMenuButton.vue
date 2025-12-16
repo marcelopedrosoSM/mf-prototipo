@@ -20,17 +20,17 @@ const props = withDefaults(defineProps<SidebarMenuButtonProps & {
 
 const { isMobile, state } = useSidebar()
 
-const delegatedProps = reactiveOmit(props, "tooltip")
+const delegatedProps = reactiveOmit(props, "tooltip", "as") as Omit<typeof props, "tooltip" | "as">
 </script>
 
 <template>
-  <SidebarMenuButtonChild v-if="!tooltip" v-bind="{ ...delegatedProps, ...$attrs }">
+  <SidebarMenuButtonChild v-if="!tooltip" v-bind="delegatedProps" :as="typeof props.as === 'string' ? props.as : 'button'">
     <slot />
   </SidebarMenuButtonChild>
 
   <Tooltip v-else>
     <TooltipTrigger as-child>
-      <SidebarMenuButtonChild v-bind="{ ...delegatedProps, ...$attrs }">
+      <SidebarMenuButtonChild v-bind="delegatedProps" :as="typeof props.as === 'string' ? props.as : 'button'">
         <slot />
       </SidebarMenuButtonChild>
     </TooltipTrigger>

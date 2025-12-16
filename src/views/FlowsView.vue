@@ -142,6 +142,7 @@
 
 <script setup lang="ts">
 import { ref, onMounted } from 'vue';
+import { useRouter } from 'vue-router';
 import { Plus, Bot, Calendar } from 'lucide-vue-next';
 import AppLayout from '@/components/layout/AppLayout.vue';
 import { Button } from '@/components/ui/button';
@@ -161,8 +162,10 @@ import FlowsTable from '@/components/flows/FlowsTable.vue';
 import FlowDialog from '@/components/flows/FlowDialog.vue';
 import { MOCK_FLOWS_ATENDIMENTO, MOCK_FLOWS_ATIVIDADES, type Flow } from '@/mocks/data/flows';
 import { useToast } from '@/composables/useToast';
+import { generateFlowId } from '@/utils/idGenerator';
 
 const toast = useToast();
+const router = useRouter();
 const activeTab = ref('atendimento');
 
 // Atendimento state
@@ -196,13 +199,12 @@ function loadFlowsAtendimento() {
 }
 
 function handleCreateAtendimento() {
-  selectedFlowAtendimento.value = null;
-  dialogOpenAtendimento.value = true;
+  // TODO: Implementar criação de fluxo
+  // router.push('/flows/atendimento/novo');
 }
 
 function handleEditAtendimento(flow: Flow) {
-  selectedFlowAtendimento.value = { ...flow };
-  dialogOpenAtendimento.value = true;
+  router.push(`/fluxos/${flow.id}`);
 }
 
 function handleDeleteAtendimento(flow: Flow) {
@@ -241,12 +243,15 @@ function handleSaveAtendimento(data: Omit<Flow, 'id' | 'createdAt' | 'updatedAt'
   } else {
     const newFlow: Flow = {
       ...data,
-      id: String(Date.now()),
+      id: generateFlowId(),
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
     };
     flowsAtendimento.value.push(newFlow);
     toast.success('Fluxo criado', `${data.nome} foi criado com sucesso.`);
+    // TODO: Implementar navegação para o flow builder
+    // router.push(`/flows/atendimento/${newFlow.id}`);
+    return;
   }
   dialogOpenAtendimento.value = false;
   selectedFlowAtendimento.value = null;
@@ -269,13 +274,13 @@ function loadFlowsAtividades() {
 }
 
 function handleCreateAtividades() {
-  selectedFlowAtividades.value = null;
-  dialogOpenAtividades.value = true;
+  // TODO: Implementar criação de fluxo
+  // router.push('/flows/atividades/novo');
 }
 
-function handleEditAtividades(flow: Flow) {
-  selectedFlowAtividades.value = { ...flow };
-  dialogOpenAtividades.value = true;
+function handleEditAtividades(_flow: Flow) {
+  // TODO: Implementar edição de fluxo
+  // router.push(`/flows/atividades/${_flow.id}`);
 }
 
 function handleDeleteAtividades(flow: Flow) {
@@ -314,12 +319,15 @@ function handleSaveAtividades(data: Omit<Flow, 'id' | 'createdAt' | 'updatedAt'>
   } else {
     const newFlow: Flow = {
       ...data,
-      id: String(Date.now()),
+      id: generateFlowId(),
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
     };
     flowsAtividades.value.push(newFlow);
     toast.success('Fluxo criado', `${data.nome} foi criado com sucesso.`);
+    // TODO: Implementar navegação para o flow builder
+    // router.push(`/flows/atividades/${newFlow.id}`);
+    return;
   }
   dialogOpenAtividades.value = false;
   selectedFlowAtividades.value = null;

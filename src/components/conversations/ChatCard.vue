@@ -1,11 +1,10 @@
 <template>
   <div
     :class="[
-      'py-3 px-4 cursor-pointer transition-colors border-b border-border',
+      'py-3.5 px-4 cursor-pointer transition-colors border-b border-border relative',
       isSelected 
-        ? 'bg-muted/50' 
-        : 'bg-background hover:bg-muted/30',
-      isInHistory && 'bg-muted/20',
+        ? 'bg-chat-card-selected border-l-4 border-l-primary' 
+        : 'bg-background hover:bg-muted',
     ]"
     @click="handleClick"
   >
@@ -18,7 +17,7 @@
       />
       <div
         v-if="recentMessage.id"
-        class="flex justify-between items-center mt-1.5 mb-1.5"
+        class="flex justify-between items-center mt-1.5 mb-2"
       >
         <ChatCardMessage :last-message="recentMessage" />
         <span
@@ -28,7 +27,7 @@
           {{ formatBadgeQuantity(chat.unreadCount) }}
         </span>
       </div>
-      <ChatCardFooter :chat="chat" :is-in-history="isInHistory" />
+      <ChatCardFooter :chat="chat" :is-in-history="isInHistory" @select-chat="handleClick" />
     </div>
   </div>
 </template>

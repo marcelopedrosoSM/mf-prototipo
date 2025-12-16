@@ -23,14 +23,14 @@ const routes: RouteRecordRaw[] = [
         component: () => import('@/views/FlowsView.vue'),
       },
       {
-        path: '/flows/atendimento',
-        name: 'flows-atendimento',
-        component: () => import('@/views/FlowsAtendimentoView.vue'),
-      },
-      {
         path: '/flows/atividades',
         name: 'flows-atividades',
         component: () => import('@/views/FlowsAtividadesView.vue'),
+      },
+      {
+        path: '/fluxos/:id',
+        name: 'fluxos-edit',
+        component: () => import('@/views/flowBuilderChat.vue'),
       },
       {
         path: '/contacts',

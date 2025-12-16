@@ -1,136 +1,85 @@
-import { ref, watch, onMounted, onUnmounted } from 'vue'
+import { ref, computed, watch } from 'vue';
 
-export type Theme = 'light' | 'dark' | 'system'
+const THEME_STORAGE_KEY = 'myflows-theme';
+type Theme = 'light' | 'dark' | 'system';
 
-const THEME_STORAGE_KEY = 'myflows-theme'
-
-const theme = ref<Theme>('system')
-const resolvedTheme = ref<'light' | 'dark'>('light')
-
-let mediaQueryListener: ((e: MediaQueryListEvent) => void) | null = null
-
-const getSystemTheme = (): 'light' | 'dark' => {
-  if (typeof window === 'undefined') return 'light'
-  return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'
+// Validação do tema lido do storage
+function getStoredTheme(): Theme {
+  if (typeof window === 'undefined') return 'system';
+  const stored = localStorage.getItem(THEME_STORAGE_KEY);
+  return (stored === 'light' || stored === 'dark' || stored === 'system') ? stored : 'system';
 }
 
-const applyTheme = (newTheme: 'light' | 'dark') => {
-  if (typeof document === 'undefined') return
+// Estado global (Singleton)
+const theme = ref<Theme>(getStoredTheme());
+const systemTheme = ref<'light' | 'dark'>('light');
 
-  const root = document.documentElement
-  
-  if (newTheme === 'dark') {
-    root.classList.add('dark')
-  } else {
-    root.classList.remove('dark')
-  }
-  
-  resolvedTheme.value = newTheme
+// Inicializar detecção do tema do sistema
+function initializeSystemTheme() {
+  if (typeof window === 'undefined') return;
+
+  const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
+
+  const updateSystemTheme = (matches: boolean) => {
+    systemTheme.value = matches ? 'dark' : 'light';
+  };
+
+  // Definir valor inicial
+  updateSystemTheme(mediaQuery.matches);
+
+  // Escutar mudanças
+  mediaQuery.addEventListener('change', (e) => updateSystemTheme(e.matches));
 }
 
-const updateTheme = (newTheme: Theme) => {
-  theme.value = newTheme
-  
-  if (typeof localStorage !== 'undefined') {
-    localStorage.setItem(THEME_STORAGE_KEY, newTheme)
-  }
-  
-  if (newTheme === 'system') {
-    const systemTheme = getSystemTheme()
-    applyTheme(systemTheme)
-    setupSystemThemeListener()
-  } else {
-    if (mediaQueryListener) {
-      const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)')
-      mediaQuery.removeEventListener('change', mediaQueryListener)
-      mediaQueryListener = null
-    }
-    applyTheme(newTheme)
-  }
-}
+// Inicializar listener do sistema
+initializeSystemTheme();
 
-const setupSystemThemeListener = () => {
-  if (typeof window === 'undefined') return
-  
-  if (mediaQueryListener) {
-    const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)')
-    mediaQuery.removeEventListener('change', mediaQueryListener)
-  }
-  
-  const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)')
-  mediaQueryListener = (e: MediaQueryListEvent) => {
-    if (theme.value === 'system') {
-      applyTheme(e.matches ? 'dark' : 'light')
-    }
-  }
-  
-  mediaQuery.addEventListener('change', mediaQueryListener)
-}
-
-const initializeTheme = () => {
-  if (typeof window === 'undefined' || typeof localStorage === 'undefined') {
-    applyTheme('light')
-    return
-  }
-
-  const stored = localStorage.getItem(THEME_STORAGE_KEY) as Theme | null
-  
-  if (stored && (stored === 'light' || stored === 'dark' || stored === 'system')) {
-    theme.value = stored
-  } else {
-    theme.value = 'system'
-  }
-  
+// Tema resolvido (computado)
+const resolvedTheme = computed<'light' | 'dark'>(() => {
   if (theme.value === 'system') {
-    const systemTheme = getSystemTheme()
-    applyTheme(systemTheme)
-    setupSystemThemeListener()
-  } else {
-    applyTheme(theme.value)
+    return systemTheme.value;
   }
+  return theme.value;
+});
+
+// Aplicar tema ao DOM
+// Aplicar tema ao DOM
+function applyTheme(newTheme: 'light' | 'dark') {
+  if (typeof document === 'undefined') return;
+
+  const root = document.documentElement;
+  const body = document.body;
+
+  if (newTheme === 'dark') {
+    root.classList.add('dark');
+    body.classList.add('dark');
+  } else {
+    root.classList.remove('dark');
+    body.classList.remove('dark');
+  }
+}
+
+// Watch global para aplicar alterações automaticamente
+// Isso garante que qualquer mudança em theme ou systemTheme reflita no DOM
+watch(resolvedTheme, (newTheme) => {
+  applyTheme(newTheme);
+}, { immediate: true });
+
+
+function setTheme(newTheme: Theme) {
+  theme.value = newTheme;
+  localStorage.setItem(THEME_STORAGE_KEY, newTheme);
+}
+
+function toggleTheme() {
+  setTheme(resolvedTheme.value === 'dark' ? 'light' : 'dark');
 }
 
 export function useTheme() {
-  onMounted(() => {
-    initializeTheme()
-  })
-
-  onUnmounted(() => {
-    if (mediaQueryListener) {
-      const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)')
-      mediaQuery.removeEventListener('change', mediaQueryListener)
-      mediaQueryListener = null
-    }
-  })
-
-  watch(
-    () => theme.value,
-    (newTheme) => {
-      if (newTheme === 'system') {
-        const systemTheme = getSystemTheme()
-        applyTheme(systemTheme)
-        setupSystemThemeListener()
-      }
-    }
-  )
-
-  const toggleTheme = () => {
-    if (resolvedTheme.value === 'light') {
-      updateTheme('dark')
-    } else {
-      updateTheme('light')
-    }
-  }
-
-  const setTheme = (newTheme: Theme) => {
-    updateTheme(newTheme)
-  }
-
   return {
-    theme: theme,
-    resolvedTheme: resolvedTheme,
+    theme,
+    resolvedTheme,
+    setTheme,
     toggleTheme,
-    setTheme
-  }
+  };
 }
-

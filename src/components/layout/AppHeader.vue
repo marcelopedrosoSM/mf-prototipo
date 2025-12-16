@@ -1,5 +1,5 @@
 <template>
-  <header class="flex h-16 w-full items-center border-b bg-background px-4 shadow-sm">
+  <header class="flex h-16 w-full items-center border-b bg-background px-4 shadow-sm relative z-50">
     <div class="flex w-full items-center justify-between">
       <!-- Left side - Logo/Brand -->
       <div class="flex items-center space-x-4">
@@ -32,7 +32,7 @@
 </template>
 
 <script setup lang="ts">
-import { h, computed } from 'vue';
+import { h } from 'vue';
 import { useRoute } from 'vue-router';
 import { LayoutDashboard, MessagesSquare, Contact, Workflow } from 'lucide-vue-next';
 import Logo from '@/components/Logo.vue';
@@ -65,8 +65,10 @@ const navigationItems = [
 
 function isActiveRoute(path: string): boolean {
   if (path === '/flows') {
-    // Highlight /flows when on /flows or any /flows/* route
-    return route.path === '/flows' || route.path.startsWith('/flows/');
+    // Highlight /flows when on /flows or any /flows/* or /fluxos/* route
+    return route.path === '/flows' 
+      || route.path.startsWith('/flows/')
+      || route.path.startsWith('/fluxos/');
   }
   return route.path === path;
 }

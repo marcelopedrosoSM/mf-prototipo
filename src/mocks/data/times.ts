@@ -4,6 +4,8 @@
 
 import type { Time } from '@/types/times';
 
+export type { Time };
+
 export const MOCK_TIMES: Time[] = [
   {
     id: '1',

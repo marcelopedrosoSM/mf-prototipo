@@ -20,7 +20,7 @@
           isConversationsRoute && (isSidebarCollapsed ? 'ml-[64px]' : 'ml-[256px]')
         )"
       >
-        <slot />
+        <slot :selected-status="selectedStatus" />
       </div>
     </div>
   </div>
@@ -35,7 +35,8 @@ import AppSidebar from './AppSidebar.vue';
 import { SidebarStatusType } from '@/types/conversations';
 
 const route = useRoute();
-const isSidebarCollapsed = ref(false);
+const isSidebarCollapsed = ref(true);
+const selectedStatus = ref<SidebarStatusType>(SidebarStatusType.ALL_CHATS);
 
 // Verifica se a rota atual é /conversations
 const isConversationsRoute = computed(() => {
@@ -47,8 +48,7 @@ function toggleSidebar() {
 }
 
 function handleStatusSelect(status: SidebarStatusType) {
-  console.log('Status selecionado no layout:', status);
-  // Aqui você pode emitir um evento ou usar um store para comunicar com a view
+  selectedStatus.value = status;
 }
 </script>
 

@@ -72,10 +72,17 @@ function formatDateHeader(timestamp: string): string {
 const messageGroups = computed(() => {
   if (props.messages.length === 0) return [];
 
+  // Ordenar mensagens por timestamp (mais antigas primeiro)
+  const sortedMessages = [...props.messages].sort((a, b) => {
+    const dateA = new Date(a.timestamp).getTime();
+    const dateB = new Date(b.timestamp).getTime();
+    return dateA - dateB; // Ordem crescente: mais antigas primeiro
+  });
+
   const groups: Array<{ date: string; messages: Message[] }> = [];
   let currentGroup: { date: string; messages: Message[] } | null = null;
 
-  props.messages.forEach((message) => {
+  sortedMessages.forEach((message) => {
     const messageDate = new Date(message.timestamp);
     const dateKey = messageDate.toDateString();
 

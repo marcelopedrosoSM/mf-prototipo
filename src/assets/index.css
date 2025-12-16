@@ -4,34 +4,62 @@
 
 @layer base {
   :root {
-    --background: 0 0% 100%; /* Mantido como está - branco */
-    --foreground: 215 28% 18%; /* MyFlows grey-darken-1 (#1F2937) */
-    --card: 0 0% 100%; /* Branco */
-    --card-foreground: 215 28% 18%; /* MyFlows grey-darken-1 (#1F2937) */
-    --popover: 0 0% 100%; /* Branco */
-    --popover-foreground: 215 28% 18%; /* MyFlows grey-darken-1 (#1F2937) */
-    --primary: 270 54% 55%; /* Roxo primário - mesma cor nos dois modos */
-    --primary-foreground: 0 0% 100%; /* Branco para contraste */
-    --primary-lighten-1: 270 54% 67%; /* Roxo secundário mais claro */
-    --secondary: 200 2% 64%; /* MyFlows secondary (#A1A5A6) */
-    --secondary-foreground: 215 28% 18%; /* MyFlows grey-darken-1 (#1F2937) */
-    --muted: 220 13% 91%; /* MyFlows border-light (#E5E7EB) */
-    --muted-foreground: 215 13% 47%; /* MyFlows grey (#6B7280) */
-    --accent: 270 54% 55%; /* Accent - mesma cor do primary */
-    --accent-foreground: 0 0% 100%; /* Branco para contraste */
-    --destructive: 0 85% 64%; /* MyFlows error (#F14949) */
-    --destructive-foreground: 0 0% 100%; /* Branco para contraste */
-    --success: 142 71% 45%; /* Verde para sucesso */
-    --success-foreground: 0 0% 100%; /* Branco para contraste */
-    --info: 270 54% 55%; /* Roxo primário para informação */
-    --info-foreground: 0 0% 100%; /* Branco para contraste */
-    --warning: 38 92% 50%; /* Amarelo/laranja para aviso */
-    --warning-foreground: 0 0% 100%; /* Branco para contraste */
-    --border: 220 13% 91%; /* MyFlows border-light (#E5E7EB) */
-    --input: 220 13% 91%; /* MyFlows border-light (#E5E7EB) */
-    --ring: 270 54% 55%; /* Ring focus - roxo primário */
+    --background: 0 0% 100%;
+    /* Mantido como está - branco */
+    --foreground: 215 28% 18%;
+    /* MyFlows grey-darken-1 (#1F2937) */
+    --card: 0 0% 100%;
+    /* Branco */
+    --card-foreground: 215 28% 18%;
+    /* MyFlows grey-darken-1 (#1F2937) */
+    --popover: 0 0% 100%;
+    /* Branco */
+    --popover-foreground: 215 28% 18%;
+    /* MyFlows grey-darken-1 (#1F2937) */
+    --primary: 270 54% 55%;
+    /* Roxo primário - mesma cor nos dois modos */
+    --primary-foreground: 0 0% 100%;
+    /* Branco para contraste */
+    --primary-lighten-1: 270 54% 67%;
+    /* Roxo secundário mais claro */
+    --secondary: 200 2% 64%;
+    /* MyFlows secondary (#A1A5A6) */
+    --secondary-foreground: 215 28% 18%;
+    /* MyFlows grey-darken-1 (#1F2937) */
+    --muted: 220 13% 91%;
+    /* MyFlows border-light (#E5E7EB) */
+    --muted-foreground: 215 13% 47%;
+    /* MyFlows grey (#6B7280) */
+    --accent: 270 54% 55%;
+    /* Accent - mesma cor do primary */
+    --accent-foreground: 0 0% 100%;
+    /* Branco para contraste */
+    --destructive: 0 85% 64%;
+    /* MyFlows error (#F14949) */
+    --destructive-foreground: 0 0% 100%;
+    /* Branco para contraste */
+    --success: 142 71% 45%;
+    /* Verde para sucesso */
+    --success-foreground: 0 0% 100%;
+    /* Branco para contraste */
+    --info: 270 54% 55%;
+    /* Roxo primário para informação */
+    --info-foreground: 0 0% 100%;
+    /* Branco para contraste */
+    --warning: 38 92% 50%;
+    /* Amarelo/laranja para aviso */
+    --warning-foreground: 0 0% 100%;
+    /* Branco para contraste */
+    --border: 220 13% 91%;
+    /* MyFlows border-light (#E5E7EB) */
+    --input: 220 13% 91%;
+    /* MyFlows border-light (#E5E7EB) */
+    --ring: 270 54% 55%;
+    /* Ring focus - roxo primário */
     --radius: 0.5rem;
-    
+    --chat-card-selected-bg: 270 8% 97%;
+    /* Roxo muito claro quase branco (#F8F7FA) para card selecionado */
+
     /* Estados interativos - centralizados aqui */
     --interactive-hover-bg: var(--muted);
     --interactive-hover-text: var(--foreground);
@@ -47,54 +75,90 @@
   }
 
   .dark {
-    --background: 0 0% 15%; /* Fundo principal - cinza escuro (painel-base) */
-    --foreground: 0 0% 100%; /* Texto principal - branco */
-    
-    --card: 0 0% 10%; /* Fundo de cards - mais escuro (painel-base) */
-    --card-foreground: 0 0% 100%; /* Texto em cards - branco */
-    
-    --popover: 0 0% 10%; /* Fundo de popovers (painel-base) */
-    --popover-foreground: 0 0% 100%; /* Texto em popovers */
-    
-    --primary: 270 54% 55%; /* Roxo primário - mesma cor nos dois modos */
-    --primary-foreground: 0 0% 100%; /* Texto sobre primary - branco */
-    --primary-lighten-1: 270 54% 67%; /* Roxo secundário mais claro */
-    
-    --secondary: 270 20% 25%; /* Secundário escuro (painel-base) */
-    --secondary-foreground: 270 54% 88%; /* Texto secundário - roxo claro */
-    
-    --muted: 0 0% 20%; /* Elementos muted - cinza médio (painel-base) */
-    --muted-foreground: 0 0% 60%; /* Texto muted - cinza claro */
-    
-    --accent: 270 54% 55%; /* Accent - mesma cor do primary */
-    --accent-foreground: 0 0% 100%; /* Texto accent - branco */
-    
-    --destructive: 0 50% 55%; /* Vermelho destrutivo (painel-base) */
-    --destructive-foreground: 0 0% 100%; /* Texto destructive - branco */
-    --success: 142 60% 50%; /* Verde para sucesso (dark mode) */
-    --success-foreground: 0 0% 100%; /* Branco para contraste */
-    --info: 270 54% 55%; /* Roxo primário para informação */
-    --info-foreground: 0 0% 100%; /* Branco para contraste */
-    --warning: 38 85% 55%; /* Amarelo/laranja para aviso (dark mode) */
-    --warning-foreground: 0 0% 100%; /* Branco para contraste */
-    --border: 0 0% 20%; /* Bordas - cinza médio (painel-base) */
-    --input: 0 0% 20%; /* Inputs - cinza médio */
-    --ring: 270 54% 55%; /* Ring focus - roxo primário */
-    
+    --background: 0 0% 15%;
+    /* Fundo principal - cinza escuro (painel-base) */
+    --foreground: 0 0% 100%;
+    /* Texto principal - branco */
+
+    --card: 0 0% 10%;
+    /* Fundo de cards - mais escuro (painel-base) */
+    --card-foreground: 0 0% 100%;
+    /* Texto em cards - branco */
+
+    --popover: 0 0% 10%;
+    /* Fundo de popovers (painel-base) */
+    --popover-foreground: 0 0% 100%;
+    /* Texto em popovers */
+
+    --primary: 270 54% 55%;
+    /* Roxo primário - mesma cor nos dois modos */
+    --primary-foreground: 0 0% 100%;
+    /* Texto sobre primary - branco */
+    --primary-lighten-1: 270 54% 67%;
+    /* Roxo secundário mais claro */
+
+    --secondary: 270 20% 25%;
+    /* Secundário escuro (painel-base) */
+    --secondary-foreground: 270 54% 88%;
+    /* Texto secundário - roxo claro */
+
+    --muted: 0 0% 20%;
+    /* Elementos muted - cinza médio (painel-base) */
+    --muted-foreground: 0 0% 60%;
+    /* Texto muted - cinza claro */
+
+    --accent: 270 54% 55%;
+    /* Accent - mesma cor do primary */
+    --accent-foreground: 0 0% 100%;
+    /* Texto accent - branco */
+
+    --destructive: 0 50% 55%;
+    /* Vermelho destrutivo (painel-base) */
+    --destructive-foreground: 0 0% 100%;
+    /* Texto destructive - branco */
+    --success: 142 60% 50%;
+    /* Verde para sucesso (dark mode) */
+    --success-foreground: 0 0% 100%;
+    /* Branco para contraste */
+    --info: 270 54% 55%;
+    /* Roxo primário para informação */
+    --info-foreground: 0 0% 100%;
+    /* Branco para contraste */
+    --warning: 38 85% 55%;
+    /* Amarelo/laranja para aviso (dark mode) */
+    --warning-foreground: 0 0% 100%;
+    /* Branco para contraste */
+    --border: 0 0% 20%;
+    /* Bordas - cinza médio (painel-base) */
+    --input: 0 0% 20%;
+    /* Inputs - cinza médio */
+    --ring: 270 54% 55%;
+    /* Ring focus - roxo primário */
+    --chat-card-selected-bg: 270 20% 25%;
+    /* Roxo escuro para card selecionado no dark mode */
+
     /* Estados interativos no dark mode */
     --interactive-hover-bg: var(--muted);
     --interactive-hover-text: var(--foreground);
     --interactive-focus-ring: var(--ring);
-    
+
     /* Sidebar (painel-base) */
-    --sidebar-background: 0 0% 8%; /* Fundo sidebar - muito escuro */
-    --sidebar-foreground: 0 0% 90%; /* Texto sidebar - cinza claro */
-    --sidebar-primary: 270 54% 55%; /* Primary sidebar - roxo primário */
-    --sidebar-primary-foreground: 0 0% 100%; /* Texto primary sidebar */
-    --sidebar-accent: 0 0% 15%; /* Accent sidebar */
-    --sidebar-accent-foreground: 0 0% 90%; /* Texto accent sidebar */
-    --sidebar-border: 0 0% 15%; /* Borda sidebar */
-    --sidebar-ring: 270 54% 55%; /* Ring sidebar - roxo primário */
+    --sidebar-background: 0 0% 8%;
+    /* Fundo sidebar - muito escuro */
+    --sidebar-foreground: 0 0% 90%;
+    /* Texto sidebar - cinza claro */
+    --sidebar-primary: 270 54% 55%;
+    /* Primary sidebar - roxo primário */
+    --sidebar-primary-foreground: 0 0% 100%;
+    /* Texto primary sidebar */
+    --sidebar-accent: 0 0% 15%;
+    /* Accent sidebar */
+    --sidebar-accent-foreground: 0 0% 90%;
+    /* Texto accent sidebar */
+    --sidebar-border: 0 0% 15%;
+    /* Borda sidebar */
+    --sidebar-ring: 270 54% 55%;
+    /* Ring sidebar - roxo primário */
   }
 }
 
@@ -102,6 +166,7 @@
   * {
     @apply border-border;
   }
+
   body {
     @apply bg-background text-foreground;
   }
@@ -111,46 +176,52 @@
   .interactive {
     @apply transition-colors;
   }
+
   .interactive:hover {
     background-color: hsl(var(--interactive-hover-bg));
     color: hsl(var(--interactive-hover-text));
   }
+
   /* Hover para itens já selecionados (com bg-accent) */
   .interactive.bg-accent:hover,
   .interactive[class*="bg-accent"]:hover {
     background-color: hsl(var(--accent) / 0.9);
     color: hsl(var(--accent-foreground));
   }
+
   /* Hover para itens já selecionados (com bg-primary) */
   .interactive.bg-primary:hover,
   .interactive[class*="bg-primary"]:hover {
     background-color: hsl(var(--primary) / 0.9);
     color: hsl(var(--primary-foreground));
   }
-  
+
   .interactive-focus {
     @apply transition-colors;
   }
+
   .interactive-focus:hover {
     background-color: hsl(var(--interactive-hover-bg));
     color: hsl(var(--interactive-hover-text));
   }
+
   .interactive-focus:focus-visible {
     @apply outline-none ring-2 ring-ring ring-offset-2;
   }
+
   /* Hover para itens selecionados com focus */
   .interactive-focus.bg-accent:hover,
   .interactive-focus[class*="bg-accent"]:hover {
     background-color: hsl(var(--accent) / 0.9);
     color: hsl(var(--accent-foreground));
   }
-  
+
   /* Regra para itens de navegação selecionados - ícones e textos em branco */
   .bg-accent,
   [class*="bg-accent"] {
     color: hsl(var(--accent-foreground));
   }
-  
+
   /* Ícones e textos dentro de itens selecionados ficam brancos */
   .bg-accent svg,
   .bg-accent [class*="icon"],
@@ -164,7 +235,7 @@
   [class*="bg-primary"] {
     color: hsl(var(--primary-foreground));
   }
-  
+
   /* Ícones e textos dentro de itens selecionados com bg-primary ficam brancos */
   .bg-primary svg,
   .bg-primary [class*="icon"],
@@ -222,5 +293,212 @@
     background-color: hsl(var(--primary) / 0.6);
   }
 
-}
+  /* Chat card selecionado - roxo secundário quase branco */
+  .bg-chat-card-selected,
+  div.bg-chat-card-selected {
+    background-color: hsl(var(--chat-card-selected-bg) / 1);
+  }
 
+  /* Ajuste para dark mode */
+  .dark .bg-chat-card-selected,
+  .dark div.bg-chat-card-selected {
+    background-color: hsl(var(--primary-lighten-1) / 0.15);
+  }
+
+  /* Badge do sidebar quando item está selecionado - força cor roxa */
+  .sidebar-badge-selected,
+  button.bg-primary .bg-primary-foreground,
+  a.bg-primary .bg-primary-foreground,
+  .bg-primary .bg-primary-foreground {
+    color: hsl(var(--primary)) !important;
+  }
+
+  /* Vue Flow - Respeitar tema Light/Dark da aplicação */
+  .vue-flow {
+    background-color: hsl(var(--background)) !important;
+    color: hsl(var(--foreground)) !important;
+  }
+
+  /* Garantir que o container do canvas também use a cor de fundo */
+  .vue-flow__renderer {
+    background-color: hsl(var(--background)) !important;
+  }
+
+  .vue-flow__background {
+    background-color: hsl(var(--background)) !important;
+    /* Garantir que SVG use cor correta */
+    fill: hsl(var(--background)) !important;
+  }
+
+  /* Vue Flow dots/grid - usar cores do tema */
+  .vue-flow__background pattern circle,
+  .vue-flow__background pattern path {
+    fill: hsl(var(--muted-foreground) / 0.3) !important;
+    stroke: hsl(var(--muted-foreground) / 0.3) !important;
+  }
+
+  /* Vue Flow Controls - usar cores do tema */
+  .vue-flow__controls {
+    background-color: hsl(var(--card)) !important;
+    border: 1px solid hsl(var(--border)) !important;
+    border-radius: 0.5rem !important;
+  }
+
+  .vue-flow__controls-button {
+    background-color: hsl(var(--card)) !important;
+    border-color: hsl(var(--border)) !important;
+    color: hsl(var(--foreground)) !important;
+  }
+
+  .vue-flow__controls-button:hover {
+    background-color: hsl(var(--muted)) !important;
+  }
+
+  .vue-flow__controls-button svg {
+    fill: hsl(var(--foreground)) !important;
+  }
+
+  /* Vue Flow MiniMap - Garantir visibilidade e z-index */
+  .vue-flow__minimap,
+  .vue-flow__minimap-custom {
+    z-index: 50 !important;
+    display: block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    background-color: hsl(var(--card)) !important;
+    border: 1px solid hsl(var(--border)) !important;
+  }
+
+  /* MiniMap Dark Mode */
+  .dark .vue-flow__minimap {
+    background-color: hsl(0 0% 10%) !important;
+    border: 1px solid hsl(0 0% 20%) !important;
+  }
+
+  .dark .vue-flow__minimap-mask {
+    fill: rgb(0, 0, 0, 0.6) !important;
+  }
+
+  .dark .vue-flow__minimap-node {
+    fill: hsl(0 0% 20%) !important;
+    stroke: hsl(0 0% 30%) !important;
+  }
+
+  /* Vue Flow Controls - Garantir z-index */
+  .vue-flow__controls {
+    z-index: 50 !important;
+  }
+
+  /* Vue Flow Panel - Garantir z-index */
+  .vue-flow__panel {
+    z-index: 50 !important;
+  }
+
+  /* Vue Flow Custom Nodes */
+  .vue-flow__node-customNode {
+    background: transparent !important;
+    border: none !important;
+    padding: 0 !important;
+    overflow: visible !important;
+    box-shadow: none !important;
+  }
+
+  .vue-flow__node-noteNode {
+    background: transparent !important;
+    border: none !important;
+    padding: 0 !important;
+    overflow: visible !important;
+    box-shadow: none !important;
+  }
+
+  /* Remover borda de seleção padrão do Vue Flow em TODOS os nodes */
+  .vue-flow__node.selected,
+  .vue-flow__node:focus,
+  .vue-flow__node:focus-visible,
+  .vue-flow__node-customNode.selected,
+  .vue-flow__node-customNode:focus,
+  .vue-flow__node-customNode:focus-visible,
+  .vue-flow__node-noteNode.selected,
+  .vue-flow__node-noteNode:focus,
+  .vue-flow__node-noteNode:focus-visible {
+    outline: none !important;
+    box-shadow: none !important;
+    border: none !important;
+  }
+
+  /* Garantir que o wrapper do Vue Flow não oculte o conteúdo */
+  .vue-flow__node {
+    visibility: visible !important;
+    opacity: 1 !important;
+    overflow: visible !important;
+  }
+
+  /* Garantir visibilidade dos handles do CustomNode */
+  .vue-flow__node-customNode .vue-flow__handle {
+    position: absolute !important;
+    z-index: 10 !important;
+  }
+
+  .vue-flow__node-customNode .vue-flow__handle-left {
+    left: -6px !important;
+  }
+
+  .vue-flow__node-customNode .vue-flow__handle-right {
+    right: -6px !important;
+  }
+
+  /* Aumentar área de conexão (invisível) sem alterar o visual da bolinha */
+  .vue-flow__node-customNode .vue-flow__handle::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 48px;
+    height: 48px;
+    background: transparent;
+    cursor: crosshair;
+    z-index: -1;
+    pointer-events: auto;
+  }
+
+  /* Esconder handles do noteNode */
+  .vue-flow__node-noteNode .vue-flow__handle {
+    display: none !important;
+  }
+
+  /* Vue Flow Edges - Estilos customizados */
+  .vue-flow__edge-path {
+    stroke: #b1b1b7;
+    stroke-width: 2;
+  }
+
+  .vue-flow__edge.selected .vue-flow__edge-path {
+    stroke: #2563EB;
+    stroke-width: 3;
+  }
+
+  /* Animação para edges em execução */
+  @keyframes edge-pulse {
+
+    0%,
+    100% {
+      stroke-opacity: 1;
+    }
+
+    50% {
+      stroke-opacity: 0.7;
+    }
+  }
+
+  .vue-flow__edge.executing .vue-flow__edge-path {
+    stroke: #10b981;
+    stroke-width: 3;
+    animation: edge-pulse 1.5s ease-in-out infinite;
+  }
+
+  .vue-flow__edge.executed .vue-flow__edge-path {
+    stroke: #10b981;
+    stroke-width: 2.5;
+  }
+}

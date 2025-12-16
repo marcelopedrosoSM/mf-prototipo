@@ -1,5 +1,7 @@
 import type { HolidayAndInactivity } from '@/types/holidays-and-inactivities'
 
+export type { HolidayAndInactivity };
+
 // Dados iniciais - Feriados nacionais de 2026
 const initialHolidaysAndInactivities: HolidayAndInactivity[] = [
   {
