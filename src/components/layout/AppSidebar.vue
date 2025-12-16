@@ -1,53 +1,77 @@
 <template>
-  <aside
-    :class="cn(
-      'fixed left-0 top-16 z-40 h-[calc(100vh-4rem)] border-r bg-background transition-all duration-300',
-      collapsed ? 'w-16' : 'w-64'
-    )"
-  >
-    <nav class="flex h-full flex-col p-4">
-      <!-- Toggle Button -->
-      <div class="mb-4 flex items-center gap-2">
-        <button
-          @click="$emit('toggle')"
-          class="flex h-10 w-10 items-center justify-center rounded-md p-2 interactive flex-shrink-0"
-          :title="collapsed ? 'Expandir menu' : 'Recolher menu'"
-        >
-          <PanelLeftOpen v-if="collapsed" class="h-5 w-5" />
-          <PanelLeftClose v-else class="h-5 w-5" />
-        </button>
-        <span v-if="!collapsed" class="text-base font-semibold truncate">
-          Conversas
-        </span>
-      </div>
-
-      <!-- Sidebar content -->
-      <div class="flex-1 space-y-1">
-        <!-- Conteúdo para /conversations - Em construção -->
-        <div v-if="!collapsed" class="flex flex-col items-center justify-center h-full px-4 py-8 text-center">
-          <div class="rounded-full bg-muted p-4 mb-4">
-            <Construction class="h-8 w-8 text-muted-foreground" />
-          </div>
-          <p class="text-sm font-medium text-muted-foreground">Em construção</p>
-          <p class="text-xs text-muted-foreground mt-2">Esta seção está sendo desenvolvida</p>
-        </div>
-      </div>
-    </nav>
-  </aside>
+  <BaseSidebar
+    title="Conversas"
+    :items="sidebarItems"
+    :collapsed="collapsed"
+    :active-key="selectedStatus"
+    @toggle="$emit('toggle')"
+    @item-click="handleItemClick"
+  />
 </template>
 
 <script setup lang="ts">
-import { PanelLeftClose, PanelLeftOpen, Construction } from 'lucide-vue-next';
-import { cn } from '@/lib/utils';
+import { h, ref } from 'vue';
+import { Users, UserX, Headphones, AtSign, CheckCircle2 } from 'lucide-vue-next';
+import BaseSidebar, { type SidebarItem } from './BaseSidebar.vue';
+import { SidebarStatusType } from '@/types/conversations';
 
 interface Props {
   collapsed: boolean;
 }
 
-defineProps<Props>();
+const props = defineProps<Props>();
 
-defineEmits<{
+const emit = defineEmits<{
   toggle: [];
+  'status-select': [status: SidebarStatusType];
 }>();
+
+const selectedStatus = ref<SidebarStatusType>(SidebarStatusType.ALL_CHATS);
+
+const sidebarItems: SidebarItem[] = [
+  {
+    key: SidebarStatusType.ALL_CHATS,
+    label: 'Todas',
+    icon: h(Users),
+    status: SidebarStatusType.ALL_CHATS,
+    badge: 12,
+  },
+  {
+    key: SidebarStatusType.WITHOUT_TEAM,
+    label: 'Sem time atribuído',
+    icon: h(UserX),
+    status: SidebarStatusType.WITHOUT_TEAM,
+    badge: 5,
+  },
+  {
+    key: SidebarStatusType.IN_SERVICE,
+    label: 'Em atendimento',
+    icon: h(Headphones),
+    status: SidebarStatusType.IN_SERVICE,
+    badge: 3,
+  },
+  {
+    key: SidebarStatusType.MENTION,
+    label: 'Menções',
+    icon: h(AtSign),
+    status: SidebarStatusType.MENTION,
+    badge: 2,
+  },
+  {
+    key: SidebarStatusType.FINISHED,
+    label: 'Finalizadas',
+    icon: h(CheckCircle2),
+    status: SidebarStatusType.FINISHED,
+    badge: 8,
+  },
+];
+
+const handleItemClick = (item: SidebarItem) => {
+  const status = (item as any).status as SidebarStatusType;
+  if (status) {
+    selectedStatus.value = status;
+    emit('status-select', status);
+  }
+};
 </script>
 

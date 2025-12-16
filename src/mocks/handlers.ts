@@ -1,6 +1,9 @@
 import { http, HttpResponse } from 'msw';
 import { faker } from '@faker-js/faker';
 import { MOCK_CREDENTIALS, MOCK_USER } from './data/auth';
+import { MOCK_CHAT_SESSIONS } from './data/chatSessions';
+import { MOCK_INBOXES } from './data/inboxes';
+import { MOCK_LABELS } from './data/labels';
 
 // Example API handlers
 export const handlers = [
@@ -69,6 +72,52 @@ export const handlers = [
       },
       { status: 401 }
     );
+  }),
+
+  // Chat Sessions
+  http.get('/api/chat/conversations', ({ request }) => {
+    const url = new URL(request.url);
+    const inboxId = url.searchParams.get('inboxId');
+    const status = url.searchParams.get('status');
+    const search = url.searchParams.get('search');
+
+    let filtered = [...MOCK_CHAT_SESSIONS];
+
+    if (inboxId) {
+      filtered = filtered.filter((chat) => chat.inbox.id === inboxId);
+    }
+
+    if (status) {
+      // Filtrar por status se necessário
+    }
+
+    if (search) {
+      const searchLower = search.toLowerCase();
+      filtered = filtered.filter(
+        (chat) =>
+          chat.sender.name.toLowerCase().includes(searchLower) ||
+          chat.sender.phoneNumber.includes(search)
+      );
+    }
+
+    return HttpResponse.json({
+      data: filtered,
+      total: filtered.length,
+    });
+  }),
+
+  // Inboxes
+  http.get('/api/inboxes', () => {
+    return HttpResponse.json({
+      data: MOCK_INBOXES,
+    });
+  }),
+
+  // Labels
+  http.get('/api/labels', () => {
+    return HttpResponse.json({
+      data: MOCK_LABELS,
+    });
   }),
 ];
 

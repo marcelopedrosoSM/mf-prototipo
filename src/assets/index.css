@@ -121,6 +121,12 @@
     background-color: hsl(var(--accent) / 0.9);
     color: hsl(var(--accent-foreground));
   }
+  /* Hover para itens já selecionados (com bg-primary) */
+  .interactive.bg-primary:hover,
+  .interactive[class*="bg-primary"]:hover {
+    background-color: hsl(var(--primary) / 0.9);
+    color: hsl(var(--primary-foreground));
+  }
   
   .interactive-focus {
     @apply transition-colors;
@@ -151,6 +157,20 @@
   .bg-accent span,
   .bg-accent * {
     color: hsl(var(--accent-foreground)) !important;
+  }
+
+  /* Regra para itens de navegação selecionados com bg-primary - ícones e textos em branco */
+  .bg-primary,
+  [class*="bg-primary"] {
+    color: hsl(var(--primary-foreground));
+  }
+  
+  /* Ícones e textos dentro de itens selecionados com bg-primary ficam brancos */
+  .bg-primary svg,
+  .bg-primary [class*="icon"],
+  .bg-primary span:not([class*="bg-primary-foreground/20"]),
+  .bg-primary *:not([class*="bg-primary-foreground/20"]) {
+    color: hsl(var(--primary-foreground)) !important;
   }
 
   /* Cor de texto padrão para itens de menu dentro de popovers/dropdowns */

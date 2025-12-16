@@ -1,7 +1,7 @@
 <template>
   <AppLayout>
     <div class="flex h-full flex-col">
-      <ScrollArea class="flex-1">
+      <div class="flex-1 overflow-y-auto custom-scrollbar">
         <div class="p-6">
           <div class="mx-auto max-w-7xl space-y-6">
             <!-- Header com saudação -->
@@ -263,7 +263,7 @@
             </div>
           </div>
         </div>
-      </ScrollArea>
+      </div>
     </div>
   </AppLayout>
 </template>

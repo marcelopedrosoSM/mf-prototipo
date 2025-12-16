@@ -10,6 +10,7 @@
         v-if="isConversationsRoute"
         :collapsed="isSidebarCollapsed"
         @toggle="toggleSidebar"
+        @status-select="handleStatusSelect"
       />
 
       <!-- Content Area -->
@@ -26,15 +27,17 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from 'vue';
+import { ref, computed, provide } from 'vue';
 import { useRoute } from 'vue-router';
 import { cn } from '@/lib/utils';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import AppHeader from './AppHeader.vue';
 import AppSidebar from './AppSidebar.vue';
+import { SidebarStatusType } from '@/types/conversations';
 
 const route = useRoute();
 const isSidebarCollapsed = ref(false);
+const selectedStatus = ref<SidebarStatusType>(SidebarStatusType.ALL_CHATS);
 
 // Verifica se a rota atual é /conversations
 const isConversationsRoute = computed(() => {
@@ -44,5 +47,12 @@ const isConversationsRoute = computed(() => {
 function toggleSidebar() {
   isSidebarCollapsed.value = !isSidebarCollapsed.value;
 }
+
+function handleStatusSelect(status: SidebarStatusType) {
+  selectedStatus.value = status;
+}
+
+// Provide status para componentes filhos
+provide('sidebarStatus', selectedStatus);
 </script>
 
