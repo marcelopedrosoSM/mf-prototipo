@@ -10,3 +10,10 @@ pinia.use(
 
 export default pinia;
 
+// Export all stores for easy access
+export { useAuthStore } from './auth';
+export { useThemeStore } from './theme';
+export { useFlowsStore } from './flows';
+export { useNotificationsStore } from './notifications';
+export { useExampleStore } from './example';
+

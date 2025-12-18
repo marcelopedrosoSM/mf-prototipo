@@ -8,7 +8,7 @@
         </DialogDescription>
       </DialogHeader>
 
-      <div class="flex-1 min-h-0 overflow-y-auto custom-scrollbar">
+      <ScrollArea class="flex-1 min-h-0">
         <div class="px-6 py-4 space-y-4">
           <!-- Título -->
           <div class="space-y-2">
@@ -25,15 +25,29 @@
           <!-- Data de Expiração -->
           <div class="space-y-2">
             <Label htmlFor="expiresAt">Data de expiração (opcional)</Label>
-            <Input
-              id="expiresAt"
-              v-model="formData.expiresAt"
-              type="date"
-              placeholder="Selecione a data de expiração"
-              :min="minExpirationDate"
-              :max="maxExpirationDate"
-              :class="errors.expiresAt ? 'border-destructive' : ''"
-            />
+            <Popover>
+              <PopoverTrigger as-child>
+                <Button
+                  variant="outline"
+                  :class="[
+                    'w-full justify-start text-left font-normal',
+                    !displayDate && 'text-muted-foreground',
+                    errors.expiresAt ? 'border-destructive' : ''
+                  ]"
+                >
+                  <CalendarIcon class="mr-2 h-4 w-4" />
+                  {{ displayDate || 'DD/MM/AAAA' }}
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent class="w-auto p-0" align="start">
+                <Calendar
+                  v-model="selectedDate"
+                  :min="minDate"
+                  :max="maxDate"
+                  @update:model-value="handleDateSelect"
+                />
+              </PopoverContent>
+            </Popover>
             <p v-if="errors.expiresAt" class="text-sm text-destructive">{{ errors.expiresAt }}</p>
           </div>
 
@@ -121,7 +135,7 @@
             </div>
           </div>
         </div>
-      </div>
+      </ScrollArea>
 
       <DialogFooter class="flex-shrink-0 px-6 pb-6 pt-4 border-t">
         <Button variant="secondary" @click="handleOpenChange(false)">
@@ -138,11 +152,14 @@
 
 <script setup lang="ts">
 import { ref, watch, computed } from 'vue';
-import { Loader2 } from 'lucide-vue-next';
+import { Loader2, CalendarIcon } from 'lucide-vue-next';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
+import { ScrollArea } from '@/components/ui/scroll-area';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Calendar } from '@/components/ui/calendar';
 import {
   Dialog,
   DialogContent,
@@ -151,6 +168,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
+import { formatDate, dateToInputFormat, inputFormatToDate } from '@/utils/date';
 
 import {
   Table,
@@ -187,18 +205,37 @@ const formData = ref<TokenApiFormData>({
 const errors = ref<Record<string, string>>({});
 const isSaving = ref(false);
 
-// Date limits
-const minExpirationDate = computed(() => {
-  const tomorrow = new Date();
-  tomorrow.setDate(tomorrow.getDate() + 1);
-  return tomorrow.toISOString().split('T')[0];
+// Date picker state
+const selectedDate = ref<Date | undefined>(undefined);
+const displayDate = computed(() => {
+  if (!formData.value.expiresAt) return '';
+  return formatDate(formData.value.expiresAt);
 });
 
-const maxExpirationDate = computed(() => {
+// Date limits
+const minDate = computed(() => {
+  const tomorrow = new Date();
+  tomorrow.setDate(tomorrow.getDate() + 1);
+  return tomorrow;
+});
+
+const maxDate = computed(() => {
   const maxDate = new Date();
   maxDate.setFullYear(maxDate.getFullYear() + 10);
-  return maxDate.toISOString().split('T')[0];
+  return maxDate;
 });
+
+function handleDateSelect(date: Date | undefined) {
+  if (date) {
+    // Convert Date to YYYY-MM-DD format for storage
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    formData.value.expiresAt = `${year}-${month}-${day}`;
+  } else {
+    formData.value.expiresAt = '';
+  }
+}
 
 watch(() => props.open, (opened) => {
   if (opened) {
@@ -207,11 +244,24 @@ watch(() => props.open, (opened) => {
       expiresAt: '',
       permissionIds: [],
     };
+    selectedDate.value = undefined;
     selectedPermissions.value = {};
     errors.value = {};
     selectProfile('all');
   }
 });
+
+// Sync selectedDate with formData.expiresAt
+watch(() => formData.value.expiresAt, (dateString) => {
+  if (dateString) {
+    const date = new Date(dateString);
+    if (!isNaN(date.getTime())) {
+      selectedDate.value = date;
+    }
+  } else {
+    selectedDate.value = undefined;
+  }
+}, { immediate: true });
 
 function getSelectedPermissionId(groupName: string): number | undefined {
   return selectedPermissions.value[groupName];

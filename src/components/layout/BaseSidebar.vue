@@ -10,7 +10,7 @@
       <div class="mb-4 flex items-center gap-2">
         <button
           @click="$emit('toggle')"
-          class="flex h-10 w-10 items-center justify-center rounded-md p-2 interactive flex-shrink-0"
+          class="flex h-8 w-8 items-center justify-center rounded-md p-2 interactive flex-shrink-0"
           :title="collapsed ? 'Expandir menu' : 'Recolher menu'"
         >
           <PanelLeftOpen v-if="collapsed" class="h-4 w-4" />

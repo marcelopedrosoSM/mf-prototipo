@@ -10,7 +10,7 @@
         </DialogDescription>
       </DialogHeader>
 
-      <div class="flex-1 min-h-0 overflow-y-auto custom-scrollbar">
+      <ScrollArea class="flex-1 min-h-0">
         <form @submit.prevent="handleSubmit" class="px-6 py-4 space-y-4">
         <div class="space-y-2">
           <Label for="name">Nome *</Label>
@@ -24,12 +24,26 @@
 
         <div class="space-y-2">
           <Label for="date">Data *</Label>
-          <Input
-            id="date"
-            v-model="formData.date"
-            type="date"
-            required
-          />
+          <Popover>
+            <PopoverTrigger as-child>
+              <Button
+                variant="outline"
+                :class="[
+                  'w-full justify-start text-left font-normal',
+                  !displayDate && 'text-muted-foreground'
+                ]"
+              >
+                <CalendarIcon class="mr-2 h-4 w-4" />
+                {{ displayDate || 'DD/MM/AAAA' }}
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent class="w-auto p-0" align="start">
+              <Calendar
+                v-model="selectedDate"
+                @update:model-value="handleDateSelect"
+              />
+            </PopoverContent>
+          </Popover>
         </div>
 
         <div class="space-y-2">
@@ -58,7 +72,7 @@
           </Select>
         </div>
         </form>
-      </div>
+      </ScrollArea>
 
       <DialogFooter class="flex-shrink-0 px-6 pb-6 pt-4 border-t">
         <Button type="button" variant="outline" @click="handleCancel">
@@ -73,7 +87,8 @@
 </template>
 
 <script setup lang="ts">
-import { ref, watch } from 'vue';
+import { ref, watch, computed } from 'vue';
+import { CalendarIcon } from 'lucide-vue-next';
 import {
   Dialog,
   DialogContent,
@@ -86,6 +101,9 @@ import {
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { ScrollArea } from '@/components/ui/scroll-area';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Calendar } from '@/components/ui/calendar';
 import {
   Select,
   SelectContent,
@@ -93,6 +111,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import { formatDate } from '@/utils/date';
 import type { HolidayAndInactivity, HolidayAndInactivityType, HolidayAndInactivityPeriodicity } from '@/types/holidays-and-inactivities';
 import { DEFAULT_HOLIDAY_AND_INACTIVITY } from '@/types/holidays-and-inactivities';
 
@@ -122,6 +141,25 @@ const formData = ref<{
   periodicity: 'one-time',
 });
 
+// Date picker state
+const selectedDate = ref<Date | undefined>(undefined);
+const displayDate = computed(() => {
+  if (!formData.value.date) return '';
+  return formatDate(formData.value.date);
+});
+
+function handleDateSelect(date: Date | undefined) {
+  if (date) {
+    // Convert Date to YYYY-MM-DD format for storage
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    formData.value.date = `${year}-${month}-${day}`;
+  } else {
+    formData.value.date = '';
+  }
+}
+
 watch(
   () => props.item,
   (newItem) => {
@@ -140,9 +178,30 @@ watch(
         periodicity: DEFAULT_HOLIDAY_AND_INACTIVITY.periodicity,
       };
     }
+    // Sync selectedDate with formData.date
+    if (formData.value.date) {
+      const date = new Date(formData.value.date);
+      if (!isNaN(date.getTime())) {
+        selectedDate.value = date;
+      }
+    } else {
+      selectedDate.value = undefined;
+    }
   },
   { immediate: true }
 );
+
+// Sync selectedDate when formData.date changes
+watch(() => formData.value.date, (dateString) => {
+  if (dateString) {
+    const date = new Date(dateString);
+    if (!isNaN(date.getTime())) {
+      selectedDate.value = date;
+    }
+  } else {
+    selectedDate.value = undefined;
+  }
+});
 
 function handleOpenChange(open: boolean) {
   emit('update:open', open);

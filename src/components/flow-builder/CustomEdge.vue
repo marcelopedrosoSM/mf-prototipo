@@ -6,14 +6,14 @@ import type { EdgeProps } from '@vue-flow/core';
 const props = defineProps<EdgeProps>();
 const { removeEdges } = useVueFlow();
 
-const [edgePath, labelX, labelY] = getSmoothStepPath({
+const pathResult = computed(() => getSmoothStepPath({
   sourceX: props.sourceX,
   sourceY: props.sourceY,
   sourcePosition: props.sourcePosition,
   targetX: props.targetX,
   targetY: props.targetY,
   targetPosition: props.targetPosition,
-});
+}));
 
 const wasExecuted = computed(() => props.data?.wasExecuted || false);
 const isExecuting = computed(() => props.data?.isExecuting || false);
@@ -22,23 +22,23 @@ const isExecuting = computed(() => props.data?.isExecuting || false);
 const edgeStyle = computed(() => {
   let color = '#b1b1b7'; // Cinza padrão
   let strokeWidth = 2;
-  let activeMarkerEnd = 'url(#default-marker)';
+  let activeMarkerEnd = `url(#default-marker-${props.id})`;
 
   if (isExecuting.value) {
-    // Linha em execução - cor verde para consistência com o bloco executando
-    color = '#10b981'; // Verde
+    // Linha em execução - cor verde para destaque
+    color = 'hsl(var(--success))'; // Verde
     strokeWidth = 3;
-    activeMarkerEnd = 'url(#executing-marker)';
+    activeMarkerEnd = `url(#executing-marker-${props.id})`;
   } else if (wasExecuted.value) {
-    // Linha entre blocos executados - cor mais suave
-    color = '#10b981'; // Verde
+    // Linha entre blocos executados
+    color = 'hsl(var(--success))'; // Verde
     strokeWidth = 2.5;
-    activeMarkerEnd = 'url(#executed-marker)';
+    activeMarkerEnd = `url(#executed-marker-${props.id})`;
   } else if (props.selected) {
     // Linha selecionada
     color = '#2563EB';
     strokeWidth = 3;
-    activeMarkerEnd = 'url(#selected-marker)';
+    activeMarkerEnd = `url(#selected-marker-${props.id})`;
   }
 
   return {
@@ -61,7 +61,7 @@ const onEdgeClick = () => {
       <defs>
         <!-- Marker padrão (cinza) -->
         <marker
-          id="default-marker"
+          :id="`default-marker-${id}`"
           markerWidth="12"
           markerHeight="12"
           viewBox="-10 -10 20 20"
@@ -82,7 +82,7 @@ const onEdgeClick = () => {
 
         <!-- Marker quando selecionado (azul) -->
         <marker
-          id="selected-marker"
+          :id="`selected-marker-${id}`"
           markerWidth="12"
           markerHeight="12"
           viewBox="-10 -10 20 20"
@@ -103,7 +103,7 @@ const onEdgeClick = () => {
 
         <!-- Marker para linhas executadas (verde) -->
         <marker
-          id="executed-marker"
+          :id="`executed-marker-${id}`"
           markerWidth="12"
           markerHeight="12"
           viewBox="-10 -10 20 20"
@@ -114,8 +114,8 @@ const onEdgeClick = () => {
         >
           <polyline
             stroke-width="1.5"
-            stroke="#10b981"
-            fill="#10b981"
+            stroke="hsl(var(--success))"
+            fill="hsl(var(--success))"
             stroke-linecap="round"
             stroke-linejoin="round"
             points="-5,-4 0,0 -5,4 -5,-4"
@@ -124,7 +124,7 @@ const onEdgeClick = () => {
 
         <!-- Marker para linhas em execução (verde) -->
         <marker
-          id="executing-marker"
+          :id="`executing-marker-${id}`"
           markerWidth="12"
           markerHeight="12"
           viewBox="-10 -10 20 20"
@@ -135,8 +135,8 @@ const onEdgeClick = () => {
         >
           <polyline
             stroke-width="2"
-            stroke="#10b981"
-            fill="#10b981"
+            stroke="hsl(var(--success))"
+            fill="hsl(var(--success))"
             stroke-linecap="round"
             stroke-linejoin="round"
             points="-5,-4 0,0 -5,4 -5,-4"
@@ -148,7 +148,7 @@ const onEdgeClick = () => {
     <!-- Edge principal -->
     <BaseEdge
       :id="id"
-      :path="edgePath"
+      :path="pathResult[0]"
       :marker-end="edgeStyle.markerEnd"
       :style="{
         stroke: edgeStyle.color,
@@ -161,7 +161,7 @@ const onEdgeClick = () => {
       <div
         :style="{
           position: 'absolute',
-          transform: `translate(-50%, -50%) translate(${labelX}px, ${labelY}px)`,
+          transform: `translate(-50%, -50%) translate(${pathResult[1]}px, ${pathResult[2]}px)`,
           pointerEvents: 'all',
         }"
         class="nodrag nopan"

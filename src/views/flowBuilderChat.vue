@@ -10,13 +10,23 @@
       @simulate="handleSimulate"
       @validate="handleValidate"
       @layout="handleLayout"
+      @settings="handleSettings"
     />
+
+    <!-- Flow Config Sheet -->
+    <FlowConfigSheet
+      v-model:open="configSheetOpen"
+      :initial-config="flowConfig"
+      @save="handleSaveConfig"
+    />
+
 
     <!-- Main Content Area -->
     <div class="flex flex-1 overflow-hidden relative">
       <!-- Flow Builder Chat Sidebar -->
       <FlowBuilderChatSidebar 
         :collapsed="isSidebarCollapsed" 
+        :flow-type="currentFlow?.tipo" 
         @toggle="toggleSidebar" 
         @block-click="handleBlockClick" 
       />
@@ -30,82 +40,113 @@
         @dragover="onDragOver"
         @drop="onDrop"
       >
-        <VueFlow
-          v-model:nodes="nodes"
-          v-model:edges="edges"
-          :default-viewport="{ zoom: 1 }"
-          :min-zoom="0.2"
-          :max-zoom="4"
-          :snap-to-grid="true"
-          :snap-grid="[20, 20]"
-          :node-types="nodeTypes"
-          :edges-updatable="true"
-          :nodes-draggable="true"
-          :elements-selectable="true"
-          :delete-key-code="['Delete', 'Backspace']"
-          :connection-mode="ConnectionMode.Strict"
-          :connect-on-click="false"
-          :connection-radius="30"
-          :auto-connect="true"
-          :fit-view-on-init="false"
-          class="vue-flow-container"
-          @connect="onConnect"
-          @nodes-change="onNodesChange"
-          @edges-change="onEdgesChange"
-        >
-          <Background variant="dots" :gap="12" :size="1" />
-          
-          <!-- Custom Toolbar -->
-          <FlowToolbar
-            :can-undo="canUndo"
-            :can-redo="canRedo"
-            @zoom-in="zoomIn"
-            @zoom-out="zoomOut"
-            @undo="undo"
-            @redo="redo"
-            @fit-view="() => fitView({ padding: 0.2, maxZoom: 1 })"
-            @layout="handleLayout"
-          />
+        <div class="h-full">
+        <ResizablePanelGroup :direction="layoutMode === 'horizontal' ? 'vertical' : 'horizontal'">
+          <!-- Painel Superior: Canvas VueFlow -->
+          <ResizablePanel :default-size="60" :min-size="20" :max-size="80" class="relative">
+            <VueFlow
+              v-model:nodes="nodes"
+              v-model:edges="edges"
+              :default-viewport="{ zoom: 1 }"
+              :min-zoom="0.2"
+              :max-zoom="4"
+              :snap-to-grid="true"
+              :snap-grid="[20, 20]"
+              :node-types="nodeTypes"
+              :edge-types="edgeTypes"
+              :edges-updatable="true"
+              :nodes-draggable="true"
+              :is-valid-connection="isValidConnection"
+              :elements-selectable="true"
+              :delete-key-code="['Delete', 'Backspace']"
+              :connection-mode="ConnectionMode.Loose"
+              :connect-on-click="false"
+              :connection-radius="30"
+              :auto-connect="true"
+              :fit-view-on-init="false"
+              class="vue-flow-container"
+              @connect="onConnect"
+              @nodes-change="onNodesChange"
+              @edges-change="onEdgesChange"
+            >
+              <Background variant="dots" :gap="12" :size="1" />
+              
+              <!-- Custom Toolbar -->
+              <FlowToolbar
+                :can-undo="canUndo"
+                :can-redo="canRedo"
+                :layout-mode="layoutMode"
+                @zoom-in="zoomIn"
+                @zoom-out="zoomOut"
+                @undo="undo"
+                @redo="redo"
+                @fit-view="() => fitView({ padding: 0.2, maxZoom: 1 })"
+                @layout="handleLayout"
+                @toggle-layout="toggleLayoutMode"
+              />
 
-          <!-- Helper Lines -->
-          <HelperLines 
-            :horizontal="helperLineHorizontal"
-            :vertical="helperLineVertical"
-          />
-          
-          <!-- Minimap - aparece apenas durante zoom -->
-          <MiniMap 
-            v-if="showMinimap"
-            :node-color="getNodeColor"
-            position="bottom-right"
-            pannable
-            zoomable
-            :mask-color="minimapMaskColor"
-            class="vue-flow__minimap-custom"
-            :style="{ zIndex: 50 }"
-          />
-        </VueFlow>
-      </div>
+              <!-- Helper Lines -->
+              <HelperLines 
+                :horizontal="helperLineHorizontal"
+                :vertical="helperLineVertical"
+              />
+              
+              <!-- Minimap - aparece apenas durante zoom -->
+              <MiniMap 
+                v-if="showMinimap"
+                :node-color="getNodeColor"
+                position="bottom-right"
+                pannable
+                zoomable
+                :mask-color="minimapMaskColor"
+                class="vue-flow__minimap-custom"
+                :style="{ zIndex: 50 }"
+              />
+            </VueFlow>
 
-      <!-- Painel de Configuração Sliding -->
-      <div 
-        v-if="showConfigPanel && selectedNodeId"
-        class="absolute right-0 top-0 bottom-0 z-50 shadow-xl bg-background border-l animate-in slide-in-from-right duration-200"
-      >
-        <BlockConfigPanel
-          :block-id="selectedNodeId"
-          :block-type="selectedNodeData.type"
-          v-model="selectedNodeData"
-          @close="closeConfigPanel"
-          @save="handleSaveBlock"
-        />
-      </div>
+            <!-- Painel de Configuração Sliding -->
+            <div 
+              v-if="showConfigPanel && selectedNodeId"
+              class="absolute right-0 top-0 bottom-0 z-50 shadow-xl bg-background border-l animate-in slide-in-from-right duration-200"
+            >
+              <BlockConfigPanel
+                :block-id="selectedNodeId"
+                :block-type="selectedNodeData.type"
+                v-model="selectedNodeData"
+                @close="closeConfigPanel"
+                @save="handleSaveBlock"
+              />
+            </div>
+          </ResizablePanel>
+
+          <!-- Divider -->
+          <ResizableHandle v-if="showSimulator" with-handle />
+
+          <!-- Painel Inferior: Simulador -->
+            <ResizablePanel 
+              v-if="showSimulator" 
+              :default-size="simPanelDefault" 
+              :min-size="simPanelMin" 
+              :max-size="simPanelMax"
+              class="relative z-0"
+            >
+              <ChatSimulator
+                :nodes="nodes"
+                :edges="edges"
+                @close="handleCloseSimulator"
+                @block-execute="handleBlockExecute"
+                @execution-state-change="handleExecutionStateChange"
+              />
+            </ResizablePanel>
+        </ResizablePanelGroup>
+        </div>
+        </div>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, onUnmounted } from 'vue';
+import { ref, computed, onMounted, onUnmounted, watch, nextTick, provide } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { VueFlow, useVueFlow, ConnectionMode, Position, MarkerType, applyNodeChanges, applyEdgeChanges } from '@vue-flow/core';
 import { Background } from '@vue-flow/background';
@@ -117,27 +158,41 @@ import FlowBuilderHeader from '@/components/flows/FlowBuilderHeader.vue';
 import FlowToolbar from '@/components/flow-builder/FlowToolbar.vue';
 import { MOCK_FLOWS_ATENDIMENTO, type Flow } from '@/mocks/data/flows';
 import CustomNode from '@/components/flow-builder/CustomNode.vue';
+import CustomNodeHorizontal from '@/components/flow-builder/CustomNodeHorizontal.vue';
+import CustomNodeVertical from '@/components/flow-builder/CustomNodeVertical.vue';
 import CustomNodeNote from '@/components/flow-builder/CustomNodeNote.vue';
+import CustomEdge from '@/components/flow-builder/CustomEdge.vue';
 import BlockConfigPanel from '@/components/flow-builder/BlockConfigPanel.vue';
+
 import HelperLines from '@/components/flow-builder/HelperLines.vue';
 import { getHelperLines } from '@/components/flow-builder/utils';
 import { useLayout } from '@/composables/useLayout';
 import type { GraphNode } from '@vue-flow/core';
 import { useRefHistory } from '@vueuse/core';
-
-
-
+import { useFlowsStore } from '@/stores';
+import { useToast } from '@/components/ui/toast/use-toast';
+import ChatSimulator from '@/components/flow-builder/ChatSimulator.vue';
+import FlowConfigSheet from '@/components/flow-builder/FlowConfigSheet.vue';
+import { ResizablePanelGroup, ResizablePanel, ResizableHandle } from '@/components/ui/resizable';
+import type { FlowConfigData } from '@/types/flow-config';
+import { getDefaultFlowConfig } from '@/constants/flow-config-defaults';
 
 
 const route = useRoute();
 const router = useRouter();
 const { getViewport, onViewportChange, addEdges, onNodeClick, fitView, zoomIn, zoomOut, project } = useVueFlow();
+const { toast } = useToast();
+const flowsStore = useFlowsStore();
 
 const flowId = computed(() => route.params.id as string);
 const isNewFlow = computed(() => flowId.value === 'novo');
 const isSidebarCollapsed = ref(false);
 const currentFlow = ref<Flow | null>(null);
 const isFlowActive = ref(false);
+
+// 🆕 Estado do FlowConfigSheet
+const configSheetOpen = ref(false);
+const flowConfig = ref<Partial<FlowConfigData>>(getDefaultFlowConfig());
 
 // 🆕 Vue Flow elements - SEPARADOS em nodes e edges
 const nodes = ref<Node[]>([]);
@@ -153,7 +208,20 @@ const { undo, redo, canUndo, canRedo } = useRefHistory(nodes, {
 // 🆕 Estado para o painel de configuração
 const selectedNodeId = ref<string | null>(null);
 const selectedNodeData = ref<any>(null);
+
 const showConfigPanel = ref(false);
+
+
+// Estado do Simulador
+const showSimulator = ref(false);
+// Layout Mode: 'horizontal' (simulator bottom) or 'vertical' (simulator right)
+const layoutMode = ref<'horizontal' | 'vertical'>('horizontal');
+// Provide layoutMode to child components (CustomNode, etc.)
+provide('layoutMode', layoutMode);
+// Tamanhos do painel do simulador em % do group (sem cálculo dinâmico px)
+const simPanelDefault = 70; // default 40%
+const simPanelMin = 20;     // min 20%
+const simPanelMax = 80;     // max 80%
 
 // Helper Lines state
 const helperLineHorizontal = ref<number | undefined>(undefined);
@@ -162,8 +230,17 @@ const helperLineVertical = ref<number | undefined>(undefined);
 // 🆕 Registrar tipos de nodes customizados
 const nodeTypes = {
   customNode: CustomNode,
+  customNodeHorizontal: CustomNodeHorizontal,
+  customNodeVertical: CustomNodeVertical,
   noteNode: CustomNodeNote,
-  default: CustomNode, // Fallback para nodes sem tipo definido
+  default: CustomNode,
+};
+
+// 🆕 Registrar tipos de edges customizados
+const edgeTypes = {
+  default: CustomEdge,
+  custom: CustomEdge,
+  smoothstep: CustomEdge, // 🆕 Mapeando smoothstep também
 };
 
 // 🆕 Estados para controle do MiniMap
@@ -211,6 +288,7 @@ const handleViewportChange = () => {
 // 🆕 Handler para clique no node
 onNodeClick(({ node }) => {
   if (node.type === 'noteNode') return; // Notas não têm configuração rica por enquanto
+  if (['start', 'end'].includes(node.data.type)) return; // Início e Fim não têm configuração
   
   selectedNodeId.value = node.id;
   // Clona os dados para evitar mutação direta sem salvar
@@ -243,13 +321,28 @@ const closeConfigPanel = () => {
   selectedNodeId.value = null;
 };
 
+// 🆕 Handlers para FlowConfigSheet
+const handleSettings = () => {
+  configSheetOpen.value = true;
+};
+
+const handleSaveConfig = (config: FlowConfigData) => {
+  flowConfig.value = config;
+  // TODO: Persistir configuração no flow/store
+  toast({
+    title: 'Configuração salva',
+    description: 'As configurações do assistente foram atualizadas.',
+  });
+};
+
 // Carregar dados do fluxo se for edição
 onMounted(() => {
   if (!isNewFlow.value) {
     loadFlow();
+  } else {
+    // Inicializar com um node de gatilho apenas para novos fluxos
+    initializeFlow();
   }
-  // Inicializar com um node de gatilho
-  initializeFlow();
 
   // Ajustar visualização inicial
   window.requestAnimationFrame(() => {
@@ -262,6 +355,7 @@ onMounted(() => {
   
   // Registrar listener para mudanças de viewport
   onViewportChange(handleViewportChange);
+
 });
 
 // 🆕 Cleanup do timeout do minimap
@@ -272,17 +366,21 @@ onUnmounted(() => {
 });
 
 function initializeFlow() {
+  const nodeType = layoutMode.value === 'horizontal' ? 'customNodeHorizontal' : 'customNodeVertical';
+  const sourcePos = layoutMode.value === 'horizontal' ? Position.Right : Position.Bottom;
+  const targetPos = layoutMode.value === 'horizontal' ? Position.Left : Position.Top;
+  
   nodes.value = [
     {
-      id: 'trigger-1',
-      type: 'customNode',
+      id: 'start-1',
+      type: nodeType,
       position: { x: 100, y: 100 },
-      sourcePosition: Position.Right,
-      targetPosition: Position.Left,
+      sourcePosition: sourcePos,
+      targetPosition: targetPos,
       data: { 
-        title: 'Gatilho',
-        type: 'trigger',
-        content: 'Conversa Iniciada',
+        title: 'Início',
+        type: 'start',
+        content: 'Início do Fluxo',
         triggerType: 'conversation_created',
       },
     },
@@ -290,10 +388,67 @@ function initializeFlow() {
 }
 
 function loadFlow() {
-  const flow = MOCK_FLOWS_ATENDIMENTO.find(f => f.id === flowId.value);
-  if (flow) {
-    currentFlow.value = flow;
+  // Tentar carregar da Pinia store
+  const savedFlow = flowsStore.loadFlow(flowId.value);
+  
+  if (savedFlow) {
+    currentFlow.value = {
+      id: savedFlow.id,
+      nome: savedFlow.nome,
+      descricao: savedFlow.descricao || '',
+      ativo: savedFlow.isActive,
+      tipo: 'atendimento',
+      status: 'ativo',
+      createdAt: savedFlow.createdAt || new Date().toISOString(),
+      updatedAt: savedFlow.updatedAt || new Date().toISOString(),
+    } as Flow;
+    
+    // Carregar nodes e edges com normalização para o layout atual
+    const currentNodeType = layoutMode.value === 'horizontal' ? 'customNodeHorizontal' : 'customNodeVertical';
+    const currentSourcePos = layoutMode.value === 'horizontal' ? Position.Right : Position.Bottom;
+    const currentTargetPos = layoutMode.value === 'horizontal' ? Position.Left : Position.Top;
+
+    nodes.value = savedFlow.nodes.map(node => {
+      // Ignorar noteNode
+      if (node.type === 'noteNode') return node;
+
+      return {
+        ...node,
+        type: currentNodeType,
+        sourcePosition: currentSourcePos,
+        targetPosition: currentTargetPos,
+      };
+    });
+    edges.value = savedFlow.edges;
+    isFlowActive.value = savedFlow.isActive;
+
+    // Sincronizar nodeIdCounter com os nodes carregados para evitar duplicidade de IDs
+    if (nodes.value.length > 0) {
+      const ids = nodes.value.map(n => {
+        const parts = n.id.split('-');
+        const lastPart = parts[parts.length - 1];
+        return parseInt(lastPart) || 0;
+      });
+      nodeIdCounter = Math.max(...ids, 0);
+    }
+    
+    toast({
+      title: 'Fluxo carregado',
+      description: `Fluxo "${savedFlow.nome}" carregado com sucesso.`,
+    });
+    
+    return;
   }
+  
+  // Fallback: carregar dos mocks
+    const flow = MOCK_FLOWS_ATENDIMENTO.find(f => f.id === flowId.value);
+    if (flow) {
+      currentFlow.value = flow;
+    toast({
+      title: 'Fluxo carregado',
+      description: `Fluxo "${flow.nome}" carregado dos dados de exemplo.`,
+    });
+    }
 }
 
 function toggleSidebar() {
@@ -302,16 +457,30 @@ function toggleSidebar() {
 
 function handleBlockClick(block: any) {
   // Adicionar novo node ao canvas
-  const nodeType = block.key === 'note' ? 'noteNode' : 'customNode';
+  const isNote = block.key === 'note';
+  const nodeType = isNote ? 'noteNode' : (layoutMode.value === 'horizontal' ? 'customNodeHorizontal' : 'customNodeVertical');
+  const sourcePos = layoutMode.value === 'horizontal' ? Position.Right : Position.Bottom;
+  const targetPos = layoutMode.value === 'horizontal' ? Position.Left : Position.Top;
+  
+  // Determinar posição baseada no layout e nós existentes
+  let position = { x: 100, y: 100 };
+  if (nodes.value.length > 0) {
+    const maxX = Math.max(...nodes.value.map(n => n.position.x));
+    const maxY = Math.max(...nodes.value.map(n => n.position.y));
+    
+    if (layoutMode.value === 'horizontal') {
+      position = { x: maxX + 250, y: 100 };
+    } else {
+      position = { x: 100, y: maxY + 250 };
+    }
+  }
+
   const newNode: Node = {
     id: `${block.key}-${++nodeIdCounter}`,
     type: nodeType,
-    position: { 
-      x: Math.random() * 400 + 200, 
-      y: Math.random() * 400 + 200 
-    },
-    sourcePosition: Position.Right,
-    targetPosition: Position.Left,
+    position,
+    sourcePosition: sourcePos,
+    targetPosition: targetPos,
     data: {
       title: block.label,
       type: block.key === 'decision' ? 'switch' : block.key === 'integration' ? 'api' : block.key,
@@ -324,6 +493,7 @@ function handleBlockClick(block: any) {
 }
 
 function onConnect(params: Connection) {
+  console.log('✅ onConnect triggered:', params);
   // Usar addEdges do VueFlow para garantir que a conexão seja feita corretamente
   addEdges([{
     id: `edge-${params.source}-${params.target}`,
@@ -331,10 +501,16 @@ function onConnect(params: Connection) {
     target: params.target!,
     sourceHandle: params.sourceHandle,
     targetHandle: params.targetHandle,
-    type: 'default',
-    //type: 'smoothstep',
+    type: 'smoothstep',
     markerEnd: MarkerType.ArrowClosed,
   }]);
+}
+
+// Permitir todas as conexões para debug
+function isValidConnection(_connection: Connection) {
+  // Opcional: Adicionar lógica para impedir conexões cíclicas ou inválidas aqui
+  // Por enquanto, permitir tudo para garantir que o bug não é validacao
+  return true; 
 }
 
 function updateHelperLines(changes: NodeChange[], nodes: GraphNode[]) {
@@ -372,6 +548,103 @@ function onNodesChange(changes: NodeChange[]) {
 function onEdgesChange(changes: EdgeChange[]) {
   edges.value = applyEdgeChanges(changes, edges.value as any);
 }
+
+// 🆕 Handler para atualização de estado do simulador
+const handleExecutionStateChange = ({ 
+  path, 
+  currentBlockId, 
+  hasError, 
+  errorBlockId 
+}: { 
+  path: string[], 
+  currentBlockId: string | null,
+  hasError: boolean, 
+  errorBlockId: string | null
+}) => {
+  // Atualizar Nodes
+  nodes.value = nodes.value.map(node => {
+    const wasExecuted = path.includes(node.id);
+    const isExecuting = node.id === currentBlockId;
+    // Se houve erro, o bloco atual é o bloco com erro
+    const nodeHasError = hasError && node.id === errorBlockId;
+    
+    // Otimização: Só atualizar se mudar
+    if (
+      node.data.wasExecuted === wasExecuted && 
+      node.data.isExecuting === isExecuting &&
+      node.data.hasError === nodeHasError
+    ) {
+      return node;
+    }
+
+    return {
+      ...node,
+      data: {
+        ...node.data,
+        wasExecuted,
+        isExecuting,
+        hasError: nodeHasError
+      }
+    };
+  });
+
+  // Atualizar Edges
+  edges.value = edges.value.map(edge => {
+    const sourceExecuted = path.includes(edge.source);
+    const targetExecuted = path.includes(edge.target);
+    const sourceExecuting = edge.source === currentBlockId;
+    const targetExecuting = edge.target === currentBlockId;
+
+    const wasExecuted = sourceExecuted && targetExecuted;
+    const isExecuting = (sourceExecuting && targetExecuted) || (targetExecuting && sourceExecuted);
+    
+    // Conexões ativas devem ficar por cima das inativas
+    const zIndex = (wasExecuted || isExecuting) ? 1000 : 0;
+
+    if (
+      edge.data?.wasExecuted === wasExecuted && 
+      edge.data?.isExecuting === isExecuting &&
+      edge.zIndex === zIndex
+    ) {
+      return edge;
+    }
+
+    return {
+      ...edge,
+      zIndex,
+      data: {
+        ...edge.data,
+        wasExecuted,
+        isExecuting
+      }
+    };
+  });
+};
+
+const handleCloseSimulator = () => {
+  showSimulator.value = false;
+  
+  // Limpar estado visual dos Nodes
+  nodes.value = nodes.value.map(node => ({
+    ...node,
+    data: {
+      ...node.data,
+      wasExecuted: false,
+      isExecuting: false
+    }
+  }));
+
+  // Limpar estado visual das Edges e resetar zIndex
+  edges.value = edges.value.map(edge => ({
+    ...edge,
+    zIndex: 0,
+    data: {
+      ...edge.data,
+      wasExecuted: false,
+      isExecuting: false
+    }
+  }));
+};
 
 function onDragOver(event: DragEvent) {
   event.preventDefault();
@@ -413,13 +686,17 @@ function onDrop(event: DragEvent) {
 }
 
 function addNodeAtPosition(block: any, position: { x: number; y: number }) {
-  const nodeType = block.key === 'note' ? 'noteNode' : 'customNode';
+  const isNote = block.key === 'note';
+  const nodeType = isNote ? 'noteNode' : (layoutMode.value === 'horizontal' ? 'customNodeHorizontal' : 'customNodeVertical');
+  const sourcePos = layoutMode.value === 'horizontal' ? Position.Right : Position.Bottom;
+  const targetPos = layoutMode.value === 'horizontal' ? Position.Left : Position.Top;
+  
   const newNode: Node = {
     id: `${block.key}-${++nodeIdCounter}`,
     type: nodeType,
     position,
-    sourcePosition: Position.Right,
-    targetPosition: Position.Left,
+    sourcePosition: sourcePos,
+    targetPosition: targetPos,
     data: {
       title: block.label,
       type: block.key === 'decision' ? 'switch' : block.key === 'integration' ? 'api' : block.key,
@@ -432,13 +709,132 @@ function addNodeAtPosition(block: any, position: { x: number; y: number }) {
 }
 
 function handleSave() {
-  // Implementar lógica de salvamento
-  console.log('Salvando fluxo...', { nodes: nodes.value, edges: edges.value });
+  console.log('🔵 handleSave called');
+  try {
+    // Gerar ID se for novo fluxo
+    const saveFlowId = isNewFlow.value ? `flow-${Date.now()}` : flowId.value;
+    console.log('🔵 Flow ID:', saveFlowId, 'isNew:', isNewFlow.value);
+    
+    // Preparar dados do fluxo
+    const flowData = {
+      id: saveFlowId,
+      nome: currentFlow.value?.nome || 'Novo Fluxo',
+      descricao: currentFlow.value?.descricao || '',
+      nodes: nodes.value,
+      edges: edges.value,
+      isActive: isFlowActive.value,
+      createdAt: currentFlow.value?.createdAt || new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    };
+    
+    console.log('🔵 Flow data to save:', {
+      id: flowData.id,
+      nome: flowData.nome,
+      nodesCount: flowData.nodes.length,
+      edgesCount: flowData.edges.length,
+      isActive: flowData.isActive,
+    });
+    
+    // Salvar na Pinia store (que persiste automaticamente no localStorage)
+    console.log('🔵 Calling flowsStore.saveFlow...');
+    flowsStore.saveFlow(flowData);
+    console.log('🔵 flowsStore.saveFlow completed');
+    
+    // Atualizar currentFlow
+    if (isNewFlow.value) {
+      currentFlow.value = {
+        id: saveFlowId,
+        nome: flowData.nome,
+        descricao: flowData.descricao,
+        ativo: flowData.isActive,
+        tipo: 'atendimento',
+        status: 'ativo',
+        createdAt: flowData.createdAt,
+        updatedAt: flowData.updatedAt,
+      } as Flow;
+      
+      // Redirecionar para a URL do fluxo salvo
+      console.log('🔵 Redirecting to:', `/fluxos/${saveFlowId}`);
+      router.replace(`/fluxos/${saveFlowId}`);
+    }
+    
+    console.log('🔵 Showing success toast');
+    toast({
+      title: 'Fluxo salvo',
+      description: `Fluxo "${flowData.nome}" salvo com sucesso.`,
+    });
+    
+    console.log('✅ Fluxo salvo:', flowData);
+  } catch (error) {
+    console.error('❌ Erro ao salvar fluxo:', error);
+    toast({
+      title: 'Erro ao salvar',
+      description: 'Não foi possível salvar o fluxo. Tente novamente.',
+      variant: 'destructive',
+    });
+  }
 }
 
+
+
+// Watcher para limpar o estado visual quando o simulador for fechado
+watch(showSimulator, (isOpen) => {
+  if (!isOpen) {
+    handleCloseSimulator();
+  }
+  // Se abriu, fazer fitView após render
+  if (isOpen) {
+    nextTick(() => {
+      setTimeout(() => {
+        fitView({ padding: 0.2, maxZoom: 1 });
+      }, 50);
+    });
+  }
+});
+
 function handleSimulate() {
-  // TODO: Abrir modal ou painel de simulação
-  console.log('Iniciando simulação do fluxo...');
+  // Fechar painel de config se aberto
+  showConfigPanel.value = false;
+  // Alternar simulador (a limpeza é feita pelo watcher se fechar)
+  showSimulator.value = !showSimulator.value;
+}
+
+// Handler para highlight de bloco em execução
+function handleBlockExecute(blockId: string) {
+  // Poderia adicionar highlight visual no bloco
+  console.log('Executando bloco:', blockId);
+}
+
+function toggleLayoutMode() {
+  const newMode = layoutMode.value === 'horizontal' ? 'vertical' : 'horizontal';
+  layoutMode.value = newMode;
+  
+  // Determine new node type and positions
+  const newNodeType = newMode === 'horizontal' ? 'customNodeHorizontal' : 'customNodeVertical';
+  const newSourcePos = newMode === 'horizontal' ? Position.Right : Position.Bottom;
+  const newTargetPos = newMode === 'horizontal' ? Position.Left : Position.Top;
+  
+  // Update all nodes to use the new type and positions
+  nodes.value = nodes.value.map(node => {
+    // Skip note nodes
+    if (node.type === 'noteNode') return node;
+    
+    return {
+      ...node,
+      type: newNodeType,
+      sourcePosition: newSourcePos,
+      targetPosition: newTargetPos,
+    };
+  });
+  
+  // Re-layout blocks to match the new direction and fit view
+  nextTick(() => {
+    handleLayout();
+    // Auto-fit after layout change
+    setTimeout(() => {
+      fitView({ padding: 0.2, maxZoom: 1, duration: 300 });
+    }, 100);
+  });
 }
 
 function handleValidate() {
@@ -449,7 +845,8 @@ function handleValidate() {
 const { layout } = useLayout();
 
 function handleLayout() {
-  nodes.value = layout(nodes.value, edges.value, 'LR');
+  const direction = layoutMode.value === 'horizontal' ? 'LR' : 'TB';
+  nodes.value = layout(nodes.value, edges.value, direction);
   // Ajustar visualização após layout
   window.requestAnimationFrame(() => {
     fitView({ padding: 0.2, maxZoom: 1, duration: 500 });
@@ -493,5 +890,6 @@ function goBack() {
 .vue-flow__edge.selected .vue-flow__edge-path {
   stroke: hsl(var(--primary));
 }
+
 </style>
 

@@ -40,7 +40,12 @@
               @click="handleRowClick(flow)"
             >
             <TableCell class="font-medium">
-              {{ flow.nome }}
+              <div class="flex items-center gap-2 w-full">
+                <div class="flex h-7 w-7 items-center justify-center rounded-full bg-primary/10 text-primary flex-shrink-0">
+                  <component :is="getFlowIcon(flow)" class="h-3.5 w-3.5" />
+                </div>
+                <span class="truncate">{{ flow.nome }}</span>
+              </div>
             </TableCell>
             <TableCell>
               <span class="text-muted-foreground">
@@ -94,8 +99,7 @@
 
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue';
-import { useRouter } from 'vue-router';
-import { Plus, Workflow, Loader2, MoreVertical, Edit, Trash2 } from 'lucide-vue-next';
+import { Plus, Workflow, Loader2, MoreVertical, Edit, Trash2, BotIcon, CheckCircle2 } from 'lucide-vue-next';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import {
@@ -131,7 +135,6 @@ const props = withDefaults(defineProps<Props>(), {
   onCreate: undefined,
 });
 
-const router = useRouter();
 const currentPage = ref(1);
 const pageSize = ref(10);
 
@@ -167,6 +170,11 @@ const paginatedFlows = computed(() => {
   return pagination.paginate(sortable.sortedItems.value);
 });
 
+// Ícone condicional por tipo de flow (atendimento usa BotIcon, atividades usa CheckCircle2)
+function getFlowIcon(flow: Flow) {
+  return flow.tipo === 'atendimento' ? BotIcon : CheckCircle2;
+}
+
 function handleSort(key: string) {
   sortable.toggleSort(key);
   currentPage.value = 1; // Reset to first page when sorting
@@ -185,6 +193,7 @@ const emit = defineEmits<{
   edit: [flow: Flow];
   delete: [flow: Flow];
   create: [];
+  'row-click': [flow: Flow];
 }>();
 
 function getStatusVariant(status: string): 'default' | 'secondary' | 'destructive' | 'outline' {
@@ -215,7 +224,7 @@ function getStatusLabel(status: string): string {
 
 
 function handleRowClick(flow: Flow) {
-  router.push(`/fluxos/${flow.id}`);
+  emit('row-click', flow);
 }
 
 function handleEdit(flow: Flow) {

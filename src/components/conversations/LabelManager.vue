@@ -34,7 +34,8 @@
         </div>
 
         <!-- Lista de Etiquetas -->
-        <div class="flex-1 min-h-0 overflow-y-auto px-6 pb-4">
+        <ScrollArea class="flex-1 min-h-0">
+          <div class="px-6 pb-4">
           <div v-if="filteredLabels.length === 0" class="flex flex-col items-center justify-center py-12">
             <Tag class="h-12 w-12 text-muted-foreground mb-4" />
             <p class="text-sm text-muted-foreground">
@@ -101,7 +102,8 @@
               </div>
             </div>
           </div>
-        </div>
+          </div>
+        </ScrollArea>
       </div>
 
       <DialogFooter class="px-6 pb-6 pt-4 border-t border-border">
@@ -156,6 +158,7 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import { ScrollArea } from '@/components/ui/scroll-area';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 import LabelDialog from './LabelDialog.vue';
 import { getLabels, deleteLabel, searchLabels, type Label } from '@/mocks/data/labels';

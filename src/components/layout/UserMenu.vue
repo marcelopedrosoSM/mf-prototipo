@@ -59,7 +59,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { useTheme } from '@/composables/useTheme';
+import { useAuthStore, useThemeStore } from '@/stores';
 
 const helpItems = [
   {
@@ -70,17 +70,16 @@ const helpItems = [
 ];
 
 const router = useRouter();
-const { resolvedTheme, toggleTheme } = useTheme();
+const authStore = useAuthStore();
+const themeStore = useThemeStore();
 
-// Get user from localStorage
+// Get user from auth store
 const user = computed(() => {
-  const userStr = localStorage.getItem('user');
-  if (userStr) {
-    try {
-      return JSON.parse(userStr);
-    } catch {
-      return { name: 'Usuário', email: 'user@myflows.com.br' };
-    }
+  if (authStore.user) {
+    return {
+      name: authStore.user.nome,
+      email: authStore.user.email,
+    };
   }
   return { name: 'Usuário', email: 'user@myflows.com.br' };
 });
@@ -95,9 +94,14 @@ const userInitials = computed(() => {
     .slice(0, 2);
 });
 
+const resolvedTheme = computed(() => themeStore.effectiveTheme);
+
+function toggleTheme() {
+  themeStore.toggleTheme();
+}
+
 function handleLogout() {
-  localStorage.removeItem('token');
-  localStorage.removeItem('user');
+  authStore.clearAuth();
   router.push('/');
 }
 </script>

@@ -71,12 +71,26 @@
         @click="$emit('layout')"
         title="Auto-alinhamento"
       >
-        <Sparkles class="h-4 w-4" />
+        <AlignCenterHorizontal v-if="layoutMode === 'horizontal'" class="h-4 w-4" />
+        <AlignCenterVertical v-else class="h-4 w-4" />
       </Button>
     </div>
 
     <!-- Helper (Optional) -->
      <Separator orientation="vertical" class="h-5 mx-1" />
+
+     <!-- Layout Toggle -->
+     <Button 
+        variant="ghost" 
+        size="icon" 
+        class="h-8 w-8 rounded-full hover:bg-muted"
+        @click="$emit('toggle-layout')"
+        :title="layoutMode === 'horizontal' ? 'Layout Horizontal (Ativo) - Clique para Vertical' : 'Layout Vertical (Ativo) - Clique para Horizontal'"
+      >
+        <LayoutPanelLeft v-if="layoutMode === 'horizontal'" class="h-4 w-4" />
+        <LayoutPanelTop v-else class="h-4 w-4" />
+      </Button>
+
      <Button 
         variant="ghost" 
         size="icon" 
@@ -92,11 +106,12 @@
 <script setup lang="ts">
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
-import { Minus, Plus, Undo2, Redo2, Maximize, Sparkles, HelpCircle } from 'lucide-vue-next';
+import { Minus, Plus, Undo2, Redo2, Maximize, AlignCenterHorizontal, AlignCenterVertical, HelpCircle, LayoutPanelTop, LayoutPanelLeft } from 'lucide-vue-next';
 
 defineProps<{
   canUndo?: boolean;
   canRedo?: boolean;
+  layoutMode?: 'horizontal' | 'vertical';
 }>();
 
 defineEmits<{
@@ -106,5 +121,6 @@ defineEmits<{
   'redo': [];
   'fit-view': [];
   'layout': [];
+  'toggle-layout': [];
 }>();
 </script>

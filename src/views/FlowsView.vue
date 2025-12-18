@@ -18,11 +18,11 @@
           <Tabs v-model="activeTab" class="w-full">
             <TabsList class="grid w-full max-w-md grid-cols-2">
               <TabsTrigger value="atendimento" class="flex items-center justify-center gap-2">
-                <Bot class="h-4 w-4" />
+                <BotIcon class="h-4 w-4" />
                 <span>Atendimento por IA</span>
               </TabsTrigger>
               <TabsTrigger value="atividades" class="flex items-center justify-center gap-2">
-                <Calendar class="h-4 w-4" />
+                <CheckCircle2 class="h-4 w-4" />
                 <span>Atividades</span>
               </TabsTrigger>
             </TabsList>
@@ -48,6 +48,7 @@
                 @edit="handleEditAtendimento"
                 @delete="handleDeleteAtendimento"
                 @create="handleCreateAtendimento"
+                @row-click="handleEditAtendimento"
               />
 
               <FlowDialog
@@ -101,6 +102,7 @@
                 @edit="handleEditAtividades"
                 @delete="handleDeleteAtividades"
                 @create="handleCreateAtividades"
+                @row-click="handleEditAtividades"
               />
 
               <FlowDialog
@@ -143,7 +145,7 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
-import { Plus, Bot, Calendar } from 'lucide-vue-next';
+import { Plus, BotIcon, CheckCircle2 } from 'lucide-vue-next';
 import AppLayout from '@/components/layout/AppLayout.vue';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -199,8 +201,7 @@ function loadFlowsAtendimento() {
 }
 
 function handleCreateAtendimento() {
-  // TODO: Implementar criação de fluxo
-  // router.push('/flows/atendimento/novo');
+  router.push('/fluxos/novo');
 }
 
 function handleEditAtendimento(flow: Flow) {
@@ -249,8 +250,7 @@ function handleSaveAtendimento(data: Omit<Flow, 'id' | 'createdAt' | 'updatedAt'
     };
     flowsAtendimento.value.push(newFlow);
     toast.success('Fluxo criado', `${data.nome} foi criado com sucesso.`);
-    // TODO: Implementar navegação para o flow builder
-    // router.push(`/flows/atendimento/${newFlow.id}`);
+    router.push(`/fluxos/${newFlow.id}`);
     return;
   }
   dialogOpenAtendimento.value = false;
@@ -274,13 +274,11 @@ function loadFlowsAtividades() {
 }
 
 function handleCreateAtividades() {
-  // TODO: Implementar criação de fluxo
-  // router.push('/flows/atividades/novo');
+  router.push('/fluxos-atividades/novo');
 }
 
-function handleEditAtividades(_flow: Flow) {
-  // TODO: Implementar edição de fluxo
-  // router.push(`/flows/atividades/${_flow.id}`);
+function handleEditAtividades(flow: Flow) {
+  router.push(`/fluxos-atividades/${flow.id}`);
 }
 
 function handleDeleteAtividades(flow: Flow) {

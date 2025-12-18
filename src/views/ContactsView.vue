@@ -1,8 +1,8 @@
 <template>
   <AppLayout>
     <div class="flex h-full flex-col">
-      <div class="flex-1 overflow-y-auto p-6">
-        <div class="mx-auto max-w-7xl">
+      <ScrollArea class="flex-1">
+        <div class="mx-auto max-w-7xl p-6">
           <!-- Header -->
           <div class="mb-6 flex items-center justify-between">
             <div>
@@ -57,7 +57,7 @@
             </AlertDialogContent>
           </AlertDialog>
         </div>
-      </div>
+      </ScrollArea>
     </div>
   </AppLayout>
 </template>
@@ -77,6 +77,7 @@ import {
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
 import AppLayout from '@/components/layout/AppLayout.vue';
+import { ScrollArea } from '@/components/ui/scroll-area';
 import ContactsTable from '@/components/contacts/ContactsTable.vue';
 import ContactDialog from '@/components/contacts/ContactDialog.vue';
 import {

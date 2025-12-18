@@ -5,7 +5,7 @@
 </template>
 
 <script setup lang="ts">
-import { ToastTitle as ToastTitlePrimitive } from 'radix-vue'
+import { ToastTitle as ToastTitlePrimitive } from 'reka-ui'
 import { cn } from '@/utils'
 
 interface Props {

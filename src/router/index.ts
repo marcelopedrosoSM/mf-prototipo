@@ -12,31 +12,36 @@ const routes: RouteRecordRaw[] = [
     name: 'dashboard',
     component: () => import('@/views/DashboardView.vue'),
   },
-      {
-        path: '/conversations',
-        name: 'conversations',
-        component: () => import('@/views/ConversationsView.vue'),
-      },
-      {
-        path: '/flows',
-        name: 'flows',
-        component: () => import('@/views/FlowsView.vue'),
-      },
-      {
-        path: '/flows/atividades',
-        name: 'flows-atividades',
-        component: () => import('@/views/FlowsAtividadesView.vue'),
-      },
-      {
-        path: '/fluxos/:id',
-        name: 'fluxos-edit',
-        component: () => import('@/views/flowBuilderChat.vue'),
-      },
-      {
-        path: '/contacts',
-        name: 'contacts',
-        component: () => import('@/views/ContactsView.vue'),
-      },
+  {
+    path: '/conversations',
+    name: 'conversations',
+    component: () => import('@/views/ConversationsView.vue'),
+  },
+  {
+    path: '/flows',
+    name: 'flows',
+    component: () => import('@/views/FlowsView.vue'),
+  },
+  {
+    path: '/flows/atividades',
+    name: 'flows-atividades',
+    component: () => import('@/views/FlowsAtividadesView.vue'),
+  },
+  {
+    path: '/fluxos/:id',
+    name: 'fluxos-edit',
+    component: () => import('@/views/flowBuilderChat.vue'),
+  },
+  {
+    path: '/fluxos-atividades/:id',
+    name: 'fluxos-atividades-edit',
+    component: () => import('@/views/flowBuilderTask.vue'),
+  },
+  {
+    path: '/contacts',
+    name: 'contacts',
+    component: () => import('@/views/ContactsView.vue'),
+  },
   {
     path: '/settings',
     name: 'settings',

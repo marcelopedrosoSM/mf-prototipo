@@ -8,7 +8,7 @@
 </template>
 
 <script setup lang="ts">
-import { ToastViewport as ToastViewportPrimitive } from 'radix-vue'
+import { ToastViewport as ToastViewportPrimitive } from 'reka-ui'
 import { cn } from '@/utils'
 
 interface Props {

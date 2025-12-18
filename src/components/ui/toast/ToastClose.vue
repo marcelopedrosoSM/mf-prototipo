@@ -10,7 +10,7 @@
 </template>
 
 <script setup lang="ts">
-import { ToastClose as ToastClosePrimitive } from 'radix-vue'
+import { ToastClose as ToastClosePrimitive } from 'reka-ui'
 import { X } from 'lucide-vue-next'
 import { cn } from '@/utils'
 

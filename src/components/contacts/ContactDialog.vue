@@ -10,7 +10,7 @@
         </DialogDescription>
       </DialogHeader>
 
-      <div class="flex-1 min-h-0 overflow-y-auto custom-scrollbar">
+      <ScrollArea class="flex-1 min-h-0">
         <form @submit.prevent="handleSubmit" class="px-6 py-4 space-y-6">
           <!-- Seção Geral -->
           <ContactFormGeneral
@@ -33,7 +33,7 @@
             v-model:model-value-city="formData.city"
           />
         </form>
-      </div>
+      </ScrollArea>
 
       <DialogFooter class="flex-shrink-0 px-6 pb-6 pt-4 border-t">
         <Button variant="outline" @click="handleOpenChange(false)">
@@ -58,6 +58,7 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
+import { ScrollArea } from '@/components/ui/scroll-area';
 import ContactFormGeneral from './ContactFormGeneral.vue';
 import ContactFormCommunication from './ContactFormCommunication.vue';
 import ContactFormAddress from './ContactFormAddress.vue';

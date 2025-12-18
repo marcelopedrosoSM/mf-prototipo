@@ -12,6 +12,8 @@ export interface Flow {
   status: FlowStatus;
   createdAt: string;
   updatedAt: string;
+  horario?: any; // To be typed properly or kept as any for simplicity in mock
+  continuarAtendimentoHorario?: boolean;
 }
 
 // Mock data para Fluxos de Atendimento por IA

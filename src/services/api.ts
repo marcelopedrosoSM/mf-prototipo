@@ -1,4 +1,5 @@
 import axios from 'axios';
+import { useAuthStore } from '@/stores';
 
 const api = axios.create({
   baseURL: import.meta.env.VITE_API_BASE_URL || '/api',
@@ -11,10 +12,10 @@ const api = axios.create({
 // Request interceptor
 api.interceptors.request.use(
   (config) => {
-    // Add auth token if available
-    const token = localStorage.getItem('token');
-    if (token) {
-      config.headers.Authorization = `Bearer ${token}`;
+    // Add auth token if available from store
+    const authStore = useAuthStore();
+    if (authStore.token) {
+      config.headers.Authorization = `Bearer ${authStore.token}`;
     }
     return config;
   },
@@ -31,9 +32,13 @@ api.interceptors.response.use(
   (error) => {
     // Handle common errors
     if (error.response?.status === 401) {
-      // Handle unauthorized
-      localStorage.removeItem('token');
+      // Handle unauthorized - clear auth from store
+      const authStore = useAuthStore();
+      authStore.clearAuth();
       // Redirect to login if needed
+      if (typeof window !== 'undefined') {
+        window.location.href = '/';
+      }
     }
     return Promise.reject(error);
   }

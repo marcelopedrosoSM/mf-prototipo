@@ -5,5 +5,5 @@
 </template>
 
 <script setup lang="ts">
-import { ToastProvider as ToastProviderPrimitive } from 'radix-vue'
+import { ToastProvider as ToastProviderPrimitive } from 'reka-ui'
 </script>

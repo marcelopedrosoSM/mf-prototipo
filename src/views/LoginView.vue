@@ -28,9 +28,11 @@ import Logo from '@/components/Logo.vue';
 import LoginForm from '@/components/auth/LoginForm.vue';
 import { useToast } from '@/composables/useToast';
 import { MOCK_CREDENTIALS, MOCK_USER } from '@/mocks/data/auth';
+import { useAuthStore } from '@/stores';
 
 const router = useRouter();
 const toast = useToast();
+const authStore = useAuthStore();
 const loginFormRef = ref<InstanceType<typeof LoginForm> | null>(null);
 
 async function handleLogin(data: { email: string; password: string }) {
@@ -42,9 +44,15 @@ async function handleLogin(data: { email: string; password: string }) {
       const token = 'mock-jwt-token-' + Date.now();
       const user = MOCK_USER;
 
-      // Save token
-      localStorage.setItem('token', token);
-      localStorage.setItem('user', JSON.stringify(user));
+      // Save to auth store (will automatically persist to localStorage)
+      authStore.setAuth(token, {
+        id: user.id,
+        nome: user.name, // MOCK_USER has 'name', store expects 'nome'
+        email: user.email,
+        avatar: undefined,
+        role: undefined,
+      });
+
 
       // Show success toast
       toast.success('Login realizado com sucesso!', 'Bem-vindo ao MyFlows');

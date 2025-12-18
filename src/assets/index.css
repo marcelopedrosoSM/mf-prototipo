@@ -246,17 +246,48 @@
 
   /* Cor de texto padrão para itens de menu dentro de popovers/dropdowns */
   [data-radix-dropdown-menu-content],
+  [data-reka-dropdown-menu-content],
   [data-radix-popover-content],
+  [data-reka-popover-content],
+  [data-radix-select-content],
+  [data-reka-select-content] {
+    z-index: 100 !important;
+  }
+
+  [data-state=open][data-radix-dropdown-menu-content],
+  [data-state=open][data-reka-dropdown-menu-content],
+  [data-state=open][data-radix-popover-content],
+  [data-state=open][data-reka-popover-content],
+  [data-state=open][data-radix-select-content],
+  [data-state=open][data-reka-select-content] {
+    animation: in 0.2s ease-out;
+  }
+
+  /* Cor de texto padrão para itens de menu dentro de popovers/dropdowns */
+  [data-radix-dropdown-menu-content],
+  [data-reka-dropdown-menu-content],
+  [data-radix-popover-content],
+  [data-reka-popover-content],
   [data-radix-context-menu-content],
-  [data-radix-menubar-content] {
+  [data-reka-context-menu-content],
+  [data-radix-menubar-content],
+  [data-reka-menubar-content],
+  [data-radix-select-content],
+  [data-reka-select-content] {
     color: hsl(var(--popover-foreground));
   }
 
   /* Garantir que itens de menu tenham cor de texto padrão */
   [data-radix-dropdown-menu-item]:not([data-highlighted]):not(:focus),
+  [data-reka-dropdown-menu-item]:not([data-highlighted]):not(:focus),
   [data-radix-context-menu-item]:not([data-highlighted]):not(:focus),
+  [data-reka-context-menu-item]:not([data-highlighted]):not(:focus),
   [data-radix-menubar-item]:not([data-highlighted]):not(:focus),
-  [data-radix-combobox-item]:not([data-highlighted]):not(:focus) {
+  [data-reka-menubar-item]:not([data-highlighted]):not(:focus),
+  [data-radix-combobox-item]:not([data-highlighted]):not(:focus),
+  [data-reka-combobox-item]:not([data-highlighted]):not(:focus),
+  [data-radix-select-item]:not([data-highlighted]):not(:focus),
+  [data-reka-select-item]:not([data-highlighted]):not(:focus) {
     color: hsl(var(--popover-foreground));
   }
 
@@ -467,6 +498,7 @@
     display: none !important;
   }
 
+
   /* Vue Flow Edges - Estilos customizados */
   .vue-flow__edge-path {
     stroke: #b1b1b7;
@@ -500,5 +532,15 @@
   .vue-flow__edge.executed .vue-flow__edge-path {
     stroke: #10b981;
     stroke-width: 2.5;
+  }
+
+  /* Smooth transitions for node positions during auto-layout */
+  .vue-flow__node {
+    transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  /* Disable transition during drag for immediate feedback */
+  .vue-flow__node.dragging {
+    transition: none;
   }
 }

@@ -9,8 +9,17 @@ export type BlockType =
   | 'api'        // Integração
   | 'action'     // Ação
   | 'wait'       // Espera
-  | 'trigger'    // Gatilho
-  | 'note';      // Nota
+  | 'start'      // Início
+  | 'end'        // Fim
+  | 'note'       // Nota
+  | 'condition_holiday'    // Condição: Feriado
+  | 'condition_weekday'    // Condição: Dia da Semana
+  | 'condition_time_range' // Condição: Horário
+  // Activity-specific blocks
+  | 'email'      // E-mail
+  | 'call'       // Ligação
+  | 'task'       // Tarefa
+  | 'chat_flow'; // Fluxo de Atendimento
 
 export type ActionType =
   | 'add_tag'
@@ -38,6 +47,7 @@ export interface Condition {
   operator?: string;
   valueType?: 'literal' | 'variable';
   literalValue?: string;
+  // Para condition_weekday e condition_time_range o value será usado
 }
 
 export interface CustomNodeData {
@@ -52,19 +62,32 @@ export interface CustomNodeData {
   api_method?: string;
   api_endpoint?: string;
   waitDuration?: number;
+  // Execution State
+  hasError?: boolean;
+  isExecuting?: boolean;
+  wasExecuted?: boolean;
   [key: string]: unknown;
 }
 
 // Mapa de cores dos blocos
 export const BLOCK_COLORS: Record<BlockType, string> = {
-  message: '#3B82F6',   // Azul
-  question: '#10B981',  // Verde
-  switch: '#F97316',    // Laranja
-  api: '#06B6D4',       // Ciano
-  action: '#9333EA',    // Roxo
-  wait: '#F59E0B',      // Âmbar
-  trigger: '#8B5CF6',   // Roxo (Violet)
-  note: '#FCD34D',      // Amarelo
+  start: 'hsl(var(--primary))',             // Roxo primário
+  end: '#ef4444',                           // Vermelho
+  message: 'hsl(var(--success))',           // Verde
+  question: 'hsl(var(--success))',          // Verde
+  switch: 'hsl(var(--warning))',            // Amarelo
+  api: '#3B82F6',                           // Azul
+  action: 'hsl(var(--primary-lighten-1))',  // Roxo secundário
+  wait: 'hsl(var(--secondary))',            // Cinza
+  note: 'hsl(var(--warning))',              // Amarelo
+  condition_holiday: '#F59E0B',             // Ambar 
+  condition_weekday: '#F59E0B',             // Ambar
+  condition_time_range: '#F59E0B',          // Ambar
+  // Activity-specific blocks
+  email: '#3B82F6',                         // Azul
+  call: '#14B8A6',                          // Teal
+  task: '#F59E0B',                          // Ambar
+  chat_flow: 'hsl(var(--primary))',         // Roxo
 };
 
 export const ACTION_TYPES: Array<{ value: ActionType; label: string; section?: string }> = [

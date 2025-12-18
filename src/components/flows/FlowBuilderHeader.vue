@@ -42,18 +42,10 @@
         <Button 
           variant="outline" 
           size="sm"
-          @click="$emit('validate')"
+          @click="showValidateDialog = true"
         >
           <ShieldCheck class="mr-2 h-4 w-4" />
           Validar
-        </Button>
-        <Button 
-          variant="outline" 
-          size="sm"
-          @click="$emit('layout')"
-        >
-          <Sparkles class="mr-2 h-4 w-4" />
-          Organizar
         </Button>
         <Button 
           variant="outline" 
@@ -63,68 +55,88 @@
           <Save class="mr-2 h-4 w-4" />
           Salvar
         </Button>
-        <Button variant="outline" size="sm" title="Configurações">
+        <Button 
+          variant="outline" 
+          size="sm" 
+          title="Configurações"
+          @click="$emit('settings')"
+        >
           <Settings class="mr-2 h-4 w-4" />
           Configurações
         </Button>
+
         <div class="flex items-center gap-2 px-3 py-2 rounded-md border border-input bg-background h-[42px] w-[138px]">
           <Switch 
-            id="flow-active-switch"
-            :checked="localIsActive" 
-            @update:checked="(val) => localIsActive = val"
-            :model-value="localIsActive"
-            @update:model-value="(val) => localIsActive = val"
+            id="flow-active-switch" 
+            v-model="isActive"
           />
           <Label 
             for="flow-active-switch" 
             class="text-xs font-medium cursor-pointer select-none"
           >
-            {{ localIsActive ? 'Ativado' : 'Desativado' }}
+            {{ isActive ? 'Ativado' : 'Desativado' }}
           </Label>
         </div>
       </div>
     </div>
+
+    <!-- Modal de Validação -->
+    <Dialog v-model:open="showValidateDialog">
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle>Validação do fluxo</DialogTitle>
+          <DialogDescription class="text-left mt-4">
+            <p class="mb-4">
+              A funcionalidade de validação do fluxo será implementada para verificar a integridade e a corretude do fluxo criado.
+            </p>
+            <p class="mb-2 font-medium">Esta funcionalidade irá verificar:</p>
+            <ul class="list-disc list-inside space-y-2 text-sm text-muted-foreground ml-2">
+              <li>Conectividade entre os blocos</li>
+              <li>Presença de blocos obrigatórios (ex: Gatilho)</li>
+              <li>Configurações válidas em cada bloco</li>
+              <li>Caminhos sem saída ou loops infinitos</li>
+              <li>Variáveis não definidas ou referências inválidas</li>
+            </ul>
+          </DialogDescription>
+        </DialogHeader>
+      </DialogContent>
+    </Dialog>
   </header>
 </template>
 
 <script setup lang="ts">
 import { ref, watch } from 'vue';
-import { Workflow, Save, Settings, ArrowLeft, ChevronRight, ShieldCheck, Play, Sparkles } from 'lucide-vue-next';
+import { Workflow, Save, Settings, ArrowLeft, ChevronRight, ShieldCheck, Play } from 'lucide-vue-next';
 import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 
 interface Props {
   flowName: string;
-  isActive?: boolean;
 }
 
-const props = withDefaults(defineProps<Props>(), {
-  isActive: false,
-});
+defineProps<Props>();
+
+// 🚀 defineModel simplifica a prop isActive e as emissões update:isActive e toggle-active
+const isActive = defineModel<boolean>('isActive', { default: false });
 
 const emit = defineEmits<{
   'toggle-active': [value: boolean];
-  'update:isActive': [value: boolean];
   simulate: [];
   save: [];
   validate: [];
   back: [];
   layout: [];
+  settings: [];
 }>();
 
-// Criar referência local reativa inicializada com o valor da prop
-const localIsActive = ref(props.isActive);
+const showValidateDialog = ref(false);
 
-// Sincronizar mudanças da prop para a ref local
-watch(() => props.isActive, (newVal) => {
-  localIsActive.value = newVal;
-}, { immediate: true });
-
-// Sincronizar mudanças da ref local de volta para o componente pai
-watch(localIsActive, (newVal) => {
-  emit('update:isActive', newVal);
+// Sincronizar mudança do model com o evento legado 'toggle-active' para compatibilidade
+watch(isActive, (newVal) => {
   emit('toggle-active', newVal);
 });
 </script>
+
 

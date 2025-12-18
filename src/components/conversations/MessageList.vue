@@ -109,7 +109,7 @@ const messageGroups = computed(() => {
 // Função para fazer scroll até o final
 function scrollToBottom() {
   nextTick(() => {
-    const scrollArea = document.querySelector('[data-radix-scroll-area-viewport]');
+    const scrollArea = document.querySelector('[data-reka-scroll-area-viewport]');
     if (scrollArea) {
       scrollArea.scrollTop = scrollArea.scrollHeight;
     }

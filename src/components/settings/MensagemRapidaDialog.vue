@@ -10,7 +10,7 @@
         </DialogDescription>
       </DialogHeader>
 
-      <div class="flex-1 min-h-0 overflow-y-auto custom-scrollbar">
+      <ScrollArea class="flex-1 min-h-0">
         <div class="px-6 py-4 space-y-4">
           <!-- Título -->
           <div class="space-y-2">
@@ -49,7 +49,7 @@
             </div>
           </div>
         </div>
-      </div>
+      </ScrollArea>
 
       <DialogFooter class="flex-shrink-0 px-6 pb-6 pt-4 border-t">
         <Button variant="secondary" @click="handleOpenChange(false)">
@@ -71,6 +71,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
+import { ScrollArea } from '@/components/ui/scroll-area';
 import {
   Dialog,
   DialogContent,

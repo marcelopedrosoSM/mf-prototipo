@@ -6,10 +6,16 @@ import './assets/index.css';
 import '@vue-flow/core/dist/style.css';
 
 
-// Initialize theme synchronously before first render to prevent flash
+// NOTA: A inicialização do tema agora é feita via Pinia store no App.vue
+// Esta função foi mantida comentada para referência, mas não é mais necessária
+/*
+// Initialize theme using the theme store
+// This must happen before Vue app creation to prevent flash
 function initializeTheme() {
   if (typeof window === 'undefined' || typeof document === 'undefined') return;
 
+  // The theme store will handle initialization from localStorage
+  // We just need to apply the theme to the DOM before first render
   const THEME_STORAGE_KEY = 'myflows-theme';
   const stored = localStorage.getItem(THEME_STORAGE_KEY);
 
@@ -19,23 +25,44 @@ function initializeTheme() {
 
   const root = document.documentElement;
 
-  if (stored === 'dark') {
-    root.classList.add('dark');
-  } else if (stored === 'light') {
-    root.classList.remove('dark');
+  if (stored) {
+    try {
+      const themeData = JSON.parse(stored);
+      const theme = themeData.theme || 'system';
+
+      if (theme === 'dark') {
+        root.classList.add('dark');
+      } else if (theme === 'light') {
+        root.classList.remove('dark');
+      } else {
+        // system
+        const systemTheme = getSystemTheme();
+        if (systemTheme === 'dark') {
+          root.classList.add('dark');
+        } else {
+          root.classList.remove('dark');
+        }
+      }
+    } catch {
+      // Fallback to system theme if parsing fails
+      const systemTheme = getSystemTheme();
+      if (systemTheme === 'dark') {
+        root.classList.add('dark');
+      }
+    }
   } else {
-    // system or no preference
+    // No stored preference, use system
     const systemTheme = getSystemTheme();
     if (systemTheme === 'dark') {
       root.classList.add('dark');
-    } else {
-      root.classList.remove('dark');
     }
   }
 }
 
+
 // Apply theme immediately
 initializeTheme();
+*/
 
 // Initialize MSW in development
 /*

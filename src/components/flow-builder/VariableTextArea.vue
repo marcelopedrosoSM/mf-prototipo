@@ -1,15 +1,11 @@
 <template>
   <div class="relative space-y-2">
-    <Textarea
-      ref="textareaRef"
-      :value="modelValue"
-      @input="handleInput"
-      @blur="updateCursorPosition"
-      @click="updateCursorPosition"
-      @keyup="updateCursorPosition"
+    <TipTapEditor
+      ref="editorRef"
+      v-model="localValue"
       :placeholder="placeholder"
-      :rows="rows"
-      class="w-full text-sm"
+      :variables="systemVariables"
+      :flowVariables="availableVariables"
     />
 
     <div class="flex justify-end">
@@ -39,12 +35,13 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue';
-import { Textarea } from '@/components/ui/textarea';
+import { ref, watch, computed } from 'vue';
 import { Button } from '@/components/ui/button';
 import { Popover, PopoverTrigger, PopoverContent } from '@/components/ui/popover';
 import { Braces } from 'lucide-vue-next';
+import { TipTapEditor, type VariableItem } from '@/components/ui/tiptap';
 import VariableSelector from './VariableSelector.vue';
+import { SYSTEM_VARIABLES } from '@/constants/system-variables';
 
 const props = withDefaults(defineProps<{
   modelValue: string;
@@ -60,62 +57,37 @@ const props = withDefaults(defineProps<{
 
 const emit = defineEmits(['update:modelValue']);
 
-const textareaRef = ref<InstanceType<typeof Textarea> | null>(null);
+const editorRef = ref<InstanceType<typeof TipTapEditor> | null>(null);
 const isOpen = ref(false);
-const cursorPosition = ref(0);
+const localValue = ref(props.modelValue);
 
-// Atualizar a posição do cursor sempre que houver interação
-const updateCursorPosition = (e: Event) => {
-  const target = e.target as HTMLTextAreaElement;
-  if (target) {
-    cursorPosition.value = target.selectionStart;
+// Convert system variables to VariableItem format
+const systemVariables = computed<VariableItem[]>(() => {
+  return SYSTEM_VARIABLES.map(v => ({
+    name: v.name,
+    description: v.description,
+    category: v.category,
+    example: v.example,
+  }));
+});
+
+// Sync localValue with modelValue (bidirectional)
+watch(() => props.modelValue, (newValue) => {
+  if (newValue !== localValue.value) {
+    localValue.value = newValue;
   }
-};
+});
 
-const handleInput = (e: Event) => {
-  const target = e.target as HTMLTextAreaElement;
-  emit('update:modelValue', target.value);
-  cursorPosition.value = target.selectionStart;
-};
-
-// Inserir variável na posição do cursor
-const handleInsertVariable = (variableName: string) => {
-  const variableText = `{{${variableName}}}`;
-  const currentValue = props.modelValue || '';
-  
-  // Usar a posição salva ou o final do texto se for 0/inválido
-  // (mas queremos 0 se o usuário clicou no inicio, então ok)
-  const pos = cursorPosition.value;
-  
-  const before = currentValue.slice(0, pos);
-  const after = currentValue.slice(pos);
-  
-  const newValue = before + variableText + after;
-  
+watch(localValue, (newValue) => {
   emit('update:modelValue', newValue);
-  
-  // Fechar popover
+});
+
+// Insert variable at cursor position
+const handleInsertVariable = (variableName: string) => {
+  if (editorRef.value) {
+    editorRef.value.insertVariable(variableName);
+    editorRef.value.focus();
+  }
   isOpen.value = false;
-  
-  // Tentar focar de volta e mover cursor (nextTick)
-  // Como estamos emitindo o valor, o Vue vai atualizar o DOM.
-  // Precisamos garantir que o cursor vá para depois da variável.
-  setTimeout(() => {
-    // Acessar o elemento DOM real do componente Textarea (pode precisar de .el ou $el dependendo da impl)
-    // Se Textarea for um componente Vue wrapper
-    // Vamos tentar acessar via ref
-    const textareaEl = textareaRef.value?.$el as HTMLTextAreaElement;
-    if (textareaEl && textareaEl.focus) {
-      textareaEl.focus();
-      const newPos = pos + variableText.length;
-      textareaEl.setSelectionRange(newPos, newPos);
-      cursorPosition.value = newPos;
-    } 
-    // Fallback: se textareaRef.value for o elemento direto
-    else if (textareaRef.value && (textareaRef.value as any).focus) {
-       (textareaRef.value as any).focus();
-       // ... lógica de cursor
-    }
-  }, 50);
 };
 </script>

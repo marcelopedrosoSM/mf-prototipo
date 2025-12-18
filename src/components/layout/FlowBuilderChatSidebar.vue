@@ -10,14 +10,14 @@
       <div class="mb-4 flex items-center gap-2">
         <button
           @click="$emit('toggle')"
-          class="flex h-10 w-10 items-center justify-center rounded-md p-2 interactive flex-shrink-0"
+          class="flex h-8 w-8 items-center justify-center rounded-md p-2 interactive flex-shrink-0"
           :title="collapsed ? 'Expandir menu' : 'Recolher menu'"
         >
           <PanelLeftOpen v-if="collapsed" class="h-4 w-4" />
           <PanelLeftClose v-else class="h-4 w-4" />
         </button>
         <span v-if="!collapsed" class="text-base font-semibold truncate">
-          Blocos Disponíveis
+          Blocos
         </span>
       </div>
 
@@ -28,11 +28,11 @@
           <div class="pb-2">
             <div class="relative">
               <Search class="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-              <input
+              <Input
                 v-model="searchQuery"
                 type="text"
                 placeholder="Buscar blocos..."
-                class="w-full rounded-md border border-input bg-background px-3 py-2 pl-9 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+                class="pl-9"
               />
             </div>
           </div>
@@ -79,12 +79,14 @@
 
 <script setup lang="ts">
 import { ref, computed, h } from 'vue';
-import { PanelLeftClose, PanelLeftOpen, Search, Zap, MessageSquare, HelpCircle, GitBranch, Sparkles, Globe, Clock, StickyNote } from 'lucide-vue-next';
+import { PanelLeftClose, PanelLeftOpen, Search, MessageSquare, HelpCircle, Split, Sparkles, Globe, Clock, StickyNote, Calendar, CalendarDays, Zap, ZapOff } from 'lucide-vue-next';
 import { cn } from '@/lib/utils';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { Input } from '@/components/ui/input';
 
 interface Props {
   collapsed: boolean;
+  flowType?: 'atendimento' | 'atividades';
 }
 
 const props = defineProps<Props>();
@@ -98,53 +100,81 @@ const searchQuery = ref('');
 
 const blocks = [
   {
-    key: 'trigger',
-    label: 'Gatilho',
-    description: 'Define quando o fluxo será executado',
+    key: 'start',
+    label: 'Início',
+    description: 'Ponto de partida do fluxo',
     icon: h(Zap),
-    colorClass: 'bg-primary/10 text-primary dark:bg-primary/20 dark:text-primary',
+    colorClass: 'bg-[hsl(var(--primary))]/10 text-[hsl(var(--primary))] dark:bg-[hsl(var(--primary))]/20 dark:text-[hsl(var(--primary))]',
+  },
+  {
+    key: 'end',
+    label: 'Fim',
+    description: 'Encerrar o fluxo',
+    icon: h(ZapOff),
+    colorClass: 'bg-red-500/10 text-red-500 dark:bg-red-500/20 dark:text-red-500',
   },
   {
     key: 'message',
     label: 'Mensagem',
     description: 'Enviar mensagem ao contato',
     icon: h(MessageSquare),
-    colorClass: 'bg-info/10 text-info dark:bg-info/20 dark:text-info',
+    colorClass: 'bg-[hsl(var(--success))]/10 text-[hsl(var(--success))] dark:bg-[hsl(var(--success))]/20 dark:text-[hsl(var(--success))]',
   },
   {
     key: 'question',
     label: 'Pergunta',
     description: 'Fazer pergunta e salvar resposta (texto livre ou múltipla escolha)',
     icon: h(HelpCircle),
-    colorClass: 'bg-success/10 text-success dark:bg-success/20 dark:text-success',
+    colorClass: 'bg-[hsl(var(--success))]/10 text-[hsl(var(--success))] dark:bg-[hsl(var(--success))]/20 dark:text-[hsl(var(--success))]',
   },
   {
     key: 'decision',
     label: 'Decisão',
     description: 'Avaliar condição e seguir diferentes caminhos',
-    icon: h(GitBranch),
-    colorClass: 'bg-warning/10 text-warning dark:bg-warning/20 dark:text-warning',
+    icon: h(Split),
+    colorClass: 'bg-[hsl(var(--warning))]/10 text-[hsl(var(--warning))] dark:bg-[hsl(var(--warning))]/20 dark:text-[hsl(var(--warning))]',
   },
   {
     key: 'action',
     label: 'Ação',
     description: 'Executar ação do sistema',
     icon: h(Sparkles),
-    colorClass: 'bg-primary/10 text-primary dark:bg-primary/20 dark:text-primary',
+    colorClass: 'bg-[hsl(var(--primary-lighten-1))]/10 text-[hsl(var(--primary-lighten-1))] dark:bg-[hsl(var(--primary-lighten-1))]/20 dark:text-[hsl(var(--primary-lighten-1))]',
   },
   {
     key: 'integration',
     label: 'Integração',
     description: 'Chamada HTTP para API',
     icon: h(Globe),
-    colorClass: 'bg-info/10 text-info dark:bg-info/20 dark:text-info',
+    colorClass: 'bg-[#3B82F6]/10 text-[#3B82F6] dark:bg-[#3B82F6]/20 dark:text-[#3B82F6]',
   },
   {
     key: 'wait',
     label: 'Espera',
     description: 'Pausar execução',
     icon: h(Clock),
-    colorClass: 'bg-warning/10 text-warning dark:bg-warning/20 dark:text-warning',
+    colorClass: 'bg-[hsl(var(--secondary))]/10 text-[hsl(var(--secondary))] dark:bg-[hsl(var(--secondary))]/20 dark:text-[hsl(var(--secondary))]',
+  },
+  {
+    key: 'condition_holiday',
+    label: 'Feriado',
+    description: 'Verificar Feriados/Inatividades',
+    icon: h(Calendar),
+    colorClass: 'bg-amber-500/10 text-amber-500 dark:bg-amber-500/20 dark:text-amber-500',
+  },
+  {
+    key: 'condition_weekday',
+    label: 'Dias Semana',
+    description: 'Rotear por dia da semana',
+    icon: h(CalendarDays),
+    colorClass: 'bg-amber-500/10 text-amber-500 dark:bg-amber-500/20 dark:text-amber-500',
+  },
+  {
+    key: 'condition_time_range',
+    label: 'Horário',
+    description: 'Rotear por intervalo de horário',
+    icon: h(Clock),
+    colorClass: 'bg-amber-500/10 text-amber-500 dark:bg-amber-500/20 dark:text-amber-500',
   },
   {
     key: 'note',
@@ -156,9 +186,19 @@ const blocks = [
 ];
 
 const filteredBlocks = computed(() => {
-  if (!searchQuery.value) return blocks;
+  let filtered = blocks;
+
+  // Filtrar blocos baseados no tipo do fluxo
+  if (props.flowType === 'atendimento') {
+    filtered = filtered.filter(b => 
+      !['condition_holiday', 'condition_weekday', 'condition_time_range'].includes(b.key)
+    );
+  }
+
+  if (!searchQuery.value) return filtered;
+  
   const query = searchQuery.value.toLowerCase();
-  return blocks.filter(
+  return filtered.filter(
     (block) =>
       block.label.toLowerCase().includes(query) ||
       block.description.toLowerCase().includes(query)

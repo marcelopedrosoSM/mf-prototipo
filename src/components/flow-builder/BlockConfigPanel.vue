@@ -15,8 +15,8 @@
     <ScrollArea class="flex-1">
       <div class="p-4 space-y-6">
         
-        <!-- Título do Bloco (Comum a todos) -->
-        <div class="space-y-2">
+        <!-- Título do Bloco (Comum a todos exceto início/fim) -->
+        <div v-if="!['start', 'end'].includes(blockType || '')" class="space-y-2">
           <Label for="title">Título do Bloco</Label>
           <Input 
             id="title" 
@@ -25,109 +25,19 @@
           />
         </div>
 
-        <!-- CONFIGURAÇÃO ESPECÍFICA: TRIGGER -->
-        <div v-if="blockType === 'trigger'" class="space-y-6">
-          
-          <!-- Tipo de Gatilho -->
-          <div class="space-y-3">
-            <Label>Tipo de Gatilho</Label>
-            <Select v-model="formData.triggerType">
-              <SelectTrigger class="h-auto py-3">
-                <SelectValue placeholder="Selecione um gatilho">
-                  <div v-if="formData.triggerType" class="flex items-start gap-3 text-left">
-                    <component :is="getTriggerIcon(formData.triggerType)" class="h-5 w-5 text-primary mt-0.5" />
-                    <div class="flex flex-col gap-0.5">
-                      <span class="font-medium">{{ getTriggerLabel(formData.triggerType) }}</span>
-                      <span class="text-xs text-muted-foreground">{{ getTriggerDescription(formData.triggerType) }}</span>
-                    </div>
-                  </div>
-                </SelectValue>
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem 
-                  v-for="trigger in TRIGGER_TYPES" 
-                  :key="trigger.value" 
-                  :value="trigger.value"
-                >
-                  <div class="flex items-start gap-3 py-1">
-                    <component :is="getTriggerIcon(trigger.value)" class="h-5 w-5 text-muted-foreground mt-0.5" />
-                    <div class="flex flex-col gap-0.5">
-                      <span class="font-medium">{{ trigger.label }}</span>
-                      <span class="text-xs text-muted-foreground">{{ trigger.description }}</span>
-                    </div>
-                  </div>
-                </SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-
-          <!-- Configurações adicionais para triggers de conversa/mensagem -->
-          <div v-if="['conversation_created', 'message_received'].includes(formData.triggerType || '')" class="space-y-4 border-t pt-4">
-            <h4 class="text-sm font-medium text-muted-foreground">Filtros e Atribuição</h4>
-            
-            <!-- Caixa de Entrada -->
-            <div class="space-y-2">
-              <Label>Caixa de Entrada (Opcional)</Label>
-              <Select v-model="formData.caixaEntradaId">
-                <SelectTrigger>
-                  <SelectValue placeholder="Todas as caixas" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">Todas as caixas</SelectItem>
-                  <SelectItem v-for="inbox in MOCK_INBOXES" :key="inbox.id" :value="inbox.id">
-                    {{ inbox.name }}
-                  </SelectItem>
-                </SelectContent>
-              </Select>
-              <p class="text-xs text-muted-foreground">O fluxo só iniciará para conversas nesta caixa.</p>
-            </div>
-
-            <!-- Agente Virtual -->
-            <div class="space-y-2">
-              <Label>Agente Virtual (Opcional)</Label>
-              <Select v-model="formData.agenteVirtualId">
-                <SelectTrigger>
-                  <SelectValue placeholder="Nenhum agente específico" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="none">Nenhum</SelectItem>
-                  <SelectItem v-for="agent in MOCK_AGENTS" :key="agent.id" :value="agent.id">
-                    {{ agent.name }}
-                  </SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-
-            <!-- Time -->
-            <div class="space-y-2">
-              <Label>Time (Opcional)</Label>
-              <Select v-model="formData.teamId">
-                <SelectTrigger>
-                  <SelectValue placeholder="Nenhum time específico" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="none">Nenhum</SelectItem>
-                  <SelectItem v-for="team in MOCK_TEAMS" :key="team.id" :value="team.id">
-                    {{ team.name }}
-                  </SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-
-            <!-- Atribuição Automática -->
-            <div class="flex items-center space-x-2 pt-2">
-              <Switch id="auto-assign" v-model="formData.atribuirAutomaticamente" />
-              <Label for="auto-assign">Atribuir automaticamente</Label>
-            </div>
-          </div>
-
-           <!-- Configuração Cron para Agendamento -->
-           <div v-if="formData.triggerType === 'schedule'" class="space-y-2 border-t pt-4">
-            <Label>Expressão Cron</Label>
-            <Input v-model="formData.scheduleCron" placeholder="* * * * *" />
-            <p class="text-xs text-muted-foreground">Ex: "0 9 * * 1-5" (Seg-Sex às 09:00)</p>
-          </div>
-
+        <!-- INFO: START/END (No configuration needed) -->
+        <div v-if="['start', 'end'].includes(blockType || '')" class="space-y-6">
+           <div class="p-4 bg-muted/30 rounded-lg border border-dashed flex flex-col items-center justify-center text-center gap-3 py-12">
+             <div class="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center">
+               <component :is="blockType === 'start' ? Play : Octagon" class="h-6 w-6 text-primary" />
+             </div>
+             <div class="space-y-1">
+               <p class="text-sm font-medium">Sem configurações extras</p>
+               <p class="text-xs text-muted-foreground max-w-[200px]">
+                 {{ blockType === 'start' ? 'Este bloco é o ponto de partida automático do seu fluxo.' : 'Este bloco encerra a execução do fluxo.' }}
+               </p>
+             </div>
+           </div>
         </div>
 
         <!-- MENSAGEM -->
@@ -156,16 +66,62 @@
 
           <!-- URL da Mídia -->
           <div v-if="formData.messageType && formData.messageType !== 'text'" class="space-y-2">
-            <Label>URL do Arquivo</Label>
-            <Input 
-              v-model="formData.mediaUrl" 
-              placeholder="https://exemplo.com/arquivo" 
-            />
+            <Label>Arquivo</Label>
+            
+            <!-- Input de URL ou Upload -->
+            <div class="space-y-2">
+              <!-- Input URL -->
+              <div class="flex gap-2">
+                <Input 
+                  v-model="formData.mediaUrl" 
+                  placeholder="https://exemplo.com/arquivo ou anexe um arquivo" 
+                  class="flex-1"
+                />
+                <input 
+                  ref="fileInputRef"
+                  type="file" 
+                  class="hidden" 
+                  @change="handleFileSelect"
+                  :accept="getAcceptedFileTypes(formData.messageType)"
+                />
+                <Button 
+                  type="button"
+                  variant="outline" 
+                  @click="triggerFileInput"
+                  class="shrink-0"
+                >
+                  <FileText class="h-4 w-4 mr-2" />
+                  Anexar
+                </Button>
+              </div>
+              
+              <!-- Preview do arquivo selecionado -->
+              <div v-if="selectedFile" class="flex items-center gap-2 p-2 bg-muted rounded-md border">
+                <component :is="getMessageTypeIcon(formData.messageType || 'file')" class="h-4 w-4 text-muted-foreground shrink-0" />
+                <div class="flex-1 min-w-0">
+                  <p class="text-sm font-medium truncate">{{ selectedFile.name }}</p>
+                  <p class="text-xs text-muted-foreground">{{ formatFileSize(selectedFile.size) }}</p>
+                </div>
+                <Button 
+                  type="button"
+                  variant="ghost" 
+                  size="icon" 
+                  class="h-6 w-6 shrink-0"
+                  @click="clearSelectedFile"
+                >
+                  <X class="h-3 w-3" />
+                </Button>
+              </div>
+              
+              <p class="text-xs text-muted-foreground">
+                Cole uma URL ou anexe um arquivo do seu computador
+              </p>
+            </div>
           </div>
 
           <!-- Conteúdo -->
           <div class="space-y-2">
-            <Label>{{ formData.messageType && formData.messageType !== 'text' ? 'Legenda (Opcional)' : 'Conteúdo da Texto' }}</Label>
+            <Label>{{ formData.messageType && formData.messageType !== 'text' ? 'Legenda (Opcional)' : 'Conteúdo do Texto' }}</Label>
             <VariableTextArea 
               v-model="formData.content" 
               :placeholder="formData.messageType && formData.messageType !== 'text' ? 'Digite uma legenda...' : 'Digite sua mensagem...'" 
@@ -527,6 +483,397 @@
           </div>
         </div>
 
+        <!-- INTEGRAÇÃO (API) -->
+        <div v-if="blockType === 'api'" class="space-y-6">
+          
+          <!-- Tipo de API -->
+          <div class="space-y-3 border border-dashed rounded-lg p-4 bg-muted/40">
+            <Label class="text-sm font-medium">Tipo de API</Label>
+            <RadioGroup 
+              :model-value="formData.api_type || 'rest'"
+              @update:model-value="(v) => { formData.api_type = v; if (v === 'graphql') formData.api_method = 'POST'; }"
+              class="flex gap-4"
+            >
+              <div class="flex items-center space-x-2">
+                <RadioGroupItem value="rest" id="api-type-rest" />
+                <Label for="api-type-rest" class="cursor-pointer font-normal flex items-center gap-2">
+                  <Globe class="h-4 w-4" />
+                  REST
+                </Label>
+              </div>
+              <div class="flex items-center space-x-2">
+                <RadioGroupItem value="graphql" id="api-type-graphql" />
+                <Label for="api-type-graphql" class="cursor-pointer font-normal flex items-center gap-2">
+                  <Code2 class="h-4 w-4" />
+                  GraphQL
+                </Label>
+              </div>
+            </RadioGroup>
+          </div>
+
+          <!-- Configuração Básica -->
+          <div class="space-y-4">
+            <h4 class="text-sm font-medium flex items-center gap-2">
+              <Send class="h-4 w-4 text-muted-foreground" />
+              Configuração Básica
+            </h4>
+            
+            <!-- Endpoint -->
+            <div class="space-y-2">
+              <Label>Endpoint <span class="text-destructive">*</span></Label>
+              <Input 
+                v-model="formData.api_endpoint" 
+                :placeholder="formData.api_type === 'graphql' ? 'https://api.exemplo.com/graphql' : 'https://api.exemplo.com/v1/endpoint'"
+              />
+              <p class="text-xs text-muted-foreground">URL completa da API (suporta variáveis como {{variável}})</p>
+            </div>
+
+            <!-- Método HTTP (apenas REST) -->
+            <div v-if="formData.api_type !== 'graphql'" class="space-y-2">
+              <Label>Método HTTP</Label>
+              <Select v-model="formData.api_method">
+                <SelectTrigger>
+                  <SelectValue placeholder="GET" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="GET">GET</SelectItem>
+                  <SelectItem value="POST">POST</SelectItem>
+                  <SelectItem value="PUT">PUT</SelectItem>
+                  <SelectItem value="PATCH">PATCH</SelectItem>
+                  <SelectItem value="DELETE">DELETE</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            <!-- Tipo de Autenticação -->
+            <div class="space-y-2">
+              <Label>Autenticação</Label>
+              <Select v-model="formData.api_auth_type">
+                <SelectTrigger>
+                  <SelectValue placeholder="Nenhuma" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="none">Nenhuma</SelectItem>
+                  <SelectItem value="bearer">Bearer Token</SelectItem>
+                  <SelectItem value="api_key">API Key</SelectItem>
+                  <SelectItem value="basic">Basic Auth</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            <!-- Valor de Autenticação -->
+            <div v-if="formData.api_auth_type && formData.api_auth_type !== 'none'" class="space-y-2 border-l-2 border-primary/20 pl-4">
+              <Label>
+                {{ formData.api_auth_type === 'bearer' ? 'Token' : ''}}
+                {{ formData.api_auth_type === 'api_key' ? 'Chave da API' : ''}}
+                {{ formData.api_auth_type === 'basic' ? 'Credenciais (usuário:senha)' : ''}}
+              </Label>
+              <div class="flex gap-2">
+                <Input 
+                  v-model="formData.api_auth_value" 
+                  :type="formData.api_auth_value?.includes('{{') ? 'text' : 'password'"
+                  :placeholder="formData.api_auth_type === 'basic' ? 'usuario:senha' : '{{myflows_api_token}}'"
+                  class="font-mono"
+                />
+                <Popover v-if="formData.api_auth_type !== 'basic'">
+                  <PopoverTrigger asChild>
+                    <Button type="button" variant="outline" size="icon" title="Selecionar variável">
+                      <Variable class="h-4 w-4" />
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent class="w-[400px] p-0" align="end">
+                    <VariableSelector
+                      :flowVariables="[]"
+                      :allowSensitive="true"
+                      :tokensOnly="true"
+                      @select="(v) => formData.api_auth_value = `{{${v}}}`"
+                      @close=""
+                    />
+                  </PopoverContent>
+                </Popover>
+              </div>
+              <p class="text-xs text-muted-foreground">
+                {{ formData.api_auth_type === 'basic' ? 'Formato: usuário:senha (será codificado em Base64)' : 'Selecione um token da conta ou digite diretamente' }}
+              </p>
+            </div>
+
+            <!-- Header customizado para API Key -->
+            <div v-if="formData.api_auth_type === 'api_key'" class="space-y-2 border-l-2 border-primary/20 pl-4">
+              <Label>Nome do Header (Opcional)</Label>
+              <Input 
+                v-model="formData.api_auth_header_name" 
+                placeholder="X-API-Key"
+              />
+              <p class="text-xs text-muted-foreground">
+                Padrão: <code class="bg-muted px-1 rounded">X-API-Key</code>
+              </p>
+            </div>
+          </div>
+
+          <Separator />
+
+          <!-- Headers (opcional) -->
+          <div class="space-y-3">
+            <Label class="flex items-center gap-2">
+              <FileJson class="h-4 w-4 text-muted-foreground" />
+              Headers (Opcional)
+            </Label>
+            <KeyValueEditor
+              v-model="formData.api_headers"
+              placeholder-key="Header-Name"
+              placeholder-value="Header-Value"
+              add-button-text="Adicionar Header"
+              :allow-sensitive="true"
+            />
+            <p class="text-xs text-muted-foreground">Headers HTTP adicionais para a requisição.</p>
+          </div>
+
+          <!-- Body (para POST/PUT/PATCH) -->
+          <div v-if="['POST', 'PUT', 'PATCH'].includes(formData.api_method || '') && formData.api_type !== 'graphql'" class="space-y-3">
+            <Label class="flex items-center gap-2">
+              <FileText class="h-4 w-4 text-muted-foreground" />
+              Body (Campos)
+            </Label>
+            <KeyValueEditor
+              v-model="formData.api_body"
+              placeholder-key="campo"
+              placeholder-value="valor"
+              add-button-text="Adicionar Campo"
+            />
+            <p class="text-xs text-muted-foreground">Campos do body da requisição. Suporta variáveis dinâmicas.</p>
+          </div>
+
+          <!-- GraphQL Query -->
+          <div v-if="formData.api_type === 'graphql'" class="space-y-3">
+            <Label class="flex items-center gap-2">
+              <FileText class="h-4 w-4 text-muted-foreground" />
+              Query GraphQL
+            </Label>
+            <Textarea 
+              v-model="formData.api_graphql_query"
+              placeholder="query { user(id: 1) { name email } }"
+              rows="5"
+              class="font-mono text-xs"
+            />
+            <p class="text-xs text-muted-foreground">Query ou mutation GraphQL. Suporta variáveis dinâmicas.</p>
+          </div>
+
+          <Separator />
+
+          <!-- Resposta -->
+          <div class="space-y-4">
+            <h4 class="text-sm font-medium flex items-center gap-2">
+              <FileOutput class="h-4 w-4 text-muted-foreground" />
+              Resposta
+            </h4>
+            
+            <div class="space-y-2">
+              <Label>Variável de Resposta</Label>
+              <Input 
+                v-model="formData.api_response_variable"
+                placeholder="api_response"
+                @input="(e) => formData.api_response_variable = toSnakeCase((e.target as HTMLInputElement).value)"
+              />
+              <p class="text-xs text-muted-foreground">Nome da variável onde a resposta será armazenada.</p>
+            </div>
+
+            <div class="space-y-2">
+              <Label>Caminho de Extração (Opcional)</Label>
+              <Input 
+                v-model="formData.api_response_path"
+                placeholder="data.items ou items[0].title"
+              />
+              <p class="text-xs text-muted-foreground">Extrai uma parte específica da resposta (dot notation).</p>
+            </div>
+          </div>
+
+          <Separator />
+
+          <!-- Timeout -->
+          <div class="space-y-3">
+            <div class="flex items-center justify-between">
+              <div class="space-y-1">
+                <Label class="text-sm font-medium">Timeout Customizado</Label>
+                <p class="text-xs text-muted-foreground">Tempo máximo de espera pela resposta</p>
+              </div>
+              <Switch 
+                :checked="formData.api_timeout_enabled || false"
+                @update:checked="(v) => formData.api_timeout_enabled = v"
+              />
+            </div>
+            
+            <div v-if="formData.api_timeout_enabled" class="space-y-2">
+              <Label>Timeout (milissegundos)</Label>
+              <Input 
+                v-model="formData.api_timeout"
+                type="number"
+                placeholder="5000"
+                min="1000"
+                max="60000"
+```
+              />
+              <p class="text-xs text-muted-foreground">Padrão: 5000ms (5 segundos)</p>
+            </div>
+            
+            <div v-else class="p-3 border rounded-md bg-muted/50 text-sm text-muted-foreground">
+              Usando valor padrão: <span class="font-medium text-foreground">5000ms</span> (5 segundos)
+            </div>
+          </div>
+        </div>
+
+        <!-- CONDITIONAL: HOLIDAY -->
+        <div v-if="blockType === 'condition_holiday'" class="space-y-4">
+          <div class="p-4 bg-amber-50 dark:bg-amber-900/20 rounded-lg border border-amber-200 dark:border-amber-800">
+             <div class="flex items-start gap-3">
+               <Calendar class="h-5 w-5 text-amber-600 dark:text-amber-400 mt-0.5" />
+               <div class="space-y-1">
+                 <h4 class="text-sm font-medium text-amber-800 dark:text-amber-200">Verificação de Feriados</h4>
+                 <p class="text-xs text-amber-700 dark:text-amber-300">
+                   Este bloco verifica automaticamente se hoje é um feriado ou dia inativo configurado no sistema.
+                 </p>
+               </div>
+             </div>
+          </div>
+          
+          <div class="space-y-2">
+            <Label>Calendário de Feriados</Label>
+             <Select disabled model-value="default">
+                <SelectTrigger>
+                  <SelectValue placeholder="Padrão do Sistema" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="default">Padrão do Sistema</SelectItem>
+                </SelectContent>
+             </Select>
+             <p class="text-xs text-muted-foreground">Configurações de feriados são gerenciadas nas Configurações Gerais.</p>
+          </div>
+
+          <Separator />
+          
+          <div class="space-y-2">
+             <Label>Saídas</Label>
+             <div class="space-y-2">
+               <div class="flex items-center justify-between p-2 border rounded bg-muted/50">
+                 <span class="text-sm font-medium">Sim (É Feriado)</span>
+                 <Badge variant="outline" class="bg-amber-100 text-amber-800 border-amber-200">Saída 1</Badge>
+               </div>
+               <div class="flex items-center justify-between p-2 border rounded bg-muted/50">
+                 <span class="text-sm font-medium">Não (Dia Normal)</span>
+                 <Badge variant="outline">Saída 2</Badge>
+               </div>
+             </div>
+          </div>
+        </div>
+
+        <!-- CONDITIONAL: WEEKDAY -->
+        <div v-if="blockType === 'condition_weekday'" class="space-y-6">
+           <div class="flex items-center justify-between">
+             <Label>Grupos de Dias</Label>
+             <Button variant="outline" size="sm" @click="addCondition" class="h-8">
+               <Plus class="mr-1 h-3 w-3" /> Adicionar Grupo
+             </Button>
+           </div>
+           
+           <div class="space-y-4">
+              <div 
+                v-for="(condition, index) in formData.conditions" 
+                :key="index"
+                class="border p-3 rounded-md space-y-3 relative bg-card"
+              >
+                 <div class="flex items-start justify-between gap-2">
+                    <div class="w-full space-y-3">
+                       <div class="space-y-1">
+                         <Label class="text-xs">Nome do Grupo</Label>
+                         <Input v-model="condition.label" placeholder="Ex: Dias Úteis" class="h-8" />
+                       </div>
+                       
+                       <div class="space-y-1">
+                         <Label class="text-xs">Dias Selecionados</Label>
+                         <div class="flex flex-wrap gap-1">
+                           <div 
+                             v-for="day in WEEKDAYS" 
+                             :key="day.value"
+                             @click="toggleDayInCondition(condition, day.value)"
+                             class="cursor-pointer px-2 py-1 rounded text-[10px] font-medium transition-colors border select-none"
+                             :class="condition.value?.includes(day.value) ? 'bg-primary text-primary-foreground border-primary' : 'bg-muted text-muted-foreground hover:bg-muted/80'"
+                           >
+                             {{ day.label }}
+                           </div>
+                         </div>
+                       </div>
+                    </div>
+
+                    <Button 
+                       variant="ghost" 
+                       size="icon" 
+                       class="h-6 w-6 -mr-1 -mt-1 text-muted-foreground hover:text-destructive"
+                       @click="removeCondition(index)"
+                    >
+                       <X class="h-3.5 w-3.5" />
+                    </Button>
+                 </div>
+              </div>
+
+              <div v-if="!formData.conditions || formData.conditions.length === 0" class="text-xs text-center py-4 text-muted-foreground border border-dashed rounded">
+                Adicione grupos de dias para rotear o fluxo.
+              </div>
+           </div>
+        </div>
+
+        <!-- CONDITIONAL: TIME RANGE -->
+        <div v-if="blockType === 'condition_time_range'" class="space-y-6">
+           <div class="flex items-center justify-between">
+             <Label>Intervalos de Horário</Label>
+             <Button variant="outline" size="sm" @click="addCondition" class="h-8">
+               <Plus class="mr-1 h-3 w-3" /> Adicionar Intervalo
+             </Button>
+           </div>
+           
+           <div class="space-y-4">
+              <div 
+                v-for="(condition, index) in formData.conditions" 
+                :key="index"
+                class="border p-3 rounded-md space-y-3 relative bg-card"
+              >
+                 <div class="flex items-start justify-between gap-2">
+                    <div class="w-full space-y-3">
+                       <div class="space-y-1">
+                         <Label class="text-xs">Nome do Intervalo</Label>
+                         <Input v-model="condition.label" placeholder="Ex: Manhã" class="h-8" />
+                       </div>
+                       
+                       <div class="space-y-1">
+                         <Label class="text-xs">Horário (Início - Fim)</Label>
+                         <div class="flex items-center gap-2">
+                           <!-- Simples input de texto para intervalo por enquanto, idealmente time pickers -->
+                           <Input 
+                              v-model="condition.value" 
+                              placeholder="08:00-12:00" 
+                              class="h-8 font-mono text-xs" 
+                           />
+                           <Clock class="h-4 w-4 text-muted-foreground" />
+                         </div>
+                         <p class="text-[10px] text-muted-foreground">Formato: HH:MM-HH:MM (24h)</p>
+                       </div>
+                    </div>
+
+                    <Button 
+                       variant="ghost" 
+                       size="icon" 
+                       class="h-6 w-6 -mr-1 -mt-1 text-muted-foreground hover:text-destructive"
+                       @click="removeCondition(index)"
+                    >
+                       <X class="h-3.5 w-3.5" />
+                    </Button>
+                 </div>
+              </div>
+              
+              <div v-if="!formData.conditions || formData.conditions.length === 0" class="text-xs text-center py-4 text-muted-foreground border border-dashed rounded">
+                Adicione intervalos de horário.
+              </div>
+           </div>
+        </div>
+
       </div>
     </ScrollArea>
 
@@ -549,11 +896,14 @@ import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Switch } from '@/components/ui/switch';
 import { Separator } from '@/components/ui/separator';
-import { X, MessageSquare, MessageSquarePlus, CheckCircle2, Clock, Webhook, Play, Image, Video, Mic, FileText, Type, Plus, Trash, ChevronUp, ChevronDown, AlertCircle, Variable, List, AlignLeft } from 'lucide-vue-next';
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
+import { X, MessageSquare, MessageSquarePlus, CheckCircle2, Clock, Webhook, Play, Image, Video, Mic, FileText, Type, Plus, Trash, ChevronUp, ChevronDown, AlertCircle, Variable, List, AlignLeft, Globe, Code2, Send, FileJson, FileOutput, Calendar, CalendarDays } from 'lucide-vue-next';
 import { TRIGGER_TYPES, type CustomNodeData, type BlockType, type TriggerType } from '@/types/flow-builder';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import VariableTextArea from './VariableTextArea.vue';
 import VariableSelector from './VariableSelector.vue';
+import KeyValueEditor from './KeyValueEditor.vue';
+import { Badge } from '@/components/ui/badge'; // Added Badge import
 
 // Mocks
 const MOCK_INBOXES = [
@@ -563,15 +913,11 @@ const MOCK_INBOXES = [
 ];
 
 const CONDITION_OPERATORS = [
-  { value: '===', label: 'Igual a' },
-  { value: '!==', label: 'Diferente de' },
-  { value: '>', label: 'Maior que' },
-  { value: '<', label: 'Menor que' },
-  { value: '>=', label: 'Maior ou igual a' },
-  { value: '<=', label: 'Menor ou igual a' },
+  { value: 'equals', label: 'Igual a' },
+  { value: 'not_equals', label: 'Diferente de' },
   { value: 'contains', label: 'Contém' },
-  { value: 'starts_with', label: 'Começa com' },
-  { value: 'ends_with', label: 'Termina com' },
+  { value: 'greater_than', label: 'Maior que' },
+  { value: 'less_than', label: 'Menor que' },
   { value: 'empty', label: 'Está vazio' },
   { value: 'not_empty', label: 'Não está vazio' },
 ];
@@ -587,6 +933,16 @@ const MOCK_TEAMS = [
   { id: '3', name: 'Financeiro' },
 ];
 
+const WEEKDAYS = [
+  { label: 'Seg', value: '1', full: 'Segunda-feira' },
+  { label: 'Ter', value: '2', full: 'Terça-feira' },
+  { label: 'Qua', value: '3', full: 'Quarta-feira' },
+  { label: 'Qui', value: '4', full: 'Quinta-feira' },
+  { label: 'Sex', value: '5', full: 'Sexta-feira' },
+  { label: 'Sáb', value: '6', full: 'Sábado' },
+  { label: 'Dom', value: '0', full: 'Domingo' },
+];
+
 const props = defineProps<{
   blockId: string;
   blockType: BlockType;
@@ -598,10 +954,54 @@ const emit = defineEmits(['update:modelValue', 'close', 'save']);
 // Estado local do form
 const formData = ref<CustomNodeData>({ ...props.modelValue });
 
+// Estado para arquivo selecionado
+const selectedFile = ref<File | null>(null);
+const fileInputRef = ref<HTMLInputElement | null>(null);
+
 // Sincronizar quando o prop mudar
 watch(() => props.modelValue, (newValue) => {
   formData.value = { ...newValue };
-}, { deep: true });
+  // Inicializações específicas
+  if (props.blockType === 'condition_holiday') {
+    ensureHolidayConditions();
+  } else if (props.blockType === 'condition_weekday') {
+    ensureWeekdayConditions();
+  }
+}, { deep: true, immediate: true });
+
+// Garantir condições padrão para Holiday
+function ensureHolidayConditions() {
+  if (!formData.value.conditions || formData.value.conditions.length === 0) {
+    formData.value.conditions = [
+      { label: 'Sim', value: 'true' },
+      { label: 'Não', value: 'false' }
+    ];
+  }
+}
+
+// Garantir condições padrão para Weekday
+function ensureWeekdayConditions() {
+  if (!formData.value.conditions || formData.value.conditions.length === 0) {
+    formData.value.conditions = WEEKDAYS.map(day => ({
+      label: day.full,
+      value: [day.value],
+      operator: 'contains',
+      variable: 'current_weekday'
+    }));
+  }
+}
+
+const toggleDayInCondition = (condition: any, dayValue: string) => {
+  if (!Array.isArray(condition.value)) {
+     condition.value = [];
+  }
+  const index = condition.value.indexOf(dayValue);
+  if (index === -1) {
+     condition.value.push(dayValue);
+  } else {
+     condition.value.splice(index, 1);
+  }
+};
 
 // Helpers para ícones e labels
 const getTriggerIcon = (type: string) => {
@@ -649,11 +1049,18 @@ const getMessageTypeLabel = (type: string) => {
 
 const blockTypeLabel = computed(() => {
   switch (props.blockType) {
-    case 'trigger': return 'Configuração do Gatilho';
+    case 'start': return 'Configuração de Início';
+    case 'end': return 'Configuração de Fim';
     case 'message': return 'Configuração de Mensagem';
     case 'question': return 'Configuração de Pergunta';
     case 'switch': return 'Condições de Decisão';
-    // ... outros tipos
+    case 'api': return 'Configuração de Integração';
+    case 'action': return 'Configuração de Ação';
+    case 'wait': return 'Configuração de Espera';
+    case 'note': return 'Configuração de Nota';
+    case 'condition_holiday': return 'Condição: Feriado';
+    case 'condition_weekday': return 'Condição: Dias da Semana';
+    case 'condition_time_range': return 'Condição: Horário';
     default: return 'Configuração';
   }
 });
@@ -747,5 +1154,65 @@ const getOptionPrefix = (index: number, type?: string) => {
   if (type === 'letter') return String.fromCharCode(65 + index); // A, B, C...
   if (type === 'none') return '•';
   return index + 1; // 1, 2, 3...
+};
+
+// Funções para manipulação de arquivos
+const triggerFileInput = () => {
+  fileInputRef.value?.click();
+};
+
+const handleFileSelect = (event: Event) => {
+  const target = event.target as HTMLInputElement;
+  const file = target.files?.[0];
+  
+  if (file) {
+    selectedFile.value = file;
+    
+    // Criar URL temporária do arquivo (blob URL)
+    const blobUrl = URL.createObjectURL(file);
+    formData.value.mediaUrl = blobUrl;
+    
+    // Armazenar o arquivo para upload posterior
+    formData.value.localFile = file;
+    
+    // Nota: Em produção, você pode querer fazer upload imediato para um servidor
+    // e obter uma URL permanente, ou armazenar o arquivo para upload ao salvar
+  }
+};
+
+const clearSelectedFile = () => {
+  selectedFile.value = null;
+  formData.value.mediaUrl = '';
+  formData.value.localFile = undefined;
+  
+  // Limpar o input file
+  if (fileInputRef.value) {
+    fileInputRef.value.value = '';
+  }
+};
+
+const getAcceptedFileTypes = (messageType?: string) => {
+  switch (messageType) {
+    case 'image':
+      return 'image/*';
+    case 'video':
+      return 'video/*';
+    case 'audio':
+      return 'audio/*';
+    case 'file':
+      return '*/*';
+    default:
+      return '*/*';
+  }
+};
+
+const formatFileSize = (bytes: number) => {
+  if (bytes === 0) return '0 Bytes';
+  
+  const k = 1024;
+  const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+  const i = Math.floor(Math.log(bytes) / Math.log(k));
+  
+  return Math.round(bytes / Math.pow(k, i) * 100) / 100 + ' ' + sizes[i];
 };
 </script>

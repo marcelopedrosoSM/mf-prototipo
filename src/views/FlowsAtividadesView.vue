@@ -24,6 +24,7 @@
           @edit="handleEdit"
           @delete="handleDelete"
           @create="handleCreate"
+          @row-click="handleEdit"
         />
 
         <!-- Create/Edit Dialog -->
@@ -83,6 +84,9 @@ import { MOCK_FLOWS_ATIVIDADES, type Flow } from '@/mocks/data/flows';
 import { useToast } from '@/composables/useToast';
 import { generateFlowId } from '@/utils/idGenerator';
 
+import { useRouter } from 'vue-router';
+
+const router = useRouter();
 const toast = useToast();
 const flows = ref<Flow[]>([]);
 const loading = ref(false);
@@ -105,13 +109,11 @@ function loadFlows() {
 }
 
 function handleCreate() {
-  // TODO: Implementar criação de fluxo
-  // router.push('/flows/atividades/novo');
+  router.push('/fluxos-atividades/novo');
 }
 
-function handleEdit(_flow: Flow) {
-  // TODO: Implementar edição de fluxo
-  // router.push(`/flows/atividades/${_flow.id}`);
+function handleEdit(flow: Flow) {
+  router.push(`/fluxos-atividades/${flow.id}`);
 }
 
 function handleDelete(flow: Flow) {
