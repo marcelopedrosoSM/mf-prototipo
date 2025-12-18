@@ -854,7 +854,7 @@ function handleLayout() {
 }
 
 function goBack() {
-  router.push('/flows');
+  router.push('/flows/atendimento');
 }
 </script>
 

@@ -117,6 +117,20 @@
               />
             </div>
           </ResizablePanel>
+
+          <!-- Simulator Panel -->
+          <template v-if="showSimulator">
+            <ResizableHandle with-handle />
+            <ResizablePanel :default-size="70" :min-size="20" :max-size="80">
+              <ActivityTimelineSimulator
+                :nodes="nodes"
+                :edges="edges"
+                @close="showSimulator = false"
+                @block-execute="handleBlockExecute"
+                @block-complete="handleBlockComplete"
+              />
+            </ResizablePanel>
+          </template>
         </ResizablePanelGroup>
         </div>
         </div>
@@ -151,9 +165,10 @@ import { useRefHistory } from '@vueuse/core';
 import { useFlowsStore } from '@/stores';
 import { useToast } from '@/components/ui/toast/use-toast';
 import FlowConfigSheet from '@/components/flow-builder/FlowConfigSheet.vue';
-import { ResizablePanelGroup, ResizablePanel } from '@/components/ui/resizable';
+import { ResizablePanelGroup, ResizablePanel, ResizableHandle } from '@/components/ui/resizable';
 import type { FlowConfigData } from '@/types/flow-config';
 import { getDefaultFlowConfig } from '@/constants/flow-config-defaults';
+import ActivityTimelineSimulator from '@/components/flow-builder/ActivityTimelineSimulator.vue';
 
 
 const route = useRoute();
@@ -188,6 +203,9 @@ const selectedNodeId = ref<string | null>(null);
 const selectedNodeData = ref<any>(null);
 
 const showConfigPanel = ref(false);
+
+// Simulator state
+const showSimulator = ref(false);
 
 // Layout Mode: 'horizontal' or 'vertical'
 const layoutMode = ref<'horizontal' | 'vertical'>('horizontal');
@@ -597,11 +615,39 @@ function handleSave() {
 }
 
 function handleSimulate() {
-  // TODO: Implementar simulador de atividades (diferente do chat)
-  toast({
-    title: 'Em desenvolvimento',
-    description: 'O simulador de atividades estará disponível em breve.',
-  });
+  // Fechar painel de config se aberto
+  showConfigPanel.value = false;
+  // Alternar simulador
+  showSimulator.value = !showSimulator.value;
+}
+
+// Handlers para o simulador
+function handleBlockExecute(blockId: string) {
+  // Adiciona highlight visual no bloco em execução
+  const nodeIndex = nodes.value.findIndex(n => n.id === blockId);
+  if (nodeIndex !== -1) {
+    nodes.value[nodeIndex] = {
+      ...nodes.value[nodeIndex],
+      data: { ...nodes.value[nodeIndex].data, isExecuting: true }
+    };
+    nodes.value = [...nodes.value];
+  }
+}
+
+function handleBlockComplete(blockId: string) {
+  // Remove highlight e marca como executado
+  const nodeIndex = nodes.value.findIndex(n => n.id === blockId);
+  if (nodeIndex !== -1) {
+    nodes.value[nodeIndex] = {
+      ...nodes.value[nodeIndex],
+      data: { 
+        ...nodes.value[nodeIndex].data, 
+        isExecuting: false,
+        wasExecuted: true 
+      }
+    };
+    nodes.value = [...nodes.value];
+  }
 }
 
 function toggleLayoutMode() {
@@ -646,7 +692,7 @@ function handleLayout() {
 }
 
 function goBack() {
-  router.push('/flows');
+  router.push('/flows/atividades');
 }
 </script>
 

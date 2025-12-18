@@ -19,13 +19,17 @@ const routes: RouteRecordRaw[] = [
   },
   {
     path: '/flows',
-    name: 'flows',
+    redirect: '/flows/atendimento',
+  },
+  {
+    path: '/flows/atendimento',
+    name: 'flows-atendimento',
     component: () => import('@/views/FlowsView.vue'),
   },
   {
     path: '/flows/atividades',
     name: 'flows-atividades',
-    component: () => import('@/views/FlowsAtividadesView.vue'),
+    component: () => import('@/views/FlowsView.vue'),
   },
   {
     path: '/fluxos/:id',

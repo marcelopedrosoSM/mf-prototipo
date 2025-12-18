@@ -143,8 +143,8 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue';
-import { useRouter } from 'vue-router';
+import { ref, onMounted, watch } from 'vue';
+import { useRouter, useRoute } from 'vue-router';
 import { Plus, BotIcon, CheckCircle2 } from 'lucide-vue-next';
 import AppLayout from '@/components/layout/AppLayout.vue';
 import { Button } from '@/components/ui/button';
@@ -168,7 +168,34 @@ import { generateFlowId } from '@/utils/idGenerator';
 
 const toast = useToast();
 const router = useRouter();
-const activeTab = ref('atendimento');
+const route = useRoute();
+
+// Initialize active tab based on route
+const getTabFromRoute = () => {
+  if (route.path.includes('/atividades')) return 'atividades';
+  return 'atendimento';
+};
+
+const activeTab = ref(getTabFromRoute());
+
+// Watch for route changes (e.g. browser back button)
+watch(
+  () => route.path,
+  () => {
+    const newTab = getTabFromRoute();
+    if (activeTab.value !== newTab) {
+      activeTab.value = newTab;
+    }
+  }
+);
+
+// Update route when tab changes
+watch(activeTab, (newTab) => {
+  const currentTabInRoute = getTabFromRoute();
+  if (currentTabInRoute !== newTab) {
+    router.push(`/flows/${newTab}`);
+  }
+});
 
 // Atendimento state
 const flowsAtendimento = ref<Flow[]>([]);
