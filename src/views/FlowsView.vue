@@ -42,13 +42,13 @@
                 </Button>
               </div>
 
-              <FlowsTable
+              <FlowsList
                 :flows="flowsAtendimento"
                 :loading="loadingAtendimento"
                 @edit="handleEditAtendimento"
                 @delete="handleDeleteAtendimento"
                 @create="handleCreateAtendimento"
-                @row-click="handleEditAtendimento"
+                @toggle="handleToggleAtendimento"
               />
 
               <FlowDialog
@@ -96,13 +96,13 @@
                 </Button>
               </div>
 
-              <FlowsTable
+              <FlowsList
                 :flows="flowsAtividades"
                 :loading="loadingAtividades"
                 @edit="handleEditAtividades"
                 @delete="handleDeleteAtividades"
                 @create="handleCreateAtividades"
-                @row-click="handleEditAtividades"
+                @toggle="handleToggleAtividades"
               />
 
               <FlowDialog
@@ -160,7 +160,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
-import FlowsTable from '@/components/flows/FlowsTable.vue';
+import FlowsList from '@/components/flows/FlowsList.vue';
 import FlowDialog from '@/components/flows/FlowDialog.vue';
 import { MOCK_FLOWS_ATENDIMENTO, MOCK_FLOWS_ATIVIDADES, type Flow } from '@/mocks/data/flows';
 import { useToast } from '@/composables/useToast';
@@ -235,6 +235,22 @@ function handleEditAtendimento(flow: Flow) {
   router.push(`/fluxos/${flow.id}`);
 }
 
+function handleToggleAtendimento(flow: Flow, active: boolean) {
+  const index = flowsAtendimento.value.findIndex(f => f.id === flow.id);
+  if (index !== -1) {
+    flowsAtendimento.value[index] = {
+      ...flow,
+      status: active ? 'ativo' : 'inativo'
+    };
+    
+    // Na vida real aqui chamaria API
+    toast.success(
+      active ? 'Fluxo ativado' : 'Fluxo desativado',
+      `${flow.nome} foi ${active ? 'ativado' : 'desativado'} com sucesso.`
+    );
+  }
+}
+
 function handleDeleteAtendimento(flow: Flow) {
   flowToDeleteAtendimento.value = flow;
   deleteDialogOpenAtendimento.value = true;
@@ -306,6 +322,22 @@ function handleCreateAtividades() {
 
 function handleEditAtividades(flow: Flow) {
   router.push(`/fluxos-atividades/${flow.id}`);
+}
+
+function handleToggleAtividades(flow: Flow, active: boolean) {
+  const index = flowsAtividades.value.findIndex(f => f.id === flow.id);
+  if (index !== -1) {
+    flowsAtividades.value[index] = {
+      ...flow,
+      status: active ? 'ativo' : 'inativo'
+    };
+    
+    // Na vida real aqui chamaria API
+    toast.success(
+      active ? 'Fluxo ativado' : 'Fluxo desativado',
+      `${flow.nome} foi ${active ? 'ativado' : 'desativado'} com sucesso.`
+    );
+  }
 }
 
 function handleDeleteAtividades(flow: Flow) {

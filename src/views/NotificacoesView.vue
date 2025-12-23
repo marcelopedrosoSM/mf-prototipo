@@ -34,8 +34,8 @@
                   </p>
                 </div>
                 <Switch
-                  :checked="notificationSoundEnabled"
-                  @update:checked="handleToggleSound"
+                  v-model="notificationSoundEnabled"
+                  @update:model-value="handleToggleSound"
                 />
               </div>
             </CardContent>

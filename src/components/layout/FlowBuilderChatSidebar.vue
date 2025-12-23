@@ -79,7 +79,7 @@
 
 <script setup lang="ts">
 import { ref, computed, h } from 'vue';
-import { PanelLeftClose, PanelLeftOpen, Search, MessageSquare, HelpCircle, Split, Sparkles, Globe, Clock, StickyNote, Calendar, CalendarDays, Zap, ZapOff } from 'lucide-vue-next';
+import { PanelLeftClose, PanelLeftOpen, Search, MessageSquare, HelpCircle, Split, Sparkles, Globe, Clock, StickyNote, Zap, ZapOff } from 'lucide-vue-next';
 import { cn } from '@/lib/utils';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Input } from '@/components/ui/input';
@@ -155,27 +155,7 @@ const blocks = [
     icon: h(Clock),
     colorClass: 'bg-[hsl(var(--secondary))]/10 text-[hsl(var(--secondary))] dark:bg-[hsl(var(--secondary))]/20 dark:text-[hsl(var(--secondary))]',
   },
-  {
-    key: 'condition_holiday',
-    label: 'Feriado',
-    description: 'Verificar Feriados/Inatividades',
-    icon: h(Calendar),
-    colorClass: 'bg-amber-500/10 text-amber-500 dark:bg-amber-500/20 dark:text-amber-500',
-  },
-  {
-    key: 'condition_weekday',
-    label: 'Dias Semana',
-    description: 'Rotear por dia da semana',
-    icon: h(CalendarDays),
-    colorClass: 'bg-amber-500/10 text-amber-500 dark:bg-amber-500/20 dark:text-amber-500',
-  },
-  {
-    key: 'condition_time_range',
-    label: 'Horário',
-    description: 'Rotear por intervalo de horário',
-    icon: h(Clock),
-    colorClass: 'bg-amber-500/10 text-amber-500 dark:bg-amber-500/20 dark:text-amber-500',
-  },
+
   {
     key: 'note',
     label: 'Nota',

@@ -35,11 +35,9 @@
           <TableBody>
             <TableRow v-for="agente in paginatedAgentes" :key="agente.id">
             <TableCell class="font-medium">
-              <div class="flex items-center gap-2.5">
-                <div class="flex h-7 w-7 items-center justify-center rounded-full bg-primary/10 text-primary flex-shrink-0">
-                  <span class="text-[10px] font-medium">{{ getAgenteInitials(agente.nome) }}</span>
-                </div>
-                <span>{{ agente.nome }}</span>
+              <div class="flex items-center gap-3">
+                <SoftAvatar :name="agente.nome" class="h-7 w-7 text-[10px]" />
+                <span class="font-medium text-sm">{{ agente.nome }}</span>
               </div>
             </TableCell>
             <TableCell>
@@ -51,18 +49,31 @@
               </span>
             </TableCell>
             <TableCell>
-              <div class="flex flex-wrap gap-1">
-                <Badge
-                  v-for="timeId in agente.timesIds || []"
-                  :key="timeId"
-                  variant="outline"
-                  class="text-xs border-primary/30 text-primary bg-transparent"
-                >
-                  {{ getTimeNome(timeId) }}
-                </Badge>
-                <span v-if="!agente.timesIds || agente.timesIds.length === 0" class="text-sm text-muted-foreground">
-                  -
-                </span>
+              <div class="flex items-center">
+                <span v-if="!agente.timesIds || agente.timesIds.length === 0" class="text-muted-foreground">-</span>
+                
+                <div v-else class="flex items-center gap-1">
+                  <span class="text-sm truncate max-w-[150px]">
+                    {{ agente.timesIds.slice(0, 2).map(id => getTimeNome(id)).join(', ') }}
+                  </span>
+                  
+                  <TooltipProvider v-if="agente.timesIds.length > 2">
+                    <Tooltip>
+                      <TooltipTrigger as-child>
+                        <span class="inline-flex items-center justify-center h-5 px-1.5 text-xs font-medium rounded-full bg-muted text-muted-foreground cursor-help hover:bg-muted/80 transition-colors">
+                          +{{ agente.timesIds.length - 2 }}
+                        </span>
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        <ul class="list-disc pl-4 space-y-1">
+                          <li v-for="id in agente.timesIds" :key="id" class="text-xs">
+                            {{ getTimeNome(id) }}
+                          </li>
+                        </ul>
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
+                </div>
               </div>
             </TableCell>
             <TableCell class="text-right">
@@ -120,11 +131,17 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { Badge } from '@/components/ui/badge';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from '@/components/ui/tooltip';
 import TablePagination from '@/components/ui/table/TablePagination.vue';
 import { usePagination } from '@/composables/usePagination';
 import { useSortable } from '@/composables/useSortable';
 import type { Agente, Time } from '@/mocks/data/agentes';
+import SoftAvatar from '@/components/ui/avatar/SoftAvatar.vue';
 
 interface Props {
   agentes: Agente[];
@@ -176,14 +193,7 @@ function handleSort(key: string) {
   currentPage.value = 1; // Reset to first page when sorting
 }
 
-function getAgenteInitials(nome: string): string {
-  return nome
-    .split(' ')
-    .map((n) => n[0])
-    .join('')
-    .toUpperCase()
-    .slice(0, 2);
-}
+
 
 function handlePageChange(page: number) {
   currentPage.value = page;

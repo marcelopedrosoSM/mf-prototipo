@@ -10,8 +10,7 @@
       </Label>
       <Switch
         id="show-system-vars"
-        :checked="showSystemVariables"
-        @update:checked="showSystemVariables = $event"
+        v-model="showSystemVariables"
       />
     </div>
 

@@ -4,13 +4,14 @@
     <FlowBuilderHeader 
       :flow-name="currentFlow?.nome || 'Novo Fluxo de Atividades'"
       v-model:is-active="isFlowActive"
+      v-model:view-mode="viewMode"
       @toggle-active="isFlowActive = $event"
       @save="handleSave"
       @back="goBack"
-      @simulate="handleSimulate"
       @validate="handleValidate"
       @layout="handleLayout"
       @settings="handleSettings"
+      :hide-simulate="true"
     />
 
     <!-- Flow Config Sheet -->
@@ -23,11 +24,20 @@
 
     <!-- Main Content Area -->
     <div class="flex flex-1 overflow-hidden relative">
-      <!-- Flow Builder Task Sidebar -->
+      <!-- Sidebar: Edit Mode = Block Selector, Execution Mode = Execution List -->
       <FlowBuilderTaskSidebar 
+        v-if="viewMode === 'edit'"
         :collapsed="isSidebarCollapsed" 
         @toggle="toggleSidebar" 
         @block-click="handleBlockClick" 
+      />
+      <ExecutionListSidebar
+        v-else
+        :collapsed="isSidebarCollapsed"
+        :flow-id="currentFlow?.id || ''"
+        @toggle="toggleSidebar"
+        @exit="viewMode = 'edit'"
+        @select-execution="handleSelectExecution"
       />
 
       <!-- Vue Flow Canvas -->
@@ -111,26 +121,24 @@
               <BlockConfigPanel
                 :block-id="selectedNodeId"
                 :block-type="selectedNodeData.type"
+                flow-context="atividades"
                 v-model="selectedNodeData"
                 @close="closeConfigPanel"
                 @save="handleSaveBlock"
               />
             </div>
-          </ResizablePanel>
 
-          <!-- Simulator Panel -->
-          <template v-if="showSimulator">
-            <ResizableHandle with-handle />
-            <ResizablePanel :default-size="70" :min-size="20" :max-size="80">
-              <ActivityTimelineSimulator
-                :nodes="nodes"
-                :edges="edges"
-                @close="showSimulator = false"
-                @block-execute="handleBlockExecute"
-                @block-complete="handleBlockComplete"
-              />
-            </ResizablePanel>
-          </template>
+            <!-- Activity Execution Panel -->
+            <ActivityExecutionPanel
+              :is-visible="isInteractiveExecutionActive && currentExecutingBlock !== null"
+              :current-block="currentExecutingBlock"
+              :current-step="executionStep"
+              :total-steps="executionPath.length"
+              @select-condition="handleConditionSelect"
+              @auto-advance="handleAutoAdvance"
+              @cancel="cancelInteractiveExecution"
+            />
+          </ResizablePanel>
         </ResizablePanelGroup>
         </div>
         </div>
@@ -148,27 +156,31 @@ import type { Node, Edge, Connection, NodeChange, EdgeChange } from '@vue-flow/c
 import { cn } from '@/lib/utils';
 import FlowBuilderTaskSidebar from '@/components/layout/FlowBuilderTaskSidebar.vue';
 import FlowBuilderHeader from '@/components/flows/FlowBuilderHeader.vue';
+import type { ViewMode } from '@/components/flows/FlowBuilderHeader.vue';
 import FlowToolbar from '@/components/flow-builder/FlowToolbar.vue';
-import { MOCK_FLOWS_ATIVIDADES, type Flow } from '@/mocks/data/flows';
+import { MOCK_FLOWS_ATIVIDADES, FLOW_DATA_MAP, type Flow } from '@/mocks/data/flows';
 import CustomNode from '@/components/flow-builder/CustomNode.vue';
 import CustomNodeHorizontal from '@/components/flow-builder/CustomNodeHorizontal.vue';
 import CustomNodeVertical from '@/components/flow-builder/CustomNodeVertical.vue';
 import CustomNodeNote from '@/components/flow-builder/CustomNodeNote.vue';
 import CustomEdge from '@/components/flow-builder/CustomEdge.vue';
 import BlockConfigPanel from '@/components/flow-builder/BlockConfigPanel.vue';
+import ExecutionListSidebar from '@/components/flow-builder/ExecutionListSidebar.vue';
+import ActivityExecutionPanel from '@/components/flow-builder/ActivityExecutionPanel.vue';
 
 import HelperLines from '@/components/flow-builder/HelperLines.vue';
 import { getHelperLines } from '@/components/flow-builder/utils';
 import { useLayout } from '@/composables/useLayout';
 import type { GraphNode } from '@vue-flow/core';
 import { useRefHistory } from '@vueuse/core';
-import { useFlowsStore } from '@/stores';
+import { useFlowsStore, useExecutionsStore } from '@/stores';
 import { useToast } from '@/components/ui/toast/use-toast';
 import FlowConfigSheet from '@/components/flow-builder/FlowConfigSheet.vue';
-import { ResizablePanelGroup, ResizablePanel, ResizableHandle } from '@/components/ui/resizable';
+import { ResizablePanelGroup, ResizablePanel } from '@/components/ui/resizable';
 import type { FlowConfigData } from '@/types/flow-config';
 import { getDefaultFlowConfig } from '@/constants/flow-config-defaults';
-import ActivityTimelineSimulator from '@/components/flow-builder/ActivityTimelineSimulator.vue';
+import { getSeedExecutions } from '@/mocks/data/executions';
+import type { FlowExecution } from '@/types/execution';
 
 
 const route = useRoute();
@@ -176,16 +188,29 @@ const router = useRouter();
 const { getViewport, onViewportChange, addEdges, onNodeClick, fitView, zoomIn, zoomOut, project } = useVueFlow();
 const { toast } = useToast();
 const flowsStore = useFlowsStore();
+const executionsStore = useExecutionsStore();
 
 const flowId = computed(() => route.params.id as string);
 const isNewFlow = computed(() => flowId.value === 'novo');
 const isSidebarCollapsed = ref(false);
 const currentFlow = ref<Flow | null>(null);
 const isFlowActive = ref(false);
+const viewMode = ref<ViewMode>('edit');
 
 // Estado do FlowConfigSheet
 const configSheetOpen = ref(false);
 const flowConfig = ref<Partial<FlowConfigData>>(getDefaultFlowConfig());
+
+// Interactive Execution State
+const isInteractiveExecutionActive = ref(false);
+const currentExecutingBlockId = ref<string | null>(null);
+const executionPath = ref<string[]>([]);
+const executionStep = ref(0);
+
+const currentExecutingBlock = computed(() => {
+  if (!currentExecutingBlockId.value) return null;
+  return nodes.value.find(n => n.id === currentExecutingBlockId.value) || null;
+});
 
 // Vue Flow elements
 const nodes = ref<Node[]>([]);
@@ -203,9 +228,6 @@ const selectedNodeId = ref<string | null>(null);
 const selectedNodeData = ref<any>(null);
 
 const showConfigPanel = ref(false);
-
-// Simulator state
-const showSimulator = ref(false);
 
 // Layout Mode: 'horizontal' or 'vertical'
 const layoutMode = ref<'horizontal' | 'vertical'>('horizontal');
@@ -413,6 +435,36 @@ function loadFlow() {
   const flow = MOCK_FLOWS_ATIVIDADES.find(f => f.id === flowId.value);
   if (flow) {
     currentFlow.value = flow;
+    
+    // Carregar nodes e edges do FLOW_DATA_MAP
+    const flowData = FLOW_DATA_MAP[flowId.value];
+    if (flowData) {
+      const currentNodeType = layoutMode.value === 'horizontal' ? 'customNodeHorizontal' : 'customNodeVertical';
+      const currentSourcePos = layoutMode.value === 'horizontal' ? Position.Right : Position.Bottom;
+      const currentTargetPos = layoutMode.value === 'horizontal' ? Position.Left : Position.Top;
+      
+      nodes.value = flowData.nodes.map(node => {
+        if (node.type === 'noteNode') return node;
+        return {
+          ...node,
+          type: currentNodeType,
+          sourcePosition: currentSourcePos,
+          targetPosition: currentTargetPos,
+        };
+      });
+      edges.value = flowData.edges;
+      
+      // Sincronizar nodeIdCounter
+      if (nodes.value.length > 0) {
+        const ids = nodes.value.map(n => {
+          const parts = n.id.split('-');
+          const lastPart = parts[parts.length - 1];
+          return parseInt(lastPart) || 0;
+        });
+        nodeIdCounter = Math.max(...ids, 0);
+      }
+    }
+    
     toast({
       title: 'Fluxo carregado',
       description: `Fluxo "${flow.nome}" carregado dos dados de exemplo.`,
@@ -422,6 +474,218 @@ function loadFlow() {
 
 function toggleSidebar() {
   isSidebarCollapsed.value = !isSidebarCollapsed.value;
+}
+
+// Handle execution selection - highlight flowpath
+function handleSelectExecution(execution: FlowExecution) {
+  // Apply flowpath highlighting to nodes (use wasExecuted/isExecuting to match CustomNode)
+  nodes.value = nodes.value.map(node => {
+    const wasExecuted = execution.executionPath.includes(node.id);
+    const isExecuting = execution.currentBlockId === node.id && execution.status === 'running';
+    const hasError = execution.status === 'error' && execution.currentBlockId === node.id;
+    
+    return {
+      ...node,
+      zIndex: (wasExecuted || isExecuting || hasError) ? 1000 : 0,
+      data: {
+        ...node.data,
+        wasExecuted,
+        isExecuting,
+        hasError,
+      },
+    };
+  });
+
+  // Apply flowpath highlighting to edges based on execution path
+  const executedEdges = new Set<string>();
+  for (let i = 0; i < execution.executionPath.length - 1; i++) {
+    const source = execution.executionPath[i];
+    const target = execution.executionPath[i + 1];
+    executedEdges.add(`${source}-${target}`);
+  }
+
+  edges.value = edges.value.map(edge => {
+    const wasExecuted = executedEdges.has(`${edge.source}-${edge.target}`);
+    const isExecuting = execution.currentBlockId === edge.target && execution.status === 'running';
+    
+    return {
+      ...edge,
+      zIndex: (wasExecuted || isExecuting) ? 1000 : 0,
+      data: {
+        ...edge.data,
+        wasExecuted,
+        isExecuting,
+      },
+    };
+  });
+
+  toast({
+    title: `Execução #${execution.executionNumber}`,
+    description: `Visualizando flowpath de ${execution.contactName}`,
+  });
+
+  // Start interactive execution mode
+  startInteractiveExecution(execution.executionPath[0] || 'start-1');
+}
+
+// ========================================
+// INTERACTIVE EXECUTION FUNCTIONS
+// ========================================
+
+function startInteractiveExecution(startBlockId: string) {
+  isInteractiveExecutionActive.value = true;
+  executionPath.value = [];
+  executionStep.value = 1;
+  
+  // Clear all states
+  clearExecutionStates();
+  
+  // Set start block as executing
+  setBlockExecuting(startBlockId);
+  executionPath.value.push(startBlockId);
+  
+  // Auto-advance from start block
+  const startBlock = nodes.value.find(n => n.id === startBlockId);
+  if (startBlock?.data?.type === 'start') {
+    // Auto-advance after a short delay
+    setTimeout(() => handleAutoAdvance(), 500);
+  }
+}
+
+function handleConditionSelect(payload: { conditionValue: string; conditionIndex: number }) {
+  if (!currentExecutingBlockId.value) return;
+  
+  const { conditionIndex } = payload;
+  const handleId = `condition-${conditionIndex}`;
+  
+  // Find the edge that connects from this block with this handle
+  const nextEdge = edges.value.find(
+    e => e.source === currentExecutingBlockId.value && e.sourceHandle === handleId
+  );
+  
+  if (nextEdge) {
+    advanceToBlock(nextEdge.target);
+  } else {
+    toast({
+      title: 'Caminho não encontrado',
+      description: 'Não há conexão para esta condição. Verifique as conexões do fluxo.',
+      variant: 'destructive',
+    });
+  }
+}
+
+function handleAutoAdvance() {
+  if (!currentExecutingBlockId.value) return;
+  
+  // Find the next block (first edge from current block)
+  const nextEdge = edges.value.find(e => e.source === currentExecutingBlockId.value);
+  
+  if (nextEdge) {
+    advanceToBlock(nextEdge.target);
+  } else {
+    // End of flow
+    completeInteractiveExecution();
+  }
+}
+
+function advanceToBlock(targetBlockId: string) {
+  if (!currentExecutingBlockId.value) return;
+  
+  // Mark current block as executed
+  markBlockAsExecuted(currentExecutingBlockId.value);
+  
+  // Mark edge as executed
+  markEdgeAsExecuted(currentExecutingBlockId.value, targetBlockId);
+  
+  // Move to next block
+  setBlockExecuting(targetBlockId);
+  executionPath.value.push(targetBlockId);
+  executionStep.value++;
+  
+  // Check if we reached an end block
+  const targetBlock = nodes.value.find(n => n.id === targetBlockId);
+  if (targetBlock?.data?.type === 'end') {
+    setTimeout(() => completeInteractiveExecution(), 500);
+  } else if (!targetBlock?.data?.conditions || targetBlock.data.conditions.length === 0) {
+    // Auto-advance for blocks without conditions (after delay)
+    // Only auto-advance for simple blocks like wait, action without conditions
+    if (['start'].includes(targetBlock?.data?.type)) {
+      setTimeout(() => handleAutoAdvance(), 500);
+    }
+  }
+}
+
+function setBlockExecuting(blockId: string) {
+  currentExecutingBlockId.value = blockId;
+  nodes.value = nodes.value.map(n => ({
+    ...n,
+    zIndex: n.id === blockId ? 1000 : (executionPath.value.includes(n.id) ? 500 : 0),
+    data: {
+      ...n.data,
+      wasExecuted: executionPath.value.includes(n.id) && n.id !== blockId,
+      isExecuting: n.id === blockId,
+      hasError: false,
+    },
+  }));
+}
+
+function markBlockAsExecuted(blockId: string) {
+  nodes.value = nodes.value.map(n => {
+    if (n.id === blockId) {
+      return {
+        ...n,
+        data: { ...n.data, wasExecuted: true, isExecuting: false },
+      };
+    }
+    return n;
+  });
+}
+
+function markEdgeAsExecuted(sourceId: string, targetId: string) {
+  edges.value = edges.value.map(e => {
+    if (e.source === sourceId && e.target === targetId) {
+      return {
+        ...e,
+        zIndex: 1000,
+        data: { ...e.data, wasExecuted: true, isExecuting: false },
+      };
+    }
+    return e;
+  });
+}
+
+function clearExecutionStates() {
+  nodes.value = nodes.value.map(n => ({
+    ...n,
+    zIndex: 0,
+    data: { ...n.data, wasExecuted: false, isExecuting: false, hasError: false },
+  }));
+  edges.value = edges.value.map(e => ({
+    ...e,
+    zIndex: 0,
+    data: { ...e.data, wasExecuted: false, isExecuting: false },
+  }));
+}
+
+function completeInteractiveExecution() {
+  toast({
+    title: 'Execução Concluída! 🎉',
+    description: `Fluxo percorreu ${executionPath.value.length} blocos.`,
+  });
+  isInteractiveExecutionActive.value = false;
+}
+
+function cancelInteractiveExecution() {
+  isInteractiveExecutionActive.value = false;
+  currentExecutingBlockId.value = null;
+  executionPath.value = [];
+  executionStep.value = 0;
+  clearExecutionStates();
+  
+  toast({
+    title: 'Execução Cancelada',
+    description: 'A execução interativa foi cancelada.',
+  });
 }
 
 function handleBlockClick(block: any) {
@@ -614,42 +878,6 @@ function handleSave() {
   }
 }
 
-function handleSimulate() {
-  // Fechar painel de config se aberto
-  showConfigPanel.value = false;
-  // Alternar simulador
-  showSimulator.value = !showSimulator.value;
-}
-
-// Handlers para o simulador
-function handleBlockExecute(blockId: string) {
-  // Adiciona highlight visual no bloco em execução
-  const nodeIndex = nodes.value.findIndex(n => n.id === blockId);
-  if (nodeIndex !== -1) {
-    nodes.value[nodeIndex] = {
-      ...nodes.value[nodeIndex],
-      data: { ...nodes.value[nodeIndex].data, isExecuting: true }
-    };
-    nodes.value = [...nodes.value];
-  }
-}
-
-function handleBlockComplete(blockId: string) {
-  // Remove highlight e marca como executado
-  const nodeIndex = nodes.value.findIndex(n => n.id === blockId);
-  if (nodeIndex !== -1) {
-    nodes.value[nodeIndex] = {
-      ...nodes.value[nodeIndex],
-      data: { 
-        ...nodes.value[nodeIndex].data, 
-        isExecuting: false,
-        wasExecuted: true 
-      }
-    };
-    nodes.value = [...nodes.value];
-  }
-}
-
 function toggleLayoutMode() {
   const newMode = layoutMode.value === 'horizontal' ? 'vertical' : 'horizontal';
   layoutMode.value = newMode;
@@ -689,6 +917,31 @@ function handleLayout() {
   window.requestAnimationFrame(() => {
     fitView({ padding: 0.2, maxZoom: 1, duration: 500 });
   });
+}
+
+// Initialize executions store with seed data
+onMounted(() => {
+  // Force reload seed data to ensure mocks are available
+  executionsStore.initializeWithSeedData(getSeedExecutions(), true);
+
+  // Handlers para notas
+  window.addEventListener('note-color-change', handleNoteColorChange as any);
+  window.addEventListener('note-content-change', handleNoteContentChange as any);
+});
+
+onUnmounted(() => {
+  window.removeEventListener('note-color-change', handleNoteColorChange as any);
+  window.removeEventListener('note-content-change', handleNoteContentChange as any);
+});
+
+function handleNoteColorChange(e: CustomEvent) {
+  const { id, color } = e.detail;
+  nodes.value = nodes.value.map(n => n.id === id ? { ...n, data: { ...n.data, color } } : n);
+}
+
+function handleNoteContentChange(e: CustomEvent) {
+  const { id, content } = e.detail;
+  nodes.value = nodes.value.map(n => n.id === id ? { ...n, data: { ...n.data, content } } : n);
 }
 
 function goBack() {

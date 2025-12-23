@@ -34,25 +34,38 @@
             <TableRow v-for="time in paginatedTimes" :key="time.id">
               <TableCell class="font-medium">
                 <div class="flex items-center gap-2.5">
-                  <div class="flex h-7 w-7 items-center justify-center rounded-full bg-primary/10 text-primary flex-shrink-0">
+                  <SoftIcon class="h-7 w-7 rounded-full">
                     <UsersRound class="h-3.5 w-3.5" />
-                  </div>
+                  </SoftIcon>
                   <span>{{ time.nome }}</span>
                 </div>
               </TableCell>
               <TableCell>
-                <div class="flex flex-wrap gap-1">
-                  <Badge
-                    v-for="userId in time.users || []"
-                    :key="userId"
-                    variant="outline"
-                    class="text-xs border-primary/30 text-primary bg-transparent"
-                  >
-                    {{ getAgenteNome(userId) }}
-                  </Badge>
-                  <span v-if="!time.users || time.users.length === 0" class="text-sm text-muted-foreground">
-                    Nenhum agente
-                  </span>
+                <div class="flex items-center">
+                  <span v-if="!time.users || time.users.length === 0" class="text-muted-foreground">-</span>
+                  
+                  <div v-else class="flex items-center gap-1">
+                    <span class="text-sm truncate max-w-[200px]">
+                      {{ time.users.slice(0, 2).map(id => getAgenteNome(id)).join(', ') }}
+                    </span>
+                    
+                    <TooltipProvider v-if="time.users.length > 2">
+                      <Tooltip>
+                        <TooltipTrigger as-child>
+                          <span class="inline-flex items-center justify-center h-5 px-1.5 text-xs font-medium rounded-full bg-muted text-muted-foreground cursor-help hover:bg-muted/80 transition-colors">
+                            +{{ time.users.length - 2 }}
+                          </span>
+                        </TooltipTrigger>
+                        <TooltipContent>
+                          <ul class="list-disc pl-4 space-y-1">
+                            <li v-for="id in time.users" :key="id" class="text-xs">
+                              {{ getAgenteNome(id) }}
+                            </li>
+                          </ul>
+                        </TooltipContent>
+                      </Tooltip>
+                    </TooltipProvider>
+                  </div>
                 </div>
               </TableCell>
               <TableCell class="text-right">
@@ -110,12 +123,19 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { Badge } from '@/components/ui/badge';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from '@/components/ui/tooltip';
+
 import TablePagination from '@/components/ui/table/TablePagination.vue';
 import { usePagination } from '@/composables/usePagination';
 import { useSortable } from '@/composables/useSortable';
 import type { Time } from '@/types/times';
 import type { Agente } from '@/mocks/data/agentes';
+import SoftIcon from '@/components/ui/icon/SoftIcon.vue';
 
 interface Props {
   times: Time[];

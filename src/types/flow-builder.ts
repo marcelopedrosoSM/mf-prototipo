@@ -5,8 +5,10 @@
 export type BlockType =
   | 'message'    // Mensagem
   | 'question'   // Pergunta
-  | 'switch'     // Decisão
-  | 'api'        // Integração
+  | 'switch'     // Decisão (legacy)
+  | 'decision'   // Decisão (sidebar key)
+  | 'api'        // Integração (legacy)
+  | 'integration' // Integração (sidebar key)
   | 'action'     // Ação
   | 'wait'       // Espera
   | 'start'      // Início
@@ -19,7 +21,12 @@ export type BlockType =
   | 'email'      // E-mail
   | 'call'       // Ligação
   | 'task'       // Tarefa
-  | 'chat_flow'; // Fluxo de Atendimento
+  | 'chat_flow'  // Fluxo de Atendimento
+  | 'trigger_manual'
+  | 'trigger_message_received'
+  | 'trigger_conversation_created'
+  | 'trigger_conversation_closed'
+  | 'availability_check';
 
 export type ActionType =
   | 'add_tag'
@@ -66,28 +73,37 @@ export interface CustomNodeData {
   hasError?: boolean;
   isExecuting?: boolean;
   wasExecuted?: boolean;
+  isExecuted?: boolean;      // Node was part of execution path
+  isCurrentBlock?: boolean;  // Node is the current block in execution
   [key: string]: unknown;
 }
 
-// Mapa de cores dos blocos
+// Mapa de cores dos blocos (HEX only para suportar opacity suffix)
 export const BLOCK_COLORS: Record<BlockType, string> = {
-  start: 'hsl(var(--primary))',             // Roxo primário
-  end: '#ef4444',                           // Vermelho
-  message: 'hsl(var(--success))',           // Verde
-  question: 'hsl(var(--success))',          // Verde
-  switch: 'hsl(var(--warning))',            // Amarelo
-  api: '#3B82F6',                           // Azul
-  action: 'hsl(var(--primary-lighten-1))',  // Roxo secundário
-  wait: 'hsl(var(--secondary))',            // Cinza
-  note: 'hsl(var(--warning))',              // Amarelo
-  condition_holiday: '#F59E0B',             // Ambar 
-  condition_weekday: '#F59E0B',             // Ambar
-  condition_time_range: '#F59E0B',          // Ambar
+  start: '#8B5CF6',                           // Roxo primário
+  end: '#EF4444',                             // Vermelho
+  message: '#22C55E',                         // Verde
+  question: '#22C55E',                        // Verde
+  switch: '#EAB308',                          // Amarelo
+  decision: '#EAB308',                        // Amarelo (mesmo que switch)
+  api: '#3B82F6',                             // Azul
+  integration: '#3B82F6',                     // Azul (mesmo que api)
+  action: '#A855F7',                          // Roxo secundário
+  wait: '#6B7280',                            // Cinza
+  note: '#EAB308',                            // Amarelo
+  condition_holiday: '#F59E0B',               // Ambar 
+  condition_weekday: '#F59E0B',               // Ambar
+  condition_time_range: '#F59E0B',            // Ambar
   // Activity-specific blocks
-  email: '#3B82F6',                         // Azul
-  call: '#14B8A6',                          // Teal
-  task: '#F59E0B',                          // Ambar
-  chat_flow: 'hsl(var(--primary))',         // Roxo
+  email: '#3B82F6',                           // Azul
+  call: '#14B8A6',                            // Teal
+  task: '#F59E0B',                            // Ambar
+  chat_flow: '#8B5CF6',                       // Roxo
+  trigger_manual: '#6366F1',                  // Indigo
+  trigger_message_received: '#3B82F6',        // Azul
+  trigger_conversation_created: '#10B981',    // Verde
+  trigger_conversation_closed: '#EF4444',     // Vermelho
+  availability_check: '#F59E0B',              // Ambar
 };
 
 export const ACTION_TYPES: Array<{ value: ActionType; label: string; section?: string }> = [

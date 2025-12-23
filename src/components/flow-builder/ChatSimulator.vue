@@ -205,6 +205,10 @@ import { useFlowSimulator } from '@/composables/useFlowSimulator';
 const props = defineProps<{
   nodes: Node<CustomNodeData>[];
   edges: Edge[];
+  flowId?: string;
+  flowName?: string;
+  contactId?: string;
+  contactData?: { name: string; email?: string; phone?: string };
 }>();
 
 const emit = defineEmits<{
@@ -235,7 +239,11 @@ const simulator = useFlowSimulator({
   edges: edgesRef,
   onBlockExecute: (blockId) => emit('block-execute', blockId),
   onBlockComplete: (blockId) => emit('block-complete', blockId),
-  onFlowComplete: () => emit('flow-complete')
+  onFlowComplete: () => emit('flow-complete'),
+  flowId: props.flowId,
+  flowName: props.flowName,
+  contactId: props.contactId,
+  contactData: props.contactData
 });
 
 // Computed

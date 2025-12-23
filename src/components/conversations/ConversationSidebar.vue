@@ -1,33 +1,39 @@
 <template>
   <div class="flex flex-col h-full bg-muted border-r border-border">
-    <!-- Header -->
-    <div class="flex items-center gap-2 p-4 bg-background border-b border-border">
-      <!-- Dropdown de Caixas - Ocupa espaço restante -->
-      <Select v-model="selectedInboxId" @update:model-value="handleInboxChange" class="flex-1 min-w-0">
-        <SelectTrigger class="w-full">
-          <SelectValue :placeholder="selectedInbox?.name || 'Selecione uma caixa'" />
-        </SelectTrigger>
-        <SelectContent>
-          <SelectItem
-            v-for="inbox in inboxes"
-            :key="inbox.id"
-            :value="inbox.id"
-          >
-            {{ inbox.name }}
-          </SelectItem>
-        </SelectContent>
-      </Select>
+    <!-- Header Clean -->
+    <div class="px-4 pt-4 pb-2 bg-background">
+      <div class="flex items-center justify-between mb-3">
+        <!-- Inbox Title Selector -->
+        <Select v-model="selectedInboxId" @update:model-value="handleInboxChange">
+          <SelectTrigger class="w-auto h-auto p-0 border-0 shadow-none hover:bg-transparent focus:ring-0 gap-2 group">
+            <SelectValue class="text-lg font-semibold text-foreground group-hover:text-primary transition-colors" :placeholder="selectedInbox?.nome || 'Selecione'" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem
+              v-for="inbox in inboxes"
+              :key="inbox.id"
+              :value="inbox.id"
+            >
+              {{ inbox.nome }}
+            </SelectItem>
+          </SelectContent>
+        </Select>
 
-      <!-- Botões à direita -->
-      <div class="flex items-center gap-2 flex-shrink-0">
-        <!-- Botão Filtro -->
-        <Popover v-model:open="isFilterOpen">
-          <PopoverTrigger as-child>
-            <Button variant="ghost" size="icon" :class="{ 'bg-primary/10': hasActiveFilters }">
-              <Filter class="h-4 w-4" />
-            </Button>
-          </PopoverTrigger>
-          <PopoverContent class="w-80 p-0 flex flex-col h-[650px] max-h-[650px]" align="end">
+        <!-- Actions -->
+        <div class="flex items-center gap-1">
+           <!-- Filter Trigger -->
+           <Popover v-model:open="isFilterOpen">
+            <PopoverTrigger as-child>
+              <Button
+                variant="ghost"
+                size="icon"
+                class="h-8 w-8 hover:bg-muted"
+                :class="[hasActiveFilters ? 'text-primary' : 'text-muted-foreground']"
+              >
+                <Filter class="h-4 w-4" />
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent class="w-80 p-0 flex flex-col h-[650px] max-h-[650px]" align="end">
             <div class="p-4 border-b border-border flex-shrink-0">
               <h3 class="text-sm font-semibold text-foreground">Filtros</h3>
             </div>
@@ -46,8 +52,8 @@
                             class="flex items-center gap-2 px-2 py-1.5 rounded-md hover:bg-muted cursor-pointer"
                           >
                             <Checkbox
-                              :checked="selectedAgentIds.includes(agent.id)"
-                              @update:checked="(checked) => toggleAgent(agent.id, checked)"
+                              :model-value="selectedAgentIds.includes(agent.id)"
+                              @update:model-value="(checked) => toggleAgent(agent.id, !!checked)"
                             />
                             <span class="text-sm text-foreground">{{ agent.nome }}</span>
                           </label>
@@ -68,8 +74,8 @@
                             class="flex items-center gap-2 px-2 py-1.5 rounded-md hover:bg-muted cursor-pointer"
                           >
                             <Checkbox
-                              :checked="selectedTeamIds.includes(team.id)"
-                              @update:checked="(checked) => toggleTeam(team.id, checked)"
+                              :model-value="selectedTeamIds.includes(team.id)"
+                              @update:model-value="(checked) => toggleTeam(team.id, !!checked)"
                             />
                             <span class="text-sm text-foreground">{{ team.nome }}</span>
                           </label>
@@ -118,25 +124,24 @@
               </Button>
             </div>
           </PopoverContent>
-        </Popover>
+          </Popover>
 
-        <!-- Botão Novo Chat -->
-        <StartConversationPopover :inboxes="inboxes" @conversation-created="handleNewConversationCreated">
-          <Button variant="ghost" size="icon">
-            <MessageSquarePlus class="h-4 w-4" />
-          </Button>
-        </StartConversationPopover>
+          <!-- New Chat -->
+          <StartConversationPopover :inboxes="inboxes.map(i => ({ id: i.id, name: i.nome }))" @conversation-created="handleNewConversationCreated">
+             <Button variant="ghost" size="icon" class="h-8 w-8 hover:bg-muted">
+               <MessageSquarePlus class="h-4 w-4 text-muted-foreground" />
+             </Button>
+          </StartConversationPopover>
+        </div>
       </div>
-    </div>
 
-    <!-- Barra de Busca -->
-    <div class="p-3 bg-background border-b border-border">
+      <!-- Modern Search Bar -->
       <div class="relative">
-        <Search class="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+        <Search class="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground/60" />
         <Input
           v-model="searchQuery"
-          placeholder="Buscar"
-          class="pl-9"
+          placeholder="Buscar conversa..."
+          class="pl-9 bg-muted/50 border-transparent focus:bg-background transition-all hover:bg-muted/80 h-9 rounded-lg"
           @input="handleSearch"
         />
       </div>
@@ -279,13 +284,15 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import ChatCard from './ChatCard.vue';
 import StartConversationPopover from './StartConversationPopover.vue';
-import type { ChatSession, Inbox, Label } from '@/types/conversations';
+import type { ChatSession } from '@/types/conversations';
 import { SidebarStatusType } from '@/types/conversations';
-import { MOCK_AGENTES, type Agente } from '@/mocks/data/agentes';
-import { MOCK_TIMES, type Time } from '@/mocks/data/times';
-import { MOCK_LABELS } from '@/mocks/data/labels';
-import { MOCK_CHAT_SESSIONS } from '@/mocks/data/chatSessions';
-import { MOCK_INBOXES } from '@/mocks/data/inboxes';
+
+// Stores
+import { useConversationsStore } from '@/stores/conversations';
+import { useInboxesStore } from '@/stores/inboxes';
+import { useAgentsStore } from '@/stores/agents';
+import { useTeamsStore } from '@/stores/teams';
+import { useLabelsStore } from '@/stores/labels';
 
 interface Props {
   selectedChatId?: string;
@@ -305,58 +312,68 @@ interface QuickFilter {
   filterFn: (chat: ChatSession) => boolean;
 }
 
-const conversations = ref<ChatSession[]>([]);
-const inboxes = ref<Inbox[]>([]);
+// Store Initialization
+const conversationsStore = useConversationsStore();
+const inboxesStore = useInboxesStore();
+const agentsStore = useAgentsStore();
+const teamsStore = useTeamsStore();
+const labelsStore = useLabelsStore();
+
+// UI State
 const selectedInboxId = ref<string | null>(null);
 const searchQuery = ref('');
-const loading = ref(false);
 const activeFilters = ref<Set<string>>(new Set());
 const additionalFilters = ref<QuickFilter[]>([]);
+const isFilterOpen = ref(false);
 
-// Filtros por Agentes, Times e Etiquetas
+// Filter Selections
 const selectedAgentIds = ref<string[]>([]);
 const selectedTeamIds = ref<string[]>([]);
 const selectedLabelIds = ref<string[]>([]);
-const isFilterOpen = ref(false);
 
-// Dados para filtros
-const agents = ref<Agente[]>(MOCK_AGENTES);
-const teams = ref<Time[]>(MOCK_TIMES);
-const labels = ref<Label[]>(MOCK_LABELS);
+// Data from Stores (Reactive)
+const inboxes = computed(() => inboxesStore.allInboxes);
+const agents = computed(() => agentsStore.allAgents);
+const teams = computed(() => teamsStore.allTeams);
+const labels = computed(() => labelsStore.allLabels);
+const loading = computed(() => inboxesStore.loading || conversationsStore.isInitialized === false);
 
 const selectedInbox = computed(() => {
   if (!selectedInboxId.value) return null;
-  return inboxes.value.find((inbox) => inbox.id === selectedInboxId.value) || null;
+  return inboxesStore.getInboxById(selectedInboxId.value) || null;
 });
 
+// Main Filtering Logic
 const filteredConversations = computed(() => {
-  let filtered = [...conversations.value];
+  // Start with all conversations from store
+  let filtered = [...conversationsStore.allConversations];
 
-  // Filtrar por status do AppSidebar
+  // 1. Filter by Inbox (Mandatory)
+  if (selectedInboxId.value) {
+    filtered = filtered.filter(chat => chat.inbox.id === selectedInboxId.value);
+  }
+
+  // 2. Filter by Status (Sidebar Tabs)
   if (props.statusFilter && props.statusFilter !== SidebarStatusType.ALL_CHATS) {
     switch (props.statusFilter) {
       case SidebarStatusType.WITHOUT_TEAM:
-        // Sem time atribuído
         filtered = filtered.filter((chat) => !chat.assignedUser?.team);
         break;
       case SidebarStatusType.IN_SERVICE:
-        // Em atendimento (conversas abertas com usuário atribuído)
         filtered = filtered.filter(
           (chat) => chat.status === 'open' && chat.assignedUser?.user
         );
         break;
       case SidebarStatusType.MENTION:
-        // Menções
         filtered = filtered.filter((chat) => chat.mentioned === true);
         break;
       case SidebarStatusType.FINISHED:
-        // Finalizadas
         filtered = filtered.filter((chat) => chat.status === 'closed');
         break;
     }
   }
 
-  // Filtrar por busca
+  // 3. Search Query
   if (searchQuery.value.trim()) {
     const query = searchQuery.value.toLowerCase();
     filtered = filtered.filter(
@@ -366,18 +383,19 @@ const filteredConversations = computed(() => {
     );
   }
 
-  // Filtro rápido: Não lidas
+  // 4. Quick Filters
   if (activeFilters.value.has('unread')) {
     filtered = filtered.filter((chat) => chat.unreadCount > 0);
   }
 
-  // Filtro rápido: Eu (conversas atribuídas ao usuário atual)
   if (activeFilters.value.has('me')) {
-    // Mock: assumindo que o usuário atual tem ID '1' ou podemos verificar pelo assignedUser
-    filtered = filtered.filter((chat) => chat.assignedUser?.user?.id === '1');
+    // Assuming '1' is the current user ID for prototype. 
+    // In real app, verify against auth store.
+    const currentUserId = '1'; 
+    filtered = filtered.filter((chat) => chat.assignedUser?.user?.id === currentUserId);
   }
 
-  // Filtro por Agentes
+  // 5. Advanced Filters (Multi-select)
   if (selectedAgentIds.value.length > 0) {
     filtered = filtered.filter((chat) => {
       if (!chat.assignedUser?.user) return false;
@@ -385,7 +403,6 @@ const filteredConversations = computed(() => {
     });
   }
 
-  // Filtro por Times
   if (selectedTeamIds.value.length > 0) {
     filtered = filtered.filter((chat) => {
       if (!chat.assignedUser?.team) return false;
@@ -393,7 +410,6 @@ const filteredConversations = computed(() => {
     });
   }
 
-  // Filtro por Etiquetas
   if (selectedLabelIds.value.length > 0) {
     filtered = filtered.filter((chat) => {
       if (!chat.labels || chat.labels.length === 0) return false;
@@ -403,14 +419,14 @@ const filteredConversations = computed(() => {
     });
   }
 
-  // Outros filtros adicionais
+  // 6. Custom/Additional Filters
   additionalFilters.value.forEach((filter) => {
     if (activeFilters.value.has(filter.id)) {
       filtered = filtered.filter(filter.filterFn);
     }
   });
 
-  // Ordenar por última atividade (mais recente primeiro)
+  // Sort by recent activity
   filtered.sort((a, b) => {
     const dateA = new Date(a.lastActivityAt).getTime();
     const dateB = new Date(b.lastActivityAt).getTime();
@@ -420,58 +436,15 @@ const filteredConversations = computed(() => {
   return filtered;
 });
 
-async function fetchInboxes() {
-  try {
-    // Use mock data directly
-    inboxes.value = MOCK_INBOXES;
-    if (inboxes.value.length > 0 && !selectedInboxId.value) {
-      selectedInboxId.value = inboxes.value[0].id;
-    }
-  } catch (error) {
-    console.error('Error fetching inboxes:', error);
-  }
-}
-
-async function fetchConversations() {
-  loading.value = true;
-  try {
-    // Simulate API delay
-    await new Promise(resolve => setTimeout(resolve, 300));
-
-    let results = [...MOCK_CHAT_SESSIONS];
-
-    // Filter by Inbox (Server-side simulation)
-    if (selectedInboxId.value) {
-      results = results.filter(chat => chat.inbox.id === selectedInboxId.value);
-    }
-
-    // Filter by Search (Server-side simulation - optional since client also does it, but consistent)
-    if (searchQuery.value.trim()) {
-      const query = searchQuery.value.toLowerCase();
-      results = results.filter(
-        (chat) =>
-          chat.sender.name.toLowerCase().includes(query) ||
-          chat.sender.phoneNumber.includes(query)
-      );
-    }
-
-    conversations.value = results;
-  } catch (error) {
-    console.error('Error fetching conversations:', error);
-  } finally {
-    loading.value = false;
-  }
-}
-
+// Handlers
 function handleInboxChange(inboxId: string) {
   selectedInboxId.value = inboxId;
   emit('inbox-change', inboxId);
-  fetchConversations();
+  // Store handles data automatically, no fetch call needed here if reactive
 }
 
 function handleSearch() {
-  // Debounce pode ser adicionado aqui se necessário
-  fetchConversations();
+  // Reactive computed handles this
 }
 
 function handleSelectChat(chat: ChatSession) {
@@ -486,12 +459,10 @@ function toggleFilter(filter: string) {
   }
 }
 
-// Função para adicionar novos filtros dinamicamente
 function addQuickFilter(filter: QuickFilter) {
   additionalFilters.value.push(filter);
 }
 
-// Verificar se há filtros ativos
 const hasActiveFilters = computed(() => {
   return (
     selectedAgentIds.value.length > 0 ||
@@ -501,28 +472,28 @@ const hasActiveFilters = computed(() => {
   );
 });
 
-// Funções auxiliares para obter nomes
+// Helpers for Names/Colors using Stores
 function getAgentName(agentId: string): string {
-  const agent = agents.value.find((a) => a.id === agentId);
+  const agent = agentsStore.getAgentById(agentId);
   return agent?.nome || agentId;
 }
 
 function getTeamName(teamId: string): string {
-  const team = teams.value.find((t) => t.id === teamId);
+  const team = teamsStore.getTeamById(teamId);
   return team?.nome || teamId;
 }
 
 function getLabelName(labelId: string): string {
-  const label = labels.value.find((l) => l.id === labelId);
+  const label = labelsStore.getLabelById(labelId);
   return label?.name || labelId;
 }
 
 function getLabelColor(labelId: string): string {
-  const label = labels.value.find((l) => l.id === labelId);
+  const label = labelsStore.getLabelById(labelId);
   return label?.color || '#8B5CF6';
 }
 
-// Funções para remover filtros
+// Filter Removal Helpers
 function removeAgentFilter(agentId: string) {
   selectedAgentIds.value = selectedAgentIds.value.filter((id) => id !== agentId);
 }
@@ -571,30 +542,44 @@ function clearAllFilters() {
 }
 
 function handleNewConversationCreated(conversation: ChatSession) {
-  // Adicionar a nova conversa à lista
-  conversations.value.unshift(conversation);
-  
-  // Selecionar a nova conversa automaticamente
-  emit('select-chat', conversation);
-  
-  // Atualizar a caixa selecionada se necessário
+  // Store update is enough, but we might want to ensure selection
   if (conversation.inbox.id !== selectedInboxId.value) {
     selectedInboxId.value = conversation.inbox.id;
   }
+  emit('select-chat', conversation);
 }
 
-// Expor função para componentes pais adicionarem filtros
+// Lifecycle
+onMounted(() => {
+  // Ensure stores are initialized
+  conversationsStore.initialize();
+  inboxesStore.initialize();
+  agentsStore.initialize();
+  teamsStore.initialize();
+  labelsStore.initialize();
+  
+  // Select first inbox if none selected
+  if (!selectedInboxId.value && inboxes.value.length > 0) {
+    selectedInboxId.value = inboxes.value[0].id;
+  } else {
+    // Watch for load
+    const unwatch = watch(inboxes, (newVal) => {
+      if (newVal.length > 0 && !selectedInboxId.value) {
+        selectedInboxId.value = newVal[0].id;
+        unwatch();
+      }
+    });
+  }
+});
+
+// Expose
 defineExpose({
   addQuickFilter,
 });
 
-watch(selectedInboxId, () => {
-  fetchConversations();
-});
-
-onMounted(() => {
-  fetchInboxes();
-  fetchConversations();
+// Watch
+watch(selectedInboxId, (newVal) => {
+  if(newVal) emit('inbox-change', newVal);
 });
 </script>
 

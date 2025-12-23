@@ -7,8 +7,8 @@ import type { CaixaEntrada } from '@/types/caixas-entrada';
 export const MOCK_CAIXAS_ENTRADA: CaixaEntrada[] = [
   {
     id: '1',
-    nome: 'WhatsApp Oficial - Vendas',
-    tipo: 'oficial',
+    nome: 'Vendas',
+    tipo: 'nao-oficial',
     phoneNumber: '+5511987654321',
     phoneNumberId: '123456789',
     apiKey: 'EAABwzLixnY0BO7ZC...',
@@ -18,21 +18,14 @@ export const MOCK_CAIXAS_ENTRADA: CaixaEntrada[] = [
   },
   {
     id: '2',
-    nome: 'WhatsApp Oficial - Suporte',
-    tipo: 'oficial',
+    nome: 'Suporte',
+    tipo: 'nao-oficial',
     phoneNumber: '+5511999887766',
     phoneNumberId: '987654321',
     apiKey: 'EAABwzLixnY0BO7ZC...',
     businessAccountId: '123456789',
     createdAt: '2024-01-16T10:00:00Z',
     updatedAt: '2024-01-16T10:00:00Z',
-  },
-  {
-    id: '3',
-    nome: 'WhatsApp Não Oficial - Teste',
-    tipo: 'nao-oficial',
-    createdAt: '2024-01-17T10:00:00Z',
-    updatedAt: '2024-01-17T10:00:00Z',
   },
 ];
 
@@ -75,4 +68,3 @@ export function deleteCaixaEntrada(id: string): boolean {
   MOCK_CAIXAS_ENTRADA.splice(index, 1);
   return true;
 }
-

@@ -84,8 +84,8 @@
                     >
                       <Checkbox
                         :id="`time-${time.id}`"
-                        :checked="formData.timesIds?.includes(time.id) ?? false"
-                        @update:checked="(checked) => handleCheckboxUpdate(time.id, checked)"
+                        :model-value="formData.timesIds?.includes(time.id) ?? false"
+                        @update:model-value="(checked) => handleCheckboxUpdate(time.id, !!checked)"
                         @click.stop
                       />
                       <label

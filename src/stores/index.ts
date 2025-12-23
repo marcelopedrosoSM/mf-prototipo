@@ -16,4 +16,12 @@ export { useThemeStore } from './theme';
 export { useFlowsStore } from './flows';
 export { useNotificationsStore } from './notifications';
 export { useExampleStore } from './example';
+export { useActivityStore } from './activities';
+export { useExecutionsStore } from './executions';
+export { useAutomationsStore } from './automations';
+export { useContactsStore } from './contacts';
+export { useTeamsStore } from './teams';
+export { useInboxesStore } from './inboxes';
+export { useConversationsStore } from './conversations';
+export { useUserPreferencesStore } from './userPreferences';
 

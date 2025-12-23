@@ -66,7 +66,7 @@
     v-else
     class="flex flex-col items-center justify-center h-full bg-background"
   >
-    <MessageCircle class="h-16 w-16 text-muted-foreground mb-4" />
+    <MessageCircle class="h-16 w-16 text-muted-foreground mb-4 animate-float" />
     <p class="text-lg font-semibold text-foreground mb-2">
       Selecione uma conversa
     </p>
@@ -120,4 +120,16 @@ function handleUnassigned() {
   // Atribuição foi removida
 }
 </script>
+
+<style scoped>
+@keyframes float {
+  0% { transform: translateY(0px); }
+  50% { transform: translateY(-10px); }
+  100% { transform: translateY(0px); }
+}
+
+.animate-float {
+  animation: float 3s ease-in-out infinite;
+}
+</style>
 

@@ -4,38 +4,43 @@
 
 import type { Inbox } from '@/types/conversations';
 
-export const MOCK_INBOXES: Inbox[] = [
+// Extended Inbox type to include API details (Merging concepts)
+export interface InboxDetailed extends Inbox {
+  phoneNumberId?: string;
+  apiKey?: string;
+  businessAccountId?: string;
+}
+
+export const MOCK_INBOXES: InboxDetailed[] = [
   {
     id: '1',
-    name: 'WhatsApp Oficial - Vendas',
+    name: 'Vendas',
     phoneNumber: '+5511987654321',
     status: 'active',
     type: 'whatsapp',
     unreadCount: 5,
+    phoneNumberId: '123456789',
+    apiKey: 'EAABwzLixnY0BO7ZC...',
+    businessAccountId: '987654321',
   },
   {
     id: '2',
-    name: 'WhatsApp Oficial - Suporte',
+    name: 'Suporte',
     phoneNumber: '+5511999887766',
     status: 'active',
     type: 'whatsapp',
     unreadCount: 3,
-  },
-  {
-    id: '3',
-    name: 'WhatsApp Não Oficial - Teste',
-    phoneNumber: '+5511777665544',
-    status: 'active',
-    type: 'whatsapp_unofficial',
-    unreadCount: 2,
+    phoneNumberId: '987654321',
+    apiKey: 'EAABwzLixnY0BO7ZC...',
+    businessAccountId: '123456789',
   },
 ];
 
-export function getInboxes(): Inbox[] {
+export function getInboxes(): InboxDetailed[] {
   return [...MOCK_INBOXES];
 }
 
-export function getInboxById(id: string): Inbox | undefined {
+export function getInboxById(id: string): InboxDetailed | undefined {
   return MOCK_INBOXES.find((inbox) => inbox.id === id);
 }
 

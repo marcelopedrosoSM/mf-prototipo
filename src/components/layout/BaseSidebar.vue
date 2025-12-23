@@ -22,28 +22,31 @@
       </div>
 
       <!-- Sidebar content -->
-      <div class="flex-1 space-y-1">
+      <div class="flex-1 space-y-2 mt-2">
         <router-link
           v-for="item in itemsWithRoutes"
           :key="item.key"
           :to="item.to!"
-          class="flex items-center rounded-md text-sm font-medium transition-colors interactive w-full"
-          :class="{
-            'bg-primary text-primary-foreground': isItemActive(item),
-            'justify-center px-2 py-2': collapsed,
-            'space-x-3 px-3 py-2': !collapsed,
-          }"
+          class="flex items-center text-sm font-medium transition-all duration-200 interactive group relative"
+          :class="[
+            isItemActive(item)
+              ? 'bg-violet-100 text-violet-700 dark:bg-violet-500/15 dark:text-violet-300'
+              : 'text-muted-foreground hover:bg-muted/80 hover:text-foreground',
+            collapsed 
+              ? 'justify-center w-10 h-10 mx-auto rounded-xl' 
+              : 'w-full space-x-3 px-3 py-2 rounded-lg'
+          ]"
           :title="collapsed ? item.label : undefined"
         >
-          <div class="relative flex-shrink-0">
-            <component :is="item.icon" class="h-4 w-4" />
+          <div class="relative flex items-center justify-center">
+            <component :is="item.icon" :class="collapsed ? 'h-5 w-5' : 'h-4 w-4'" />
             <span
               v-if="collapsed && item.badge && item.badge > 0"
               :class="[
-                'absolute bottom-0 right-0 h-5 min-w-5 px-1 text-[11px] font-bold rounded-full flex items-center justify-center border-2 translate-x-1/2 translate-y-1/2',
+                'absolute -top-1.5 -right-1.5 min-w-[18px] h-[18px] px-0.5 text-[10px] font-bold rounded-full flex items-center justify-center border-2 shadow-sm',
                 isItemActive(item)
-                  ? 'bg-primary-foreground border-primary'
-                  : 'bg-muted text-muted-foreground border-background',
+                  ? 'bg-violet-600 text-primary-foreground border-violet-50 dark:border-background'
+                  : 'bg-muted-foreground text-primary-foreground border-background',
               ]"
             >
               {{ item.badge > 9 ? '9+' : item.badge }}
@@ -56,7 +59,7 @@
               'h-5 min-w-5 px-1.5 text-xs rounded-full flex items-center justify-center ml-auto flex-shrink-0',
               item.badge && item.badge > 0
                 ? isItemActive(item)
-                  ? 'bg-primary-foreground'
+                  ? 'bg-violet-600 text-primary-foreground'
                   : 'bg-muted text-muted-foreground'
                 : 'opacity-0 pointer-events-none',
             ]"
@@ -67,24 +70,27 @@
         <button
           v-for="item in itemsWithoutRoutes"
           :key="item.key"
-          class="flex items-center rounded-md text-sm font-medium transition-colors interactive w-full"
-          :class="{
-            'bg-primary text-primary-foreground': isItemActive(item),
-            'justify-center px-2 py-2': collapsed,
-            'space-x-3 px-3 py-2': !collapsed,
-          }"
+          class="flex items-center text-sm font-medium transition-all duration-200 interactive group relative w-full"
+          :class="[
+            isItemActive(item)
+              ? 'bg-violet-100/80 text-violet-700 dark:bg-violet-500/15 dark:text-violet-300'
+              : 'text-muted-foreground hover:bg-muted/80 hover:text-foreground',
+             collapsed 
+              ? 'justify-center w-10 h-10 mx-auto rounded-xl' 
+              : 'space-x-3 px-3 py-2 rounded-lg'
+          ]"
           :title="collapsed ? item.label : undefined"
           @click="handleItemClick(item)"
         >
-          <div class="relative flex-shrink-0">
-            <component :is="item.icon" class="h-4 w-4" />
+          <div class="relative flex items-center justify-center">
+            <component :is="item.icon" :class="collapsed ? 'h-5 w-5' : 'h-4 w-4'" />
             <span
               v-if="collapsed && item.badge && item.badge > 0"
               :class="[
-                'absolute bottom-0 right-0 h-5 min-w-5 px-1 text-[11px] font-bold rounded-full flex items-center justify-center border-2 translate-x-1/2 translate-y-1/2',
+                'absolute -top-1.5 -right-1.5 min-w-[18px] h-[18px] px-0.5 text-[10px] font-bold rounded-full flex items-center justify-center border-2 shadow-sm',
                 isItemActive(item)
-                  ? 'bg-primary-foreground border-primary'
-                  : 'bg-muted text-muted-foreground border-background',
+                  ? 'bg-violet-600 text-primary-foreground border-violet-50 dark:border-background'
+                  : 'bg-muted-foreground text-primary-foreground border-background',
               ]"
             >
               {{ item.badge > 9 ? '9+' : item.badge }}
@@ -97,7 +103,7 @@
               'h-5 min-w-5 px-1.5 text-xs rounded-full flex items-center justify-center ml-auto flex-shrink-0',
               item.badge && item.badge > 0
                 ? isItemActive(item)
-                  ? 'bg-primary-foreground'
+                  ? 'bg-violet-600 text-primary-foreground'
                   : 'bg-muted text-muted-foreground'
                 : 'opacity-0 pointer-events-none',
             ]"

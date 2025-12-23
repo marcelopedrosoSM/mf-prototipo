@@ -23,16 +23,18 @@
 
 <script setup lang="ts">
 import { ref } from 'vue';
-import { useRouter } from 'vue-router';
+import { useRouter, useRoute } from 'vue-router';
 import Logo from '@/components/Logo.vue';
 import LoginForm from '@/components/auth/LoginForm.vue';
 import { useToast } from '@/composables/useToast';
 import { MOCK_CREDENTIALS, MOCK_USER } from '@/mocks/data/auth';
-import { useAuthStore } from '@/stores';
+import { useAuthStore, useUserPreferencesStore } from '@/stores';
 
 const router = useRouter();
+const route = useRoute();
 const toast = useToast();
 const authStore = useAuthStore();
+const preferencesStore = useUserPreferencesStore();
 const loginFormRef = ref<InstanceType<typeof LoginForm> | null>(null);
 
 async function handleLogin(data: { email: string; password: string }) {
@@ -57,8 +59,15 @@ async function handleLogin(data: { email: string; password: string }) {
       // Show success toast
       toast.success('Login realizado com sucesso!', 'Bem-vindo ao MyFlows');
 
-      // Redirect to conversations
-      router.push('/conversations');
+      // Redirect to the original destination or user's preferred route
+      const redirect = route.query.redirect as string;
+      if (redirect) {
+        router.push(redirect);
+      } else {
+        // Use user's preferred default route
+        const defaultRoute = preferencesStore.defaultRoute;
+        router.push({ name: defaultRoute });
+      }
     } else {
       // Try API as fallback or throw error
       // For this prototype fix, we treat non-matching mock creds as an error

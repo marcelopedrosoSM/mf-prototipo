@@ -62,8 +62,8 @@ const aplicarParaTodos = (diaOrigem: WeekdayId) => {
         </p>
       </div>
       <Switch
-        :checked="continuarAtendimento"
-        @update:checked="emit('update:continuarAtendimento', $event)"
+        :model-value="continuarAtendimento"
+        @update:model-value="emit('update:continuarAtendimento', !!$event)"
       />
     </div>
 
@@ -86,8 +86,8 @@ const aplicarParaTodos = (diaOrigem: WeekdayId) => {
         <div class="flex items-center justify-between gap-3">
           <div class="flex items-center gap-2 flex-shrink-0">
             <Switch
-              :checked="horario[id].ativo"
-              @update:checked="updateDia(id, 'ativo', $event)"
+              :model-value="horario[id].ativo"
+              @update:model-value="(val) => updateDia(id, 'ativo', !!val)"
             />
             <span class="text-sm">{{ label }}</span>
           </div>
@@ -143,8 +143,8 @@ const aplicarParaTodos = (diaOrigem: WeekdayId) => {
         </p>
       </div>
       <Switch
-        :checked="horario.inativoFeriados"
-        @update:checked="updateHorario({ inativoFeriados: $event })"
+        :model-value="horario.inativoFeriados"
+        @update:model-value="(val) => updateHorario({ inativoFeriados: !!val })"
       />
     </div>
   </div>

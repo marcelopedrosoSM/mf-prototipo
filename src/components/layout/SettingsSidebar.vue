@@ -18,6 +18,8 @@ import {
   Zap,
   CalendarOff,
   Key,
+  Workflow,
+  Settings,
 } from 'lucide-vue-next';
 import BaseSidebar, { type SidebarItem } from './BaseSidebar.vue';
 
@@ -32,6 +34,12 @@ const emit = defineEmits<{
 }>();
 
 const settingsItems: SidebarItem[] = [
+  {
+    key: 'preferencias',
+    to: '/settings/preferencias',
+    label: 'Preferências',
+    icon: h(Settings),
+  },
   {
     key: 'agentes',
     to: '/settings/agentes',
@@ -49,6 +57,12 @@ const settingsItems: SidebarItem[] = [
     to: '/settings/caixas-entrada',
     label: 'Caixas de entrada',
     icon: h(Inbox),
+  },
+  {
+    key: 'automacoes',
+    to: '/settings/automacoes',
+    label: 'Automações',
+    icon: h(Workflow),
   },
   {
     key: 'notificacoes',

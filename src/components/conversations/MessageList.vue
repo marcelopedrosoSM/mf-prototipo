@@ -1,5 +1,5 @@
 <template>
-  <ScrollArea class="flex-1 min-h-0">
+  <ScrollArea ref="scrollAreaRef" class="flex-1 min-h-0">
     <div class="flex flex-col p-4 gap-4">
       <template v-for="(group, groupIndex) in messageGroups" :key="groupIndex">
         <!-- Separador de Data -->
@@ -32,7 +32,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted, nextTick, watch } from 'vue';
+import { computed, onMounted, nextTick, watch, ref } from 'vue';
 import { MessageCircle } from 'lucide-vue-next';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import MessageBubble from './MessageBubble.vue';
@@ -44,6 +44,9 @@ interface Props {
 }
 
 const props = defineProps<Props>();
+
+// Template ref for scroll area
+const scrollAreaRef = ref<InstanceType<typeof ScrollArea> | null>(null);
 
 function formatDateHeader(timestamp: string): string {
   const date = new Date(timestamp);
@@ -106,12 +109,15 @@ const messageGroups = computed(() => {
   return groups;
 });
 
-// Função para fazer scroll até o final
+// Função para fazer scroll até o final - usando ref local
 function scrollToBottom() {
   nextTick(() => {
-    const scrollArea = document.querySelector('[data-reka-scroll-area-viewport]');
-    if (scrollArea) {
-      scrollArea.scrollTop = scrollArea.scrollHeight;
+    if (scrollAreaRef.value) {
+      // Access the internal viewport element via the component's $el
+      const viewport = scrollAreaRef.value.$el?.querySelector('[data-reka-scroll-area-viewport]');
+      if (viewport) {
+        viewport.scrollTop = viewport.scrollHeight;
+      }
     }
   });
 }

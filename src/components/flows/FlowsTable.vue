@@ -41,9 +41,9 @@
             >
             <TableCell class="font-medium">
               <div class="flex items-center gap-2 w-full">
-                <div class="flex h-7 w-7 items-center justify-center rounded-full bg-primary/10 text-primary flex-shrink-0">
+                <SoftIcon class="h-7 w-7 rounded-full">
                   <component :is="getFlowIcon(flow)" class="h-3.5 w-3.5" />
-                </div>
+                </SoftIcon>
                 <span class="truncate">{{ flow.nome }}</span>
               </div>
             </TableCell>
@@ -99,7 +99,7 @@
 
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue';
-import { Plus, Workflow, Loader2, MoreVertical, Edit, Trash2, BotIcon, CheckCircle2 } from 'lucide-vue-next';
+import { Plus, Workflow, Loader2, MoreVertical, Edit, Trash2, MessageSquare, Zap } from 'lucide-vue-next';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import {
@@ -123,6 +123,7 @@ import { usePagination } from '@/composables/usePagination';
 import { useSortable } from '@/composables/useSortable';
 import { formatDate } from '@/utils/date';
 import type { Flow } from '@/mocks/data/flows';
+import SoftIcon from '@/components/ui/icon/SoftIcon.vue';
 
 interface Props {
   flows: Flow[];
@@ -170,9 +171,9 @@ const paginatedFlows = computed(() => {
   return pagination.paginate(sortable.sortedItems.value);
 });
 
-// Ícone condicional por tipo de flow (atendimento usa BotIcon, atividades usa CheckCircle2)
+// Ícone condicional por tipo de flow (atendimento usa MessageSquare, atividades usa Zap)
 function getFlowIcon(flow: Flow) {
-  return flow.tipo === 'atendimento' ? BotIcon : CheckCircle2;
+  return flow.tipo === 'atendimento' ? MessageSquare : Zap;
 }
 
 function handleSort(key: string) {

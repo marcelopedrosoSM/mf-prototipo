@@ -97,5 +97,6 @@ export interface ChatSession {
   status: ConversationStatus;
   inbox: Inbox;
   mentioned?: boolean;
+  updatedAt?: string;
 }
 

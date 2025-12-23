@@ -2,7 +2,7 @@
  * Valores padrão para configuração de fluxos
  */
 
-import type { WeekDay, HorarioFuncionamento, FlowConfigData } from '@/types/flow-config'
+import type { WeekDay, FlowConfigData } from '@/types/flow-config'
 import { LLM_CONFIG } from './llm-config'
 
 // Dias da semana
@@ -16,27 +16,7 @@ export const WEEK_DAYS: readonly WeekDay[] = [
     { id: 'dom', label: 'Domingo', short: 'Dom' },
 ] as const
 
-// Horário padrão por dia
-export const DEFAULT_DIA_HORARIO = {
-    ativo: true,
-    horarioInicio: '08:00',
-    horarioFim: '18:00',
-}
 
-// Horário de funcionamento padrão
-export const getDefaultHorarioFuncionamento = (): HorarioFuncionamento => ({
-    ativo: false,
-    seg: { ...DEFAULT_DIA_HORARIO },
-    ter: { ...DEFAULT_DIA_HORARIO },
-    qua: { ...DEFAULT_DIA_HORARIO },
-    qui: { ...DEFAULT_DIA_HORARIO },
-    sex: { ...DEFAULT_DIA_HORARIO },
-    sab: { ativo: false, horarioInicio: '08:00', horarioFim: '12:00' },
-    dom: { ativo: false, horarioInicio: '08:00', horarioFim: '12:00' },
-    mensagemForaHorario: 'Estamos fora do horário de atendimento. Retornaremos assim que possível.',
-    inativoFeriados: true,
-    diasInatividade: [],
-})
 
 // Mensagens padrão
 export const DEFAULT_RETOMADA_MESSAGE = 'Olá! Podemos retomar nossa conversa?'
@@ -50,8 +30,7 @@ export const getDefaultFlowConfig = (): FlowConfigData => ({
     descricao: '',
     llmProvider: 'openai',
     llmModel: LLM_CONFIG.MODELS.PRIMARY,
-    horarioFuncionamento: getDefaultHorarioFuncionamento(),
-    continuarAtendimentoHorario: false,
+
     retomada: {
         enabled: false,
         mensagem: DEFAULT_RETOMADA_MESSAGE,

@@ -135,22 +135,7 @@ const initialContacts: Contact[] = [
     createdAt: '2024-02-15T16:00:00Z',
     updatedAt: '2024-02-15T16:00:00Z',
   },
-  {
-    id: 6,
-    accountId: 1,
-    name: 'Marcelo Pedroso',
-    emails: [
-      { id: 7, contactId: 6, email: 'marcelo.pedroso@example.com' },
-    ],
-    phoneNumbers: [
-      { id: 9, contactId: 6, phoneNumber: '+55 (45) 99921-0256', label: 'whatsapp' },
-    ],
-    city: 'Foz do Iguaçu',
-    state: 'PR',
-    notes: '',
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString(),
-  },
+
   {
     id: 7,
     accountId: 1,

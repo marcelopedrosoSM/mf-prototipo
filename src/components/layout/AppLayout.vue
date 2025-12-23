@@ -35,7 +35,7 @@ import AppSidebar from './AppSidebar.vue';
 import { SidebarStatusType } from '@/types/conversations';
 
 const route = useRoute();
-const isSidebarCollapsed = ref(true);
+const isSidebarCollapsed = ref(false);
 const selectedStatus = ref<SidebarStatusType>(SidebarStatusType.ALL_CHATS);
 
 // Verifica se a rota atual é /conversations

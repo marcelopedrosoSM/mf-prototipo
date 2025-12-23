@@ -37,9 +37,6 @@ export const useFlowsStore = defineStore(
                     console.log(`🔄 Migrando ${oldFlows.length} fluxos do sistema antigo...`);
                     savedFlows.value = oldFlows;
                     console.log('✅ Migração concluída!');
-
-                    // Opcional: remover dados antigos após migração bem-sucedida
-                    // localStorage.removeItem(OLD_KEY);
                 }
             } catch (error) {
                 console.error('❌ Erro ao migrar fluxos antigos:', error);
@@ -134,6 +131,9 @@ export const useFlowsStore = defineStore(
             setCurrentFlow,
             getAllFlows,
             updateFlowStatus,
+            // Exposed for compatibility
+            allFlows: computed(() => savedFlows.value),
+            getFlowById: computed(() => (id: string) => savedFlows.value.find(f => f.id === id)),
         };
     },
     {

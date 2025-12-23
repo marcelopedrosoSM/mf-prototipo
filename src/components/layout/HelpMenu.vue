@@ -56,9 +56,9 @@ const helpItems = [
   },
   {
     id: 'support',
-    label: 'Suporte',
-    icon: h(MessageCircle),
-    href: 'https://suporte.myflows.com.br', // Placeholder
+    label: 'Central de Ajuda',
+    icon: h(HelpCircle),
+    href: 'https://ajuda.myflows.com.br/en',
     external: true,
   },
   {

@@ -31,7 +31,7 @@ export const MOCK_AGENTES: Agente[] = [
     nome: 'Usuário Protótipo',
     email: 'user@myflows.com.br',
     telefone: '+55 (11) 98765-4321',
-    timesIds: ['1', '2'],
+    timesIds: ['1', '2', '3', '4'],
     myflows_id: 'AG001',
     createdAt: '2024-01-15T10:00:00Z',
     updatedAt: '2024-01-15T10:00:00Z',

@@ -34,9 +34,9 @@
             <TableRow v-for="mensagem in paginatedMensagens" :key="mensagem.id">
               <TableCell class="font-medium">
                 <div class="flex items-center gap-2.5">
-                  <div class="flex h-7 w-7 items-center justify-center rounded-full bg-primary/10 text-primary flex-shrink-0">
-                    <Zap class="h-3.5 w-3.5" />
-                  </div>
+                <SoftIcon class="h-7 w-7 rounded-full">
+                  <Zap class="h-3.5 w-3.5" />
+                </SoftIcon>
                   <span>{{ mensagem.title }}</span>
                 </div>
               </TableCell>
@@ -104,6 +104,7 @@ import TablePagination from '@/components/ui/table/TablePagination.vue';
 import { usePagination } from '@/composables/usePagination';
 import { useSortable } from '@/composables/useSortable';
 import type { MensagemRapida } from '@/types/mensagens-rapidas';
+import SoftIcon from '@/components/ui/icon/SoftIcon.vue';
 
 interface Props {
   mensagens: MensagemRapida[];

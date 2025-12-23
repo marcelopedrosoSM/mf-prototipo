@@ -230,18 +230,60 @@
     color: hsl(var(--accent-foreground)) !important;
   }
 
-  /* Regra para itens de navegação selecionados com bg-primary - ícones e textos em branco */
-  .bg-primary,
-  [class*="bg-primary"] {
+  /* Regra para itens de navegação selecionados com bg-primary sólido - ícones e textos em branco */
+  /* IMPORTANTE: Esta regra NÃO se aplica a fundos claros (bg-primary/5, bg-primary/10, etc) */
+  .bg-primary:not([class*="/5"]):not([class*="/10"]):not([class*="/20"]):not([class*="/30"]),
+  [class*="bg-primary"]:not([class*="/5"]):not([class*="/10"]):not([class*="/20"]):not([class*="/30"]) {
     color: hsl(var(--primary-foreground));
   }
 
-  /* Ícones e textos dentro de itens selecionados com bg-primary ficam brancos */
-  .bg-primary svg,
-  .bg-primary [class*="icon"],
-  .bg-primary span:not([class*="bg-primary-foreground/20"]),
-  .bg-primary *:not([class*="bg-primary-foreground/20"]) {
+  /* Ícones e textos dentro de itens selecionados com bg-primary sólido ficam brancos */
+  .bg-primary:not([class*="/5"]):not([class*="/10"]):not([class*="/20"]):not([class*="/30"]) svg,
+  .bg-primary:not([class*="/5"]):not([class*="/10"]):not([class*="/20"]):not([class*="/30"]) [class*="icon"],
+  .bg-primary:not([class*="/5"]):not([class*="/10"]):not([class*="/20"]):not([class*="/30"]) span:not([class*="bg-primary-foreground/20"]),
+  .bg-primary:not([class*="/5"]):not([class*="/10"]):not([class*="/20"]):not([class*="/30"]) *:not([class*="bg-primary-foreground/20"]) {
     color: hsl(var(--primary-foreground)) !important;
+  }
+
+  /* Para fundos roxos claros (bg-primary/5, bg-primary/10, etc), usar texto escuro - SOBRESCREVE regras acima */
+  [class*="bg-primary/5"],
+  [class*="bg-primary/10"],
+  [class*="bg-primary/20"],
+  [class*="bg-primary/30"] {
+    color: hsl(var(--foreground)) !important;
+  }
+
+  /* Textos, labels, spans e outros elementos dentro de fundos roxos claros devem ser escuros */
+  /* Exclui elementos que já têm classes de cor específicas (text-primary, text-muted-foreground, etc) */
+  [class*="bg-primary/5"] label,
+  [class*="bg-primary/5"] span:not([class*="text-primary"]):not([class*="text-muted"]),
+  [class*="bg-primary/5"] p:not([class*="text-primary"]):not([class*="text-muted"]),
+  [class*="bg-primary/5"] h1:not([class*="text-primary"]):not([class*="text-muted"]),
+  [class*="bg-primary/5"] h2:not([class*="text-primary"]):not([class*="text-muted"]),
+  [class*="bg-primary/5"] h3:not([class*="text-primary"]):not([class*="text-muted"]),
+  [class*="bg-primary/5"] h4:not([class*="text-primary"]):not([class*="text-muted"]),
+  [class*="bg-primary/10"] label,
+  [class*="bg-primary/10"] span:not([class*="text-primary"]):not([class*="text-muted"]),
+  [class*="bg-primary/10"] p:not([class*="text-primary"]):not([class*="text-muted"]),
+  [class*="bg-primary/10"] h1:not([class*="text-primary"]):not([class*="text-muted"]),
+  [class*="bg-primary/10"] h2:not([class*="text-primary"]):not([class*="text-muted"]),
+  [class*="bg-primary/10"] h3:not([class*="text-primary"]):not([class*="text-muted"]),
+  [class*="bg-primary/10"] h4:not([class*="text-primary"]):not([class*="text-muted"]),
+  [class*="bg-primary/20"] label,
+  [class*="bg-primary/20"] span:not([class*="text-primary"]):not([class*="text-muted"]),
+  [class*="bg-primary/20"] p:not([class*="text-primary"]):not([class*="text-muted"]),
+  [class*="bg-primary/20"] h1:not([class*="text-primary"]):not([class*="text-muted"]),
+  [class*="bg-primary/20"] h2:not([class*="text-primary"]):not([class*="text-muted"]),
+  [class*="bg-primary/20"] h3:not([class*="text-primary"]):not([class*="text-muted"]),
+  [class*="bg-primary/20"] h4:not([class*="text-primary"]):not([class*="text-muted"]),
+  [class*="bg-primary/30"] label,
+  [class*="bg-primary/30"] span:not([class*="text-primary"]):not([class*="text-muted"]),
+  [class*="bg-primary/30"] p:not([class*="text-primary"]):not([class*="text-muted"]),
+  [class*="bg-primary/30"] h1:not([class*="text-primary"]):not([class*="text-muted"]),
+  [class*="bg-primary/30"] h2:not([class*="text-primary"]):not([class*="text-muted"]),
+  [class*="bg-primary/30"] h3:not([class*="text-primary"]):not([class*="text-muted"]),
+  [class*="bg-primary/30"] h4:not([class*="text-primary"]):not([class*="text-muted"]) {
+    color: hsl(var(--foreground)) !important;
   }
 
   /* Cor de texto padrão para itens de menu dentro de popovers/dropdowns */
@@ -542,5 +584,49 @@
   /* Disable transition during drag for immediate feedback */
   .vue-flow__node.dragging {
     transition: none;
+  }
+
+  /* Node Highlighting Classes */
+  .node-executed {
+    border: 2px solid hsl(var(--success)) !important;
+    box-shadow: 0 0 15px hsl(var(--success) / 0.3) !important;
+  }
+
+  .node-executing {
+    border: 2px solid hsl(var(--success)) !important;
+    animation: node-status-pulse-success 2s infinite !important;
+  }
+
+  .node-error {
+    border: 2px solid hsl(var(--destructive)) !important;
+    animation: node-status-pulse-error 2s infinite !important;
+  }
+
+  @keyframes node-status-pulse-success {
+    0% {
+      box-shadow: 0 0 0 0 hsl(var(--success) / 0.4);
+    }
+
+    70% {
+      box-shadow: 0 0 15px 10px hsl(var(--success) / 0);
+    }
+
+    100% {
+      box-shadow: 0 0 0 0 hsl(var(--success) / 0);
+    }
+  }
+
+  @keyframes node-status-pulse-error {
+    0% {
+      box-shadow: 0 0 0 0 hsl(var(--destructive) / 0.4);
+    }
+
+    70% {
+      box-shadow: 0 0 15px 10px hsl(var(--destructive) / 0);
+    }
+
+    100% {
+      box-shadow: 0 0 0 0 hsl(var(--destructive) / 0);
+    }
   }
 }

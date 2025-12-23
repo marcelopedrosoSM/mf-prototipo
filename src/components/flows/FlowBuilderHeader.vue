@@ -29,9 +29,40 @@
         </div>
       </div>
 
+      <!-- Center - Mode Toggle (pill-style) -->
+      <div class="absolute left-1/2 -translate-x-1/2">
+        <div class="flex items-center p-1 rounded-full border bg-muted/30">
+          <button
+            @click="handleModeChange('edit')"
+            :class="cn(
+              'flex items-center gap-2 px-4 py-1.5 rounded-full text-sm font-medium transition-all',
+              viewMode === 'edit' 
+                ? 'bg-primary text-primary-foreground shadow-sm' 
+                : 'text-muted-foreground hover:text-foreground'
+            )"
+          >
+            <Pencil class="h-4 w-4" />
+            Edição
+          </button>
+          <button
+            @click="handleModeChange('execution')"
+            :class="cn(
+              'flex items-center gap-2 px-4 py-1.5 rounded-full text-sm font-medium transition-all',
+              viewMode === 'execution' 
+                ? 'bg-primary text-primary-foreground shadow-sm' 
+                : 'text-muted-foreground hover:text-foreground'
+            )"
+          >
+            <Radio class="h-4 w-4" />
+            Execução
+          </button>
+        </div>
+      </div>
+
       <!-- Right side - Actions and Toggle -->
       <div class="flex items-center space-x-4">
         <Button 
+          v-if="!hideSimulate"
           variant="outline" 
           size="sm"
           @click="$emit('simulate')"
@@ -65,14 +96,14 @@
           Configurações
         </Button>
 
-        <div class="flex items-center gap-2 px-3 py-2 rounded-md border border-input bg-background h-[42px] w-[138px]">
+        <div class="flex items-center gap-2 px-3 h-9 rounded-md border border-input bg-background ml-4">
           <Switch 
             id="flow-active-switch" 
             v-model="isActive"
           />
           <Label 
             for="flow-active-switch" 
-            class="text-xs font-medium cursor-pointer select-none"
+            class="text-xs font-medium cursor-pointer select-none whitespace-nowrap"
           >
             {{ isActive ? 'Ativado' : 'Desativado' }}
           </Label>
@@ -106,20 +137,29 @@
 
 <script setup lang="ts">
 import { ref, watch } from 'vue';
-import { Workflow, Save, Settings, ArrowLeft, ChevronRight, ShieldCheck, Play } from 'lucide-vue-next';
+import { Workflow, Save, Settings, ArrowLeft, ChevronRight, ShieldCheck, Play, Pencil, Radio } from 'lucide-vue-next';
 import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
+import { cn } from '@/lib/utils';
+
+export type ViewMode = 'edit' | 'execution';
 
 interface Props {
   flowName: string;
+  hideSimulate?: boolean;
 }
 
-defineProps<Props>();
+const props = withDefaults(defineProps<Props>(), {
+  hideSimulate: false,
+});
 
 // 🚀 defineModel simplifica a prop isActive e as emissões update:isActive e toggle-active
 const isActive = defineModel<boolean>('isActive', { default: false });
+
+// 🚀 defineModel para viewMode - permite v-model:view-mode
+const viewMode = defineModel<ViewMode>('viewMode', { default: 'edit' });
 
 const emit = defineEmits<{
   'toggle-active': [value: boolean];
@@ -132,6 +172,11 @@ const emit = defineEmits<{
 }>();
 
 const showValidateDialog = ref(false);
+
+// Handle mode change - now updates the model directly
+const handleModeChange = (mode: ViewMode) => {
+  viewMode.value = mode;
+};
 
 // Sincronizar mudança do model com o evento legado 'toggle-active' para compatibilidade
 watch(isActive, (newVal) => {

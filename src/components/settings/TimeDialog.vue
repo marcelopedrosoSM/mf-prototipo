@@ -59,8 +59,8 @@
                     >
                       <Checkbox
                         :id="`agente-${agente.id}`"
-                        :checked="formData.users?.includes(agente.id) ?? false"
-                        @update:checked="(checked) => handleCheckboxUpdate(agente.id, checked)"
+                        :model-value="formData.users?.includes(agente.id) ?? false"
+                        @update:model-value="(checked) => handleCheckboxUpdate(agente.id, !!checked)"
                         @click.stop
                       />
                       <label

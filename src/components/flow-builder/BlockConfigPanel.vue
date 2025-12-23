@@ -25,16 +25,55 @@
           />
         </div>
 
-        <!-- INFO: START/END (No configuration needed) -->
-        <div v-if="['start', 'end'].includes(blockType || '')" class="space-y-6">
+        <!-- TRIGGER BLOCKS (Informational) -->
+        <div v-if="blockType?.startsWith('trigger_')" class="space-y-6">
+           <div class="p-4 bg-primary/5 rounded-lg border border-primary/20 flex flex-col gap-3">
+             <div class="flex items-center gap-3">
+               <div class="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
+                 <Play class="h-5 w-5 text-primary" />
+               </div>
+               <div>
+                 <h4 class="text-sm font-medium">{{ formData.title || 'Gatilho' }}</h4>
+                 <p class="text-xs text-muted-foreground">Ponto de entrada do fluxo</p>
+               </div>
+             </div>
+             
+             <div class="p-3 bg-muted/50 rounded-md">
+               <p class="text-xs text-muted-foreground">
+                 <span v-if="blockType === 'trigger_message_received'">
+                   Este gatilho dispara <strong>sempre que o contato enviar uma mensagem</strong>. 
+                   Útil para monitorar qualquer interação do cliente na conversa.
+                 </span>
+                 <span v-else-if="blockType === 'trigger_conversation_created'">
+                   Este gatilho dispara <strong>apenas na primeira mensagem</strong> de uma nova conversa.
+                   Ideal para boas-vindas e triagem inicial.
+                 </span>
+                 <span v-else-if="blockType === 'trigger_conversation_closed'">
+                   Este gatilho dispara quando a conversa é <strong>marcada como resolvida</strong>.
+                   Útil para pesquisas de satisfação ou follow-ups.
+                 </span>
+                 <span v-else-if="blockType === 'trigger_manual'">
+                   Este gatilho é ativado <strong>manualmente</strong> para fins de teste.
+                   Não será executado automaticamente em produção.
+                 </span>
+                 <span v-else>
+                   Este é um bloco de gatilho. Conecte-o a outros blocos para definir o fluxo.
+                 </span>
+               </p>
+             </div>
+           </div>
+        </div>
+
+        <!-- END (No configuration needed) -->
+        <div v-if="blockType === 'end'" class="space-y-6">
            <div class="p-4 bg-muted/30 rounded-lg border border-dashed flex flex-col items-center justify-center text-center gap-3 py-12">
              <div class="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center">
-               <component :is="blockType === 'start' ? Play : Octagon" class="h-6 w-6 text-primary" />
+               <component :is="Octagon" class="h-6 w-6 text-primary" />
              </div>
              <div class="space-y-1">
-               <p class="text-sm font-medium">Sem configurações extras</p>
+               <p class="text-sm font-medium">Fim do Fluxo</p>
                <p class="text-xs text-muted-foreground max-w-[200px]">
-                 {{ blockType === 'start' ? 'Este bloco é o ponto de partida automático do seu fluxo.' : 'Este bloco encerra a execução do fluxo.' }}
+                 Este bloco encerra a execução do fluxo.
                </p>
              </div>
            </div>
@@ -42,93 +81,9 @@
 
         <!-- MENSAGEM -->
         <div v-if="blockType === 'message'" class="space-y-4">
-          
-          <!-- Tipo de Mensagem -->
-          <div class="space-y-3">
-            <Label>Tipo de Mensagem</Label>
-            <div class="grid grid-cols-5 gap-2">
-              <Button 
-                v-for="type in ['text', 'image', 'video', 'audio', 'file']" 
-                :key="type"
-                type="button"
-                :variant="formData.messageType === type || (!formData.messageType && type === 'text') ? 'default' : 'outline'"
-                class="h-10 px-0 flex items-center justify-center"
-                @click="formData.messageType = type"
-                :title="getMessageTypeLabel(type)"
-              >
-                <component :is="getMessageTypeIcon(type)" class="h-4 w-4" />
-              </Button>
-            </div>
-            <p class="text-xs text-muted-foreground text-right">
-              {{ getMessageTypeLabel(formData.messageType || 'text') }}
-            </p>
-          </div>
-
-          <!-- URL da Mídia -->
-          <div v-if="formData.messageType && formData.messageType !== 'text'" class="space-y-2">
-            <Label>Arquivo</Label>
-            
-            <!-- Input de URL ou Upload -->
-            <div class="space-y-2">
-              <!-- Input URL -->
-              <div class="flex gap-2">
-                <Input 
-                  v-model="formData.mediaUrl" 
-                  placeholder="https://exemplo.com/arquivo ou anexe um arquivo" 
-                  class="flex-1"
-                />
-                <input 
-                  ref="fileInputRef"
-                  type="file" 
-                  class="hidden" 
-                  @change="handleFileSelect"
-                  :accept="getAcceptedFileTypes(formData.messageType)"
-                />
-                <Button 
-                  type="button"
-                  variant="outline" 
-                  @click="triggerFileInput"
-                  class="shrink-0"
-                >
-                  <FileText class="h-4 w-4 mr-2" />
-                  Anexar
-                </Button>
-              </div>
-              
-              <!-- Preview do arquivo selecionado -->
-              <div v-if="selectedFile" class="flex items-center gap-2 p-2 bg-muted rounded-md border">
-                <component :is="getMessageTypeIcon(formData.messageType || 'file')" class="h-4 w-4 text-muted-foreground shrink-0" />
-                <div class="flex-1 min-w-0">
-                  <p class="text-sm font-medium truncate">{{ selectedFile.name }}</p>
-                  <p class="text-xs text-muted-foreground">{{ formatFileSize(selectedFile.size) }}</p>
-                </div>
-                <Button 
-                  type="button"
-                  variant="ghost" 
-                  size="icon" 
-                  class="h-6 w-6 shrink-0"
-                  @click="clearSelectedFile"
-                >
-                  <X class="h-3 w-3" />
-                </Button>
-              </div>
-              
-              <p class="text-xs text-muted-foreground">
-                Cole uma URL ou anexe um arquivo do seu computador
-              </p>
-            </div>
-          </div>
-
-          <!-- Conteúdo -->
-          <div class="space-y-2">
-            <Label>{{ formData.messageType && formData.messageType !== 'text' ? 'Legenda (Opcional)' : 'Conteúdo do Texto' }}</Label>
-            <VariableTextArea 
-              v-model="formData.content" 
-              :placeholder="formData.messageType && formData.messageType !== 'text' ? 'Digite uma legenda...' : 'Digite sua mensagem...'" 
-              :rows="5" 
-            />
-            <p class="text-xs text-muted-foreground">O conteúdo suporta variáveis dinâmicas.</p>
-          </div>
+          <MessageConfig 
+            v-model="formData"
+          />
         </div>
 
         <!-- PERGUNTA -->
@@ -334,7 +289,7 @@
         </div>
 
         <!-- WAIT -->
-        <div v-if="blockType === 'wait'" class="space-y-4">
+        <div v-if="blockType === 'wait' && flowContext !== 'atividades'" class="space-y-4">
           <div class="space-y-2">
             <Label>Tempo de Espera (segundos)</Label>
             <div class="flex items-center gap-2">
@@ -352,8 +307,29 @@
           </div>
         </div>
 
-        <!-- ACTION -->
-        <div v-if="blockType === 'action'" class="space-y-4">
+
+
+        <!-- END -->
+        <div v-if="blockType === 'end'" class="space-y-4">
+          <div class="space-y-2">
+            <Label>Tempo de Espera (segundos)</Label>
+            <div class="flex items-center gap-2">
+              <Input 
+                type="number" 
+                :model-value="(formData.waitDuration || 0) / 1000"
+                @update:model-value="(v) => formData.waitDuration = Number(v) * 1000"
+                min="0"
+                step="1"
+                placeholder="0"
+              />
+              <Clock class="text-muted-foreground w-4 h-4" />
+            </div>
+            <p class="text-xs text-muted-foreground">O fluxo irá aguardar este tempo antes de prosseguir.</p>
+          </div>
+        </div>
+
+        <!-- ACTION (apenas para ATENDIMENTO - com actionType) -->
+        <div v-if="blockType === 'action' && flowContext !== 'atividades'" class="space-y-4">
           <div class="space-y-2">
             <Label>Tipo de Ação</Label>
             <Select 
@@ -390,8 +366,8 @@
                 <SelectValue placeholder="Escolha um agente" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem v-for="agent in MOCK_AGENTS" :key="agent.id" :value="agent.id">
-                  {{ agent.name }}
+                <SelectItem v-for="agent in agentsList" :key="agent.id" :value="agent.id">
+                  {{ agent.nome }}
                 </SelectItem>
               </SelectContent>
             </Select>
@@ -405,8 +381,8 @@
                 <SelectValue placeholder="Escolha um time" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem v-for="team in MOCK_TEAMS" :key="team.id" :value="team.id">
-                  {{ team.name }}
+                <SelectItem v-for="team in teamsList" :key="team.id" :value="team.id">
+                  {{ team.nome }}
                 </SelectItem>
               </SelectContent>
             </Select>
@@ -697,8 +673,7 @@
                 <p class="text-xs text-muted-foreground">Tempo máximo de espera pela resposta</p>
               </div>
               <Switch 
-                :checked="formData.api_timeout_enabled || false"
-                @update:checked="(v) => formData.api_timeout_enabled = v"
+                v-model="formData.api_timeout_enabled"
               />
             </div>
             
@@ -710,7 +685,6 @@
                 placeholder="5000"
                 min="1000"
                 max="60000"
-```
               />
               <p class="text-xs text-muted-foreground">Padrão: 5000ms (5 segundos)</p>
             </div>
@@ -721,49 +695,60 @@
           </div>
         </div>
 
-        <!-- CONDITIONAL: HOLIDAY -->
-        <div v-if="blockType === 'condition_holiday'" class="space-y-4">
-          <div class="p-4 bg-amber-50 dark:bg-amber-900/20 rounded-lg border border-amber-200 dark:border-amber-800">
+        <!-- AVAILABILITY CHECK (Unificação Feriado + Horário) -->
+        <div v-if="blockType === 'availability_check'" class="space-y-6">
+           <div class="p-4 bg-amber-50 dark:bg-amber-900/20 rounded-lg border border-amber-200 dark:border-amber-800">
              <div class="flex items-start gap-3">
-               <Calendar class="h-5 w-5 text-amber-600 dark:text-amber-400 mt-0.5" />
+               <CalendarClock class="h-5 w-5 text-amber-600 dark:text-amber-400 mt-0.5" />
                <div class="space-y-1">
-                 <h4 class="text-sm font-medium text-amber-800 dark:text-amber-200">Verificação de Feriados</h4>
+                 <h4 class="text-sm font-medium text-amber-800 dark:text-amber-200">Verificação de Disponibilidade</h4>
                  <p class="text-xs text-amber-700 dark:text-amber-300">
-                   Este bloco verifica automaticamente se hoje é um feriado ou dia inativo configurado no sistema.
+                   Este bloco verifica automaticamente:
+                   <br>1. Se é <strong>Feriado</strong> (conforme configurações globais)
+                   <br>2. Se está dentro do <strong>Horário de Atendimento</strong>
                  </p>
                </div>
              </div>
-          </div>
-          
-          <div class="space-y-2">
-            <Label>Calendário de Feriados</Label>
-             <Select disabled model-value="default">
-                <SelectTrigger>
-                  <SelectValue placeholder="Padrão do Sistema" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="default">Padrão do Sistema</SelectItem>
-                </SelectContent>
-             </Select>
-             <p class="text-xs text-muted-foreground">Configurações de feriados são gerenciadas nas Configurações Gerais.</p>
-          </div>
+           </div>
 
-          <Separator />
-          
-          <div class="space-y-2">
-             <Label>Saídas</Label>
-             <div class="space-y-2">
-               <div class="flex items-center justify-between p-2 border rounded bg-muted/50">
-                 <span class="text-sm font-medium">Sim (É Feriado)</span>
-                 <Badge variant="outline" class="bg-amber-100 text-amber-800 border-amber-200">Saída 1</Badge>
-               </div>
-               <div class="flex items-center justify-between p-2 border rounded bg-muted/50">
-                 <span class="text-sm font-medium">Não (Dia Normal)</span>
-                 <Badge variant="outline">Saída 2</Badge>
-               </div>
-             </div>
-          </div>
+           <BusinessHoursConfig 
+              :intervals="formData.intervals || []"
+              @update:intervals="handleIntervalsUpdate"
+              :away-message="formData.awayMessage || {}"
+              @update:away-message="(msg) => formData.awayMessage = msg"
+            />
+
+           <Separator />
+
+           <!-- Explicação das Saídas -->
+           <div class="space-y-3">
+            <Label>Saídas do Bloco</Label>
+            <div class="space-y-2">
+                <div class="flex items-center justify-between p-3 border rounded-lg bg-emerald-50/50 dark:bg-emerald-900/10">
+                  <div class="flex items-center gap-2">
+                    <div class="w-3 h-3 rounded-full bg-emerald-500"></div>
+                    <div class="flex flex-col">
+                        <span class="text-sm font-medium">Disponível</span>
+                        <span class="text-[10px] text-muted-foreground">Dia útil e dentro do horário</span>
+                    </div>
+                  </div>
+                  <Badge variant="outline" class="bg-emerald-100 text-emerald-800 border-emerald-200">Saída 1</Badge>
+                </div>
+                
+                <div class="flex items-center justify-between p-3 border rounded-lg bg-red-50/50 dark:bg-red-900/10">
+                  <div class="flex items-center gap-2">
+                    <div class="w-3 h-3 rounded-full bg-red-500"></div>
+                    <div class="flex flex-col">
+                        <span class="text-sm font-medium">Indisponível</span>
+                        <span class="text-[10px] text-muted-foreground">Feriado ou fora do horário</span>
+                    </div>
+                  </div>
+                  <Badge variant="outline" class="bg-red-100 text-red-800 border-red-200">Saída 2</Badge>
+                </div>
+            </div>
+           </div>
         </div>
+
 
         <!-- CONDITIONAL: WEEKDAY -->
         <div v-if="blockType === 'condition_weekday'" class="space-y-6">
@@ -874,6 +859,298 @@
            </div>
         </div>
 
+        <!-- ============================================ -->
+        <!-- SEÇÕES DE BLOCOS DE ATIVIDADES               -->
+        <!-- ============================================ -->
+
+        <!-- EMAIL -->
+        <div v-if="blockType === 'email'" class="space-y-6">
+          <div class="space-y-2">
+            <Label>Assunto do E-mail</Label>
+            <Input v-model="formData.subject" placeholder="Assunto do e-mail" />
+          </div>
+          
+          <div class="space-y-2">
+            <Label>Corpo do E-mail</Label>
+            <VariableTextArea 
+              v-model="formData.body" 
+              placeholder="Conteúdo do e-mail..." 
+              :rows="6" 
+            />
+            <p class="text-xs text-muted-foreground">Suporta variáveis como {{nome}}, {{empresa}}</p>
+          </div>
+
+          <Separator />
+          
+          <!-- Condições -->
+          <div class="space-y-3">
+            <div class="flex items-center justify-between">
+              <Label>Condições de Resultado</Label>
+              <Button variant="outline" size="sm" @click="addCondition" class="h-8" :disabled="(formData.conditions?.length || 0) >= 10">
+                <Plus class="mr-1 h-3 w-3" /> Adicionar
+              </Button>
+            </div>
+            <div class="space-y-2">
+              <div 
+                v-for="(condition, index) in formData.conditions" 
+                :key="index"
+                class="flex items-center gap-2 p-2 border rounded-md bg-card animate-in slide-in-from-top-1 duration-200"
+              >
+                <Input v-model="condition.label" placeholder="Ex: Recebido" class="h-8 flex-1" />
+                <Button variant="ghost" size="icon" class="h-7 w-7 shrink-0 text-muted-foreground hover:text-destructive" @click="removeCondition(index)">
+                  <X class="h-3.5 w-3.5" />
+                </Button>
+              </div>
+              <p v-if="!formData.conditions?.length" class="text-xs text-center py-3 text-muted-foreground border border-dashed rounded">
+                Adicione condições como "Recebeu", "Não recebeu"
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <!-- CALL (LIGAÇÃO) -->
+        <div v-if="blockType === 'call'" class="space-y-6">
+          <div class="space-y-2">
+            <Label>Campo do Telefone</Label>
+            <Select v-model="formData.phoneField">
+              <SelectTrigger>
+                <SelectValue placeholder="Selecione o campo" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="main_phone">Telefone Principal</SelectItem>
+                <SelectItem value="mobile">Celular</SelectItem>
+                <SelectItem value="work">Comercial</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+          
+          <div class="space-y-2">
+            <Label>Script/Roteiro (Opcional)</Label>
+            <VariableTextArea 
+              v-model="formData.script" 
+              placeholder="Roteiro da ligação..." 
+              :rows="4" 
+            />
+          </div>
+
+          <div class="space-y-2">
+            <Label>Duração Máxima (minutos)</Label>
+            <Input v-model="formData.maxDuration" type="number" placeholder="5" class="w-24" />
+          </div>
+
+          <Separator />
+          
+          <!-- Condições -->
+          <div class="space-y-3">
+            <div class="flex items-center justify-between">
+              <Label>Condições de Resultado</Label>
+              <Button variant="outline" size="sm" @click="addCondition" class="h-8" :disabled="(formData.conditions?.length || 0) >= 10">
+                <Plus class="mr-1 h-3 w-3" /> Adicionar
+              </Button>
+            </div>
+            <div class="space-y-2">
+              <div 
+                v-for="(condition, index) in formData.conditions" 
+                :key="index"
+                class="flex items-center gap-2 p-2 border rounded-md bg-card animate-in slide-in-from-top-1 duration-200"
+              >
+                <Input v-model="condition.label" placeholder="Ex: Atendeu" class="h-8 flex-1" />
+                <Button variant="ghost" size="icon" class="h-7 w-7 shrink-0 text-muted-foreground hover:text-destructive" @click="removeCondition(index)">
+                  <X class="h-3.5 w-3.5" />
+                </Button>
+              </div>
+              <p v-if="!formData.conditions?.length" class="text-xs text-center py-3 text-muted-foreground border border-dashed rounded">
+                Adicione condições como "Atendeu", "Não atendeu", "Ocupado"
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <!-- TASK (TAREFA) -->
+        <div v-if="blockType === 'task'" class="space-y-6">
+          <div class="space-y-2">
+            <Label>Descrição da Tarefa</Label>
+            <VariableTextArea 
+              v-model="formData.description" 
+              placeholder="Descrição detalhada da tarefa..." 
+              :rows="4" 
+            />
+          </div>
+          
+          <div class="space-y-2">
+            <Label>Responsável</Label>
+            <Select v-model="formData.assigneeId">
+              <SelectTrigger>
+                <SelectValue placeholder="Selecione o responsável" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem v-for="agent in MOCK_AGENTS" :key="agent.id" :value="agent.id">
+                  {{ agent.name }}
+                </SelectItem>
+                <SelectItem v-for="team in MOCK_TEAMS" :key="team.id" :value="`team-${team.id}`">
+                  📋 {{ team.name }}
+                </SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+
+          <div class="space-y-2">
+            <Label>Prazo (dias)</Label>
+            <Input v-model="formData.dueInDays" type="number" placeholder="3" class="w-24" />
+          </div>
+
+          <Separator />
+          
+          <!-- Condições -->
+          <div class="space-y-3">
+            <div class="flex items-center justify-between">
+              <Label>Condições de Resultado</Label>
+              <Button variant="outline" size="sm" @click="addCondition" class="h-8" :disabled="(formData.conditions?.length || 0) >= 10">
+                <Plus class="mr-1 h-3 w-3" /> Adicionar
+              </Button>
+            </div>
+            <div class="space-y-2">
+              <div 
+                v-for="(condition, index) in formData.conditions" 
+                :key="index"
+                class="flex items-center gap-2 p-2 border rounded-md bg-card animate-in slide-in-from-top-1 duration-200"
+              >
+                <Input v-model="condition.label" placeholder="Ex: Concluída" class="h-8 flex-1" />
+                <Button variant="ghost" size="icon" class="h-7 w-7 shrink-0 text-muted-foreground hover:text-destructive" @click="removeCondition(index)">
+                  <X class="h-3.5 w-3.5" />
+                </Button>
+              </div>
+              <p v-if="!formData.conditions?.length" class="text-xs text-center py-3 text-muted-foreground border border-dashed rounded">
+                Adicione condições como "Concluída", "Cancelada", "Pendente"
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <!-- WAIT (ESPERA) -->
+        <div v-if="blockType === 'wait' && flowContext === 'atividades'" class="space-y-6">
+          <div class="space-y-2">
+            <Label>Tempo de Espera</Label>
+            <div class="flex items-center gap-3">
+              <Input v-model="formData.duration" type="number" placeholder="1" class="w-24" />
+              <Select v-model="formData.unit" class="flex-1">
+                <SelectTrigger>
+                  <SelectValue placeholder="Unidade" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="minutes">Minutos</SelectItem>
+                  <SelectItem value="hours">Horas</SelectItem>
+                  <SelectItem value="days">Dias</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+
+          <Separator />
+          
+          <!-- Condições -->
+          <div class="space-y-3">
+            <div class="flex items-center justify-between">
+              <Label>Condições de Resultado</Label>
+              <Button variant="outline" size="sm" @click="addCondition" class="h-8" :disabled="(formData.conditions?.length || 0) >= 10">
+                <Plus class="mr-1 h-3 w-3" /> Adicionar
+              </Button>
+            </div>
+            <div class="space-y-2">
+              <div 
+                v-for="(condition, index) in formData.conditions" 
+                :key="index"
+                class="flex items-center gap-2 p-2 border rounded-md bg-card animate-in slide-in-from-top-1 duration-200"
+              >
+                <Input v-model="condition.label" placeholder="Ex: Tempo expirou" class="h-8 flex-1" />
+                <Button variant="ghost" size="icon" class="h-7 w-7 shrink-0 text-muted-foreground hover:text-destructive" @click="removeCondition(index)">
+                  <X class="h-3.5 w-3.5" />
+                </Button>
+              </div>
+              <p v-if="!formData.conditions?.length" class="text-xs text-center py-3 text-muted-foreground border border-dashed rounded">
+                Adicione condições como "Tempo expirou", "Interação ocorreu"
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <!-- ACTION (apenas para ATIVIDADES - simples com condições) -->
+        <div v-if="blockType === 'action' && flowContext === 'atividades'" class="space-y-6">
+          <div class="p-3 bg-muted/50 rounded-md text-sm text-muted-foreground border-l-2 border-primary/20">
+            Use este bloco para criar ações personalizadas com resultados condicionais.
+          </div>
+
+          <!-- Condições -->
+          <div class="space-y-3">
+            <div class="flex items-center justify-between">
+              <Label>Condições de Resultado</Label>
+              <Button variant="outline" size="sm" @click="addCondition" class="h-8" :disabled="(formData.conditions?.length || 0) >= 10">
+                <Plus class="mr-1 h-3 w-3" /> Adicionar
+              </Button>
+            </div>
+            <div class="space-y-2">
+              <div 
+                v-for="(condition, index) in formData.conditions" 
+                :key="index"
+                class="flex items-center gap-2 p-2 border rounded-md bg-card animate-in slide-in-from-top-1 duration-200"
+              >
+                <Input v-model="condition.label" placeholder="Ex: Ótimo, Regular, Ruim" class="h-8 flex-1" />
+                <Button variant="ghost" size="icon" class="h-7 w-7 shrink-0 text-muted-foreground hover:text-destructive" @click="removeCondition(index)">
+                  <X class="h-3.5 w-3.5" />
+                </Button>
+              </div>
+              <p v-if="!formData.conditions?.length" class="text-xs text-center py-3 text-muted-foreground border border-dashed rounded">
+                Adicione condições personalizadas para criar ramificações
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <!-- CHAT_FLOW (FLUXO DE ATENDIMENTO) -->
+        <div v-if="blockType === 'chat_flow'" class="space-y-6">
+          <div class="space-y-2">
+            <Label>Fluxo de Atendimento</Label>
+            <Select v-model="formData.flowId">
+              <SelectTrigger>
+                <SelectValue placeholder="Selecione o fluxo" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="1">Atendimento Inicial</SelectItem>
+                <SelectItem value="2">Suporte Técnico</SelectItem>
+                <SelectItem value="3">Vendas</SelectItem>
+              </SelectContent>
+            </Select>
+            <p class="text-xs text-muted-foreground">O fluxo de atendimento será iniciado com o contato atual.</p>
+          </div>
+
+          <Separator />
+          
+          <!-- Condições -->
+          <div class="space-y-3">
+            <div class="flex items-center justify-between">
+              <Label>Condições de Resultado</Label>
+              <Button variant="outline" size="sm" @click="addCondition" class="h-8" :disabled="(formData.conditions?.length || 0) >= 10">
+                <Plus class="mr-1 h-3 w-3" /> Adicionar
+              </Button>
+            </div>
+            <div class="space-y-2">
+              <div 
+                v-for="(condition, index) in formData.conditions" 
+                :key="index"
+                class="flex items-center gap-2 p-2 border rounded-md bg-card animate-in slide-in-from-top-1 duration-200"
+              >
+                <Input v-model="condition.label" placeholder="Ex: Concluído" class="h-8 flex-1" />
+                <Button variant="ghost" size="icon" class="h-7 w-7 shrink-0 text-muted-foreground hover:text-destructive" @click="removeCondition(index)">
+                  <X class="h-3.5 w-3.5" />
+                </Button>
+              </div>
+              <p v-if="!formData.conditions?.length" class="text-xs text-center py-3 text-muted-foreground border border-dashed rounded">
+                Adicione condições como "Concluído", "Abandonado", "Transferido"
+              </p>
+            </div>
+          </div>
+        </div>
+
       </div>
     </ScrollArea>
 
@@ -897,7 +1174,9 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Switch } from '@/components/ui/switch';
 import { Separator } from '@/components/ui/separator';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
-import { X, MessageSquare, MessageSquarePlus, CheckCircle2, Clock, Webhook, Play, Image, Video, Mic, FileText, Type, Plus, Trash, ChevronUp, ChevronDown, AlertCircle, Variable, List, AlignLeft, Globe, Code2, Send, FileJson, FileOutput, Calendar, CalendarDays } from 'lucide-vue-next';
+import { X, MessageSquare, MessageSquarePlus, CheckCircle2, Clock, Webhook, Play, Image, Video, Mic, FileText, Type, Plus, Trash, ChevronUp, ChevronDown, AlertCircle, Variable, List, AlignLeft, Globe, Code2, Send, FileJson, FileOutput, Calendar, CalendarDays, ArrowUpDown, CalendarClock, Octagon } from 'lucide-vue-next';
+import BusinessHoursConfig from '@/components/automations/config/BusinessHoursConfig.vue'; // Import the component
+import MessageConfig from '@/components/automations/config/MessageConfig.vue';
 import { TRIGGER_TYPES, type CustomNodeData, type BlockType, type TriggerType } from '@/types/flow-builder';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import VariableTextArea from './VariableTextArea.vue';
@@ -947,6 +1226,7 @@ const props = defineProps<{
   blockId: string;
   blockType: BlockType;
   modelValue: CustomNodeData; // Usando modelValue para v-model
+  flowContext?: 'atendimento' | 'atividades'; // Contexto do fluxo
 }>();
 
 const emit = defineEmits(['update:modelValue', 'close', 'save']);
@@ -1058,6 +1338,7 @@ const blockTypeLabel = computed(() => {
     case 'action': return 'Configuração de Ação';
     case 'wait': return 'Configuração de Espera';
     case 'note': return 'Configuração de Nota';
+    case 'availability_check': return 'Verificar Disponibilidade';
     case 'condition_holiday': return 'Condição: Feriado';
     case 'condition_weekday': return 'Condição: Dias da Semana';
     case 'condition_time_range': return 'Condição: Horário';
@@ -1111,6 +1392,10 @@ const removeOption = (index: number) => {
   }
 };
 
+const handleIntervalsUpdate = (intervals: any[]) => {
+  formData.value.intervals = intervals;
+};
+
 const addCondition = () => {
   if (!formData.value.conditions) {
     formData.value.conditions = [];
@@ -1156,63 +1441,4 @@ const getOptionPrefix = (index: number, type?: string) => {
   return index + 1; // 1, 2, 3...
 };
 
-// Funções para manipulação de arquivos
-const triggerFileInput = () => {
-  fileInputRef.value?.click();
-};
-
-const handleFileSelect = (event: Event) => {
-  const target = event.target as HTMLInputElement;
-  const file = target.files?.[0];
-  
-  if (file) {
-    selectedFile.value = file;
-    
-    // Criar URL temporária do arquivo (blob URL)
-    const blobUrl = URL.createObjectURL(file);
-    formData.value.mediaUrl = blobUrl;
-    
-    // Armazenar o arquivo para upload posterior
-    formData.value.localFile = file;
-    
-    // Nota: Em produção, você pode querer fazer upload imediato para um servidor
-    // e obter uma URL permanente, ou armazenar o arquivo para upload ao salvar
-  }
-};
-
-const clearSelectedFile = () => {
-  selectedFile.value = null;
-  formData.value.mediaUrl = '';
-  formData.value.localFile = undefined;
-  
-  // Limpar o input file
-  if (fileInputRef.value) {
-    fileInputRef.value.value = '';
-  }
-};
-
-const getAcceptedFileTypes = (messageType?: string) => {
-  switch (messageType) {
-    case 'image':
-      return 'image/*';
-    case 'video':
-      return 'video/*';
-    case 'audio':
-      return 'audio/*';
-    case 'file':
-      return '*/*';
-    default:
-      return '*/*';
-  }
-};
-
-const formatFileSize = (bytes: number) => {
-  if (bytes === 0) return '0 Bytes';
-  
-  const k = 1024;
-  const sizes = ['Bytes', 'KB', 'MB', 'GB'];
-  const i = Math.floor(Math.log(bytes) / Math.log(k));
-  
-  return Math.round(bytes / Math.pow(k, i) * 100) / 100 + ' ' + sizes[i];
-};
 </script>

@@ -12,10 +12,12 @@
           v-for="item in navigationItems"
           :key="item.path"
           :to="item.path"
-          class="flex items-center space-x-2 rounded-md px-3 py-2 text-sm font-medium interactive"
-          :class="{
-            'bg-accent text-accent-foreground': isActiveRoute(item.path),
-          }"
+          class="relative flex items-center space-x-2 rounded-md px-3 py-2 text-sm font-medium interactive"
+          :class="[
+            isActiveRoute(item.path)
+              ? 'bg-violet-100 text-violet-700 dark:bg-violet-500/15 dark:text-violet-300'
+              : 'text-muted-foreground hover:bg-muted hover:text-foreground'
+          ]"
         >
           <component :is="item.icon" class="h-4 w-4" />
           <span>{{ item.label }}</span>
@@ -34,7 +36,7 @@
 <script setup lang="ts">
 import { h } from 'vue';
 import { useRoute } from 'vue-router';
-import { LayoutDashboard, MessagesSquare, Contact, Workflow } from 'lucide-vue-next';
+import { LayoutDashboard, MessagesSquare, Contact, Workflow, Play } from 'lucide-vue-next';
 import Logo from '@/components/Logo.vue';
 import UserMenu from './UserMenu.vue';
 
@@ -50,6 +52,11 @@ const navigationItems = [
     path: '/conversations',
     label: 'Conversas',
     icon: h(MessagesSquare),
+  },
+  {
+    path: '/execucao',
+    label: 'Modo Execução',
+    icon: h(Play),
   },
   {
     path: '/flows',

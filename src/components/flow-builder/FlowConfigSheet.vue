@@ -10,11 +10,10 @@ import {
 } from '@/components/ui/sheet'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { Button } from '@/components/ui/button'
-import { FileText, Sparkles, Clock, RefreshCw, User, Loader2 } from 'lucide-vue-next'
+import { FileText, Sparkles, RefreshCw, User, Loader2 } from 'lucide-vue-next'
 import CollapsibleConfigSection from './CollapsibleConfigSection.vue'
 import InformacoesGeraisSection from './sections/InformacoesGeraisSection.vue'
 import ModeloIASection from './sections/ModeloIASection.vue'
-import HorarioAtendimentoSection from './sections/HorarioAtendimentoSection.vue'
 import RetomadaAutomaticaSection from './sections/RetomadaAutomaticaSection.vue'
 import TransferenciaSection from './sections/TransferenciaSection.vue'
 import type { FlowConfigData } from '@/types/flow-config'
@@ -67,13 +66,7 @@ watch(() => props.open, (isOpen) => {
 }, { immediate: true })
 
 // Controle de switches
-const horarioEnabled = computed({
-  get: () => config.value.horarioFuncionamento.ativo,
-  set: (value: boolean) => {
-    config.value.horarioFuncionamento.ativo = value
-    hasUnsavedChanges.value = true
-  }
-})
+
 
 const retomadaEnabled = computed({
   get: () => config.value.retomada.enabled,
@@ -154,22 +147,7 @@ const markChanged = () => {
               <ModeloIASection />
             </CollapsibleConfigSection>
 
-            <!-- Seção: Horário de Atendimento -->
-            <CollapsibleConfigSection
-              title="Horário de Atendimento"
-              :default-open="false"
-              v-model:enabled="horarioEnabled"
-            >
-              <template #icon>
-                <Clock class="h-4 w-4 text-muted-foreground" />
-              </template>
-              <HorarioAtendimentoSection
-                :horario="config.horarioFuncionamento"
-                :continuar-atendimento="config.continuarAtendimentoHorario"
-                @update:horario="config.horarioFuncionamento = $event; markChanged()"
-                @update:continuar-atendimento="config.continuarAtendimentoHorario = $event; markChanged()"
-              />
-            </CollapsibleConfigSection>
+
 
             <!-- Seção: Retomada Automática -->
             <CollapsibleConfigSection

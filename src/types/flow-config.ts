@@ -2,27 +2,7 @@
  * Tipos para configuração de fluxos de atendimento
  */
 
-// Configuração de horário por dia
-export interface HorarioDia {
-    ativo: boolean
-    horarioInicio: string
-    horarioFim: string
-}
 
-// Configuração completa de horário de funcionamento
-export interface HorarioFuncionamento {
-    ativo: boolean
-    seg: HorarioDia
-    ter: HorarioDia
-    qua: HorarioDia
-    qui: HorarioDia
-    sex: HorarioDia
-    sab: HorarioDia
-    dom: HorarioDia
-    mensagemForaHorario: string
-    inativoFeriados: boolean
-    diasInatividade?: string[] // Formato: "MM-dd"
-}
 
 // Configuração de retomada automática
 export interface RetomadaConfig {
@@ -55,9 +35,7 @@ export interface FlowConfigData {
     llmProvider: 'openai'
     llmModel: string
 
-    // Horário de Atendimento
-    horarioFuncionamento: HorarioFuncionamento
-    continuarAtendimentoHorario: boolean
+
 
     // Retomada Automática
     retomada: RetomadaConfig

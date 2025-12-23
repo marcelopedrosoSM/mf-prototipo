@@ -35,9 +35,9 @@
             <TableRow v-for="token in paginatedTokens" :key="token.id">
               <TableCell class="font-medium">
                 <div class="flex items-center gap-2.5">
-                  <div class="flex h-7 w-7 items-center justify-center rounded-full bg-primary/10 text-primary flex-shrink-0">
-                    <Key class="h-3.5 w-3.5" />
-                  </div>
+                <SoftIcon class="h-7 w-7 rounded-full">
+                  <Key class="h-3.5 w-3.5" />
+                </SoftIcon>
                   <span>{{ token.title }}</span>
                 </div>
               </TableCell>
@@ -111,6 +111,7 @@ import { usePagination } from '@/composables/usePagination';
 import { useSortable } from '@/composables/useSortable';
 import { formatDate } from '@/utils/date';
 import type { TokenAPI } from '@/types/tokens-api';
+import SoftIcon from '@/components/ui/icon/SoftIcon.vue';
 
 interface Props {
   tokens: TokenAPI[];

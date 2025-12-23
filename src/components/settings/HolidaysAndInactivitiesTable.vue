@@ -39,9 +39,9 @@
                 @click="handleEdit(item)"
                 class="text-left hover:text-primary transition-colors cursor-pointer flex items-center gap-2.5"
               >
-                <div class="flex h-7 w-7 items-center justify-center rounded-full bg-primary/10 text-primary flex-shrink-0">
+                <SoftIcon class="h-7 w-7 rounded-full">
                   <CalendarOff class="h-3.5 w-3.5" />
-                </div>
+                </SoftIcon>
                 <span>{{ item.name }}</span>
               </button>
             </TableCell>
@@ -51,14 +51,14 @@
               </span>
             </TableCell>
             <TableCell>
-              <Badge :variant="getTypeVariant(item.type)" :class="getTypeBadgeClass(item.type)">
-                {{ getTypeLabel(item.type) }}
-              </Badge>
+                <span class="text-sm text-muted-foreground">
+                  {{ getTypeLabel(item.type) }}
+                </span>
             </TableCell>
             <TableCell>
-              <Badge :variant="getPeriodicityVariant(item.periodicity)" :class="getPeriodicityBadgeClass(item.periodicity)">
-                {{ getPeriodicityLabel(item.periodicity) }}
-              </Badge>
+                <span class="text-sm text-muted-foreground">
+                  {{ getPeriodicityLabel(item.periodicity) }}
+                </span>
             </TableCell>
             <TableCell class="text-right">
               <DropdownMenu>
@@ -115,12 +115,12 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { Badge } from '@/components/ui/badge';
 import TablePagination from '@/components/ui/table/TablePagination.vue';
 import { usePagination } from '@/composables/usePagination';
 import { useSortable } from '@/composables/useSortable';
 import { formatDate } from '@/utils/date';
 import type { HolidayAndInactivity } from '@/types/holidays-and-inactivities';
+import SoftIcon from '@/components/ui/icon/SoftIcon.vue';
 
 interface Props {
   holidaysAndInactivities: HolidayAndInactivity[];
@@ -186,21 +186,6 @@ const emit = defineEmits<{
   create: [];
 }>();
 
-function getTypeVariant(_type: string): 'default' | 'secondary' | 'destructive' | 'outline' {
-  return 'outline'; // Sempre outline para não preencher fundo
-}
-
-function getTypeBadgeClass(type: string): string {
-  switch (type) {
-    case 'holiday':
-      return 'border-primary/30 text-primary bg-transparent'; // Roxo secundário para feriado
-    case 'inactivity':
-      return 'border-muted-foreground/30 text-muted-foreground bg-transparent'; // Cinza para inatividade
-    default:
-      return 'border-muted-foreground/30 text-muted-foreground bg-transparent';
-  }
-}
-
 function getTypeLabel(type: string): string {
   switch (type) {
     case 'holiday':
@@ -209,21 +194,6 @@ function getTypeLabel(type: string): string {
       return 'Inatividade';
     default:
       return type;
-  }
-}
-
-function getPeriodicityVariant(_periodicity: string): 'default' | 'secondary' | 'destructive' | 'outline' {
-  return 'outline'; // Sempre outline para não preencher fundo
-}
-
-function getPeriodicityBadgeClass(periodicity: string): string {
-  switch (periodicity) {
-    case 'annual':
-      return 'border-primary/40 text-primary/80 bg-transparent'; // Roxo secundário mais claro para anual
-    case 'one-time':
-      return 'border-muted-foreground/40 text-muted-foreground/70 bg-transparent'; // Cinza mais claro para único
-    default:
-      return 'border-muted-foreground/30 text-muted-foreground bg-transparent';
   }
 }
 

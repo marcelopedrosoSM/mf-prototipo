@@ -35,21 +35,16 @@
             <TableRow v-for="caixa in paginatedCaixas" :key="caixa.id">
               <TableCell class="font-medium">
                 <div class="flex items-center gap-2.5">
-                  <div class="flex h-7 w-7 items-center justify-center rounded-full bg-primary/10 text-primary flex-shrink-0">
-                    <Inbox class="h-3.5 w-3.5" />
-                  </div>
+                <SoftIcon class="h-7 w-7 rounded-full">
+                  <Inbox class="h-3.5 w-3.5" />
+                </SoftIcon>
                   <span>{{ caixa.nome }}</span>
                 </div>
               </TableCell>
               <TableCell>
-                <Badge
-                  :variant="caixa.tipo === 'oficial' ? 'default' : 'outline'"
-                  :class="caixa.tipo === 'oficial' 
-                    ? 'bg-primary text-primary-foreground' 
-                    : 'border-muted-foreground/30 text-muted-foreground bg-transparent'"
-                >
+                <span class="text-sm text-muted-foreground">
                   {{ caixa.tipo === 'oficial' ? 'Oficial' : 'Não Oficial' }}
-                </Badge>
+                </span>
               </TableCell>
               <TableCell>
                 <span class="text-sm text-muted-foreground">
@@ -111,11 +106,11 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { Badge } from '@/components/ui/badge';
 import TablePagination from '@/components/ui/table/TablePagination.vue';
 import { usePagination } from '@/composables/usePagination';
 import { useSortable } from '@/composables/useSortable';
 import type { CaixaEntrada } from '@/types/caixas-entrada';
+import SoftIcon from '@/components/ui/icon/SoftIcon.vue';
 
 interface Props {
   caixas: CaixaEntrada[];

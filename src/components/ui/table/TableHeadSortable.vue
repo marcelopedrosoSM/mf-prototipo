@@ -1,7 +1,7 @@
 <template>
   <th
     :class="cn(
-      'h-10 px-3 text-left align-middle font-semibold text-foreground cursor-pointer select-none hover:bg-muted/80 transition-colors [&:has([role=checkbox])]:pr-0',
+      'h-10 px-5 text-left align-middle font-semibold text-foreground cursor-pointer select-none hover:bg-muted/80 transition-colors [&:has([role=checkbox])]:pr-0',
       props.class
     )"
     @click="handleClick"

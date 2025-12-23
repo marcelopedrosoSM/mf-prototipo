@@ -4,6 +4,7 @@
     <FlowBuilderHeader 
       :flow-name="currentFlow?.nome || 'Novo Fluxo'"
       v-model:is-active="isFlowActive"
+      v-model:view-mode="viewMode"
       @toggle-active="isFlowActive = $event"
       @save="handleSave"
       @back="goBack"
@@ -23,12 +24,21 @@
 
     <!-- Main Content Area -->
     <div class="flex flex-1 overflow-hidden relative">
-      <!-- Flow Builder Chat Sidebar -->
+      <!-- Sidebar: Edit Mode = Block Selector, Execution Mode = Execution List -->
       <FlowBuilderChatSidebar 
+        v-if="viewMode === 'edit'"
         :collapsed="isSidebarCollapsed" 
         :flow-type="currentFlow?.tipo" 
         @toggle="toggleSidebar" 
         @block-click="handleBlockClick" 
+      />
+      <ExecutionListSidebar
+        v-else
+        :collapsed="isSidebarCollapsed"
+        :flow-id="currentFlow?.id || ''"
+        @toggle="toggleSidebar"
+        @exit="viewMode = 'edit'"
+        @select-execution="handleSelectExecution"
       />
 
       <!-- Vue Flow Canvas -->
@@ -133,6 +143,10 @@
               <ChatSimulator
                 :nodes="nodes"
                 :edges="edges"
+                :flow-id="currentFlow?.id"
+                :flow-name="currentFlow?.nome"
+                contact-id="mock-contact-test-1"
+                :contact-data="{ name: 'Contato Teste', phone: '5511999999999', email: 'teste@exemplo.com' }"
                 @close="handleCloseSimulator"
                 @block-execute="handleBlockExecute"
                 @execution-state-change="handleExecutionStateChange"
@@ -156,26 +170,30 @@ import { cn } from '@/lib/utils';
 import FlowBuilderChatSidebar from '@/components/layout/FlowBuilderChatSidebar.vue';
 import FlowBuilderHeader from '@/components/flows/FlowBuilderHeader.vue';
 import FlowToolbar from '@/components/flow-builder/FlowToolbar.vue';
-import { MOCK_FLOWS_ATENDIMENTO, type Flow } from '@/mocks/data/flows';
+import { MOCK_FLOWS_ATENDIMENTO, FLOW_DATA_MAP, type Flow } from '@/mocks/data/flows';
 import CustomNode from '@/components/flow-builder/CustomNode.vue';
 import CustomNodeHorizontal from '@/components/flow-builder/CustomNodeHorizontal.vue';
 import CustomNodeVertical from '@/components/flow-builder/CustomNodeVertical.vue';
 import CustomNodeNote from '@/components/flow-builder/CustomNodeNote.vue';
 import CustomEdge from '@/components/flow-builder/CustomEdge.vue';
 import BlockConfigPanel from '@/components/flow-builder/BlockConfigPanel.vue';
+import ExecutionListSidebar from '@/components/flow-builder/ExecutionListSidebar.vue';
 
 import HelperLines from '@/components/flow-builder/HelperLines.vue';
 import { getHelperLines } from '@/components/flow-builder/utils';
 import { useLayout } from '@/composables/useLayout';
 import type { GraphNode } from '@vue-flow/core';
 import { useRefHistory } from '@vueuse/core';
-import { useFlowsStore } from '@/stores';
+import { useFlowsStore, useExecutionsStore } from '@/stores';
 import { useToast } from '@/components/ui/toast/use-toast';
 import ChatSimulator from '@/components/flow-builder/ChatSimulator.vue';
 import FlowConfigSheet from '@/components/flow-builder/FlowConfigSheet.vue';
 import { ResizablePanelGroup, ResizablePanel, ResizableHandle } from '@/components/ui/resizable';
 import type { FlowConfigData } from '@/types/flow-config';
 import { getDefaultFlowConfig } from '@/constants/flow-config-defaults';
+import { getSeedExecutions } from '@/mocks/data/executions';
+import type { FlowExecution } from '@/types/execution';
+import type { ViewMode } from '@/components/flows/FlowBuilderHeader.vue';
 
 
 const route = useRoute();
@@ -183,12 +201,14 @@ const router = useRouter();
 const { getViewport, onViewportChange, addEdges, onNodeClick, fitView, zoomIn, zoomOut, project } = useVueFlow();
 const { toast } = useToast();
 const flowsStore = useFlowsStore();
+const executionsStore = useExecutionsStore();
 
 const flowId = computed(() => route.params.id as string);
 const isNewFlow = computed(() => flowId.value === 'novo');
 const isSidebarCollapsed = ref(false);
 const currentFlow = ref<Flow | null>(null);
 const isFlowActive = ref(false);
+const viewMode = ref<ViewMode>('edit');
 
 // 🆕 Estado do FlowConfigSheet
 const configSheetOpen = ref(false);
@@ -356,7 +376,25 @@ onMounted(() => {
   // Registrar listener para mudanças de viewport
   onViewportChange(handleViewportChange);
 
+  // Handlers para notas
+  window.addEventListener('note-color-change', handleNoteColorChange as any);
+  window.addEventListener('note-content-change', handleNoteContentChange as any);
 });
+
+onUnmounted(() => {
+  window.removeEventListener('note-color-change', handleNoteColorChange as any);
+  window.removeEventListener('note-content-change', handleNoteContentChange as any);
+});
+
+function handleNoteColorChange(e: CustomEvent) {
+  const { id, color } = e.detail;
+  nodes.value = nodes.value.map(n => n.id === id ? { ...n, data: { ...n.data, color } } : n);
+}
+
+function handleNoteContentChange(e: CustomEvent) {
+  const { id, content } = e.detail;
+  nodes.value = nodes.value.map(n => n.id === id ? { ...n, data: { ...n.data, content } } : n);
+}
 
 // 🆕 Cleanup do timeout do minimap
 onUnmounted(() => {
@@ -444,15 +482,71 @@ function loadFlow() {
     const flow = MOCK_FLOWS_ATENDIMENTO.find(f => f.id === flowId.value);
     if (flow) {
       currentFlow.value = flow;
-    toast({
-      title: 'Fluxo carregado',
-      description: `Fluxo "${flow.nome}" carregado dos dados de exemplo.`,
-    });
+      
+      // Carregar nodes/edges do mock data
+      const flowData = FLOW_DATA_MAP[flowId.value];
+      if (flowData) {
+        const currentNodeType = layoutMode.value === 'horizontal' ? 'customNodeHorizontal' : 'customNodeVertical';
+        const currentSourcePos = layoutMode.value === 'horizontal' ? Position.Right : Position.Bottom;
+        const currentTargetPos = layoutMode.value === 'horizontal' ? Position.Left : Position.Top;
+
+        nodes.value = flowData.nodes.map(node => {
+          if (node.type === 'noteNode') return node;
+          return {
+            ...node,
+            type: currentNodeType,
+            sourcePosition: currentSourcePos,
+            targetPosition: currentTargetPos,
+          };
+        });
+        edges.value = flowData.edges;
+      }
+      
+      toast({
+        title: 'Fluxo carregado',
+        description: `Fluxo "${flow.nome}" carregado dos dados de exemplo.`,
+      });
     }
 }
 
 function toggleSidebar() {
   isSidebarCollapsed.value = !isSidebarCollapsed.value;
+}
+
+// Handle execution selection - highlight flowpath
+function handleSelectExecution(execution: FlowExecution) {
+  // Apply flowpath highlighting to nodes
+  nodes.value = nodes.value.map(node => ({
+    ...node,
+    data: {
+      ...node.data,
+      isExecuted: execution.executionPath.includes(node.id),
+      isCurrentBlock: execution.currentBlockId === node.id,
+      hasError: execution.status === 'error' && execution.currentBlockId === node.id,
+    },
+  }));
+
+  // Apply flowpath highlighting to edges based on execution path
+  const executedEdges = new Set<string>();
+  for (let i = 0; i < execution.executionPath.length - 1; i++) {
+    const source = execution.executionPath[i];
+    const target = execution.executionPath[i + 1];
+    executedEdges.add(`${source}-${target}`);
+  }
+
+  edges.value = edges.value.map(edge => ({
+    ...edge,
+    data: {
+      ...edge.data,
+      wasExecuted: executedEdges.has(`${edge.source}-${edge.target}`),
+      isExecuting: execution.currentBlockId === edge.target && execution.status === 'running',
+    },
+  }));
+
+  toast({
+    title: `Execução #${execution.executionNumber}`,
+    description: `Visualizando flowpath de ${execution.contactName}`,
+  });
 }
 
 function handleBlockClick(block: any) {

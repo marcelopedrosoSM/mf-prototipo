@@ -9,6 +9,8 @@ import { ref, computed, type Ref, onMounted, onUnmounted, watch, nextTick } from
 import type { Node, Edge } from '@vue-flow/core';
 import type { CustomNodeData, BlockType, Condition } from '@/types/flow-builder';
 import { evaluateSwitch } from '@/utils/flowExecution';
+import { useActivityStore } from '@/stores/activities';
+import { useConversationsStore } from '@/stores/conversations';
 
 // Tipos de mensagens no chat
 export type MessageType = 'bot' | 'user' | 'system';
@@ -41,6 +43,10 @@ export interface FlowSimulatorOptions {
     onFlowComplete?: () => void;
     onError?: (error: string, blockId?: string) => void;
     typingDelay?: number; // Delay padrão de digitação em ms
+    flowId?: string;
+    flowName?: string;
+    contactId?: string;
+    contactData?: { name: string; email?: string; phone?: string };
 }
 
 // Mapa centralizado de status (usado em header e mensagens de sistema)
@@ -71,7 +77,14 @@ export function useFlowSimulator(options: FlowSimulatorOptions) {
         onBlockComplete,
         onFlowComplete,
         onError,
+        flowId,
+        flowName,
+        contactId,
+        contactData,
     } = options;
+
+    const activityStore = useActivityStore();
+    const conversationsStore = useConversationsStore();
 
     // Estado da simulação
     const state = ref<FlowState>('IDLE');
@@ -110,7 +123,15 @@ export function useFlowSimulator(options: FlowSimulatorOptions) {
     };
 
     const findStartNode = (): Node<CustomNodeData> | undefined => {
-        return nodes.value.find(n => n.data.type === 'start');
+        // Prioritize manual trigger for testing
+        const manualTrigger = nodes.value.find(n => n.data.type === 'trigger_manual');
+        if (manualTrigger) return manualTrigger;
+
+        // Fallback to any trigger or legacy start
+        return nodes.value.find(n =>
+            (n.data.type && typeof n.data.type === 'string' && n.data.type.startsWith('trigger_')) ||
+            n.data.type === 'start'
+        );
     };
 
     const findNextBlockId = (fromBlockId: string, handleId?: string): string | null => {
@@ -158,8 +179,12 @@ export function useFlowSimulator(options: FlowSimulatorOptions) {
         try {
             switch (blockType) {
                 case 'start':
+                case 'trigger_manual':
+                case 'trigger_message_received':
+                case 'trigger_conversation_created':
+                case 'trigger_conversation_closed':
                     // Start já foi processado no start(), apenas navegar para o próximo
-                    console.log(`[useFlowSimulator] executeBlock: Start - apenas navegando para próximo`);
+                    console.log(`[useFlowSimulator] executeBlock: Start/Trigger - apenas navegando para próximo`);
                     break;
 
                 case 'message':
@@ -226,6 +251,53 @@ export function useFlowSimulator(options: FlowSimulatorOptions) {
                         currentBlockId.value = null;
                         onFlowComplete?.();
                         return null;
+                    }
+                    else if (actionTypeStr === 'assign_agent') {
+                        // Tentar atribuir usando a store se tivermos contexto (mesmo que mockado)
+                        // Em produção, isso usaria o ID real da conversa. Aqui simulamos com um ID fixo ou gerado.
+                        const targetConvId = 'mock-conv-id';
+                        const assigned = data.agentId ? conversationsStore.assignAgent(targetConvId, data.agentId) : false;
+
+                        const statusMsg = assigned ? '✅ Sucesso' : '⚠️ Falha (agente não encontrado)';
+                        await addMessage('system', `🔄 Atribuído ao agente: ${data.agentId || 'Não especificado'} (${statusMsg})`, blockId);
+                    }
+                    else if (actionTypeStr === 'assign_team') {
+                        const targetConvId = 'mock-conv-id';
+                        const assigned = data.teamId ? conversationsStore.assignTeam(targetConvId, data.teamId) : false;
+
+                        const statusMsg = assigned ? '✅ Sucesso' : '⚠️ Falha (time não encontrado)';
+                        await addMessage('system', `👥 Atribuído ao time: ${data.teamId || 'Não especificado'} (${statusMsg})`, blockId);
+                    }
+                    else if (actionTypeStr === 'add_tag') {
+                        const tags = Array.isArray(data.tags) ? data.tags : [];
+                        await addMessage('system', `🏷️ Tags adicionadas: ${tags.join(', ') || 'Nenhuma'}`, blockId);
+                    }
+                    break;
+
+                case 'email':
+                case 'call':
+                case 'task':
+                case 'chat_flow':
+                    // Gerar atividade na store se tivermos contexto
+                    if (flowId && contactId && contactData) {
+                        try {
+                            const activity = activityStore.createActivityFromNode(
+                                flowId,
+                                flowName || 'Fluxo sem nome',
+                                node,
+                                contactId,
+                                contactData
+                            );
+
+                            if (activity) {
+                                await addMessage('system', `📝 Atividade criada: ${activity.title} (${activity.type})`, blockId);
+                            }
+                        } catch (err) {
+                            console.error('Erro ao criar atividade:', err);
+                            await addMessage('system', `❌ Erro ao criar atividade: ${err}`, blockId);
+                        }
+                    } else {
+                        await addMessage('system', `⚠️ Atividade simulada (sem contexto de execução): ${blockType}`, blockId);
                     }
                     break;
 
