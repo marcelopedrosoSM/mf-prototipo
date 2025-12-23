@@ -13,9 +13,9 @@ export const ACTIVITY_STATUS_METADATA: Record<ActivityStatus | 'overdue', Status
     pending: {
         label: 'Pendente',
         variant: 'warning',
-        colorClass: 'text-yellow-600 dark:text-yellow-400',
-        bgColorClass: 'bg-yellow-100 dark:bg-yellow-900/30',
-        dotClass: 'bg-yellow-500',
+        colorClass: 'text-blue-600 dark:text-blue-400',
+        bgColorClass: 'bg-blue-100 dark:bg-blue-900/30',
+        dotClass: 'bg-blue-500',
     },
     in_progress: {
         label: 'Em Andamento',
@@ -48,9 +48,9 @@ export const ACTIVITY_STATUS_METADATA: Record<ActivityStatus | 'overdue', Status
     overdue: {
         label: 'Atrasada',
         variant: 'destructive',
-        colorClass: 'text-red-600 dark:text-red-400',
-        bgColorClass: 'bg-red-100 dark:bg-red-900/30',
-        dotClass: 'bg-red-500',
+        colorClass: 'text-orange-600 dark:text-orange-400',
+        bgColorClass: 'bg-orange-100 dark:bg-orange-900/30',
+        dotClass: 'bg-orange-500',
     },
 };
 

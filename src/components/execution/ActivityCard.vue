@@ -3,8 +3,6 @@
     class="w-full group p-4 rounded-lg border bg-card cursor-pointer transition-all hover:shadow-md"
     :class="[
       selected && 'ring-2 ring-primary',
-      activity.status === 'completed' && 'opacity-60',
-      isOverdue && 'border-destructive/50 dark:border-red-500/20',
       compact && 'p-3',
       activity.status === 'pending' && 'cursor-grab active:cursor-grabbing'
     ]"
@@ -12,7 +10,7 @@
     @click="$emit('click', activity)"
     @dragstart="onDragStart"
   >
-    <div class="flex items-start w-full gap-3">
+    <div class="flex items-center w-full gap-3">
       <!-- Checkbox (for list view, only for selectable activities, visible on hover or when selected) -->
       <div 
         v-if="!compact && isSelectable"
@@ -27,73 +25,59 @@
       
       <!-- Icon -->
       <div 
-        class="flex-shrink-0 h-10 w-10 rounded-full flex items-center justify-center"
+        class="flex-shrink-0 h-8 w-8 rounded-full flex items-center justify-center"
         :class="iconBgClass"
       >
-        <component :is="activityIcon" class="h-5 w-5" :class="iconColorClass" />
+        <component :is="activityIcon" class="h-4 w-4" :class="iconColorClass" />
       </div>
       
-      <!-- Content -->
+      <!-- Content (Title & Subtitle) -->
       <div class="flex-1 min-w-0">
-        <div class="flex items-start justify-between gap-2">
-          <div class="min-w-0 flex-1">
-            <h4 class="font-medium text-sm truncate">{{ activity.title }}</h4>
-            <div class="flex items-center gap-1.5 mt-0.5">
-              <p class="text-xs text-muted-foreground">
-                {{ activity.flowName }} • {{ activity.contactName }}
-              </p>
-            </div>
-          </div>
-          
-          <!-- Step Indicator & Time -->
-          <!-- Step Indicator & Time -->
-          <div class="flex flex-col items-end gap-1.5 flex-shrink-0">
-            <!-- Step Badge -->
-            <div class="flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-muted/50 border border-border">
-              <span class="text-[10px] font-medium text-muted-foreground tracking-wider whitespace-nowrap">
-                {{ activity.stepNumber }}/{{ activity.totalSteps }}
-              </span>
-            </div>
-
-            <!-- Overdue Badge -->
-            <div 
-              v-if="activity.status === 'pending' && isOverdue"
-              :class="['flex items-center gap-1 px-2 py-0.5 rounded-full border border-opacity-20', ACTIVITY_STATUS_METADATA.overdue.bgColorClass, 'border-red-500']"
-            >
-              <div :class="['w-1.5 h-1.5 rounded-full animate-pulse', ACTIVITY_STATUS_METADATA.overdue.dotClass]" />
-              <span :class="['text-[10px] font-bold whitespace-nowrap', ACTIVITY_STATUS_METADATA.overdue.colorClass]">
-                {{ overdueText.replace('Atrasado ', '') }}
-              </span>
-            </div>
-
-            <!-- Completed/Skipped Time -->
-            <div v-if="activity.status !== 'pending'" class="flex items-center gap-1.5 whitespace-nowrap px-1">
-              <span class="text-[10px] font-medium text-muted-foreground bg-muted px-2 py-0.5 rounded-full">
-                {{ completedTime }}
-              </span>
-            </div>
-          </div>
+        <h4 class="font-medium text-sm truncate">{{ activity.title }}</h4>
+        <div class="flex items-center gap-1.5 mt-0.5">
+          <p class="text-xs text-muted-foreground truncate">
+            {{ activity.flowName }} • {{ activity.contactName }}
+          </p>
         </div>
-        
-        <!-- Description (if not compact) -->
-        <p 
-          v-if="!compact && activity.description" 
-          class="text-xs text-muted-foreground mt-1 line-clamp-1"
-        >
-          {{ activity.description }}
-        </p>
       </div>
-      
-      <!-- Quick Execute Button -->
+
+      <!-- Quick Execute Button (Now before badges) -->
       <Button
         v-if="activity.status === 'pending'"
-        class="h-8 w-8 rounded-full shadow-sm opacity-0 group-hover:opacity-100 transition-all hover:scale-110 bg-primary hover:bg-primary/90 text-primary-foreground"
+        class="h-8 w-8 rounded-full shadow-sm opacity-0 group-hover:opacity-100 transition-all hover:scale-110 bg-primary hover:bg-primary/90 text-primary-foreground flex-shrink-0"
         size="icon"
         title="Executar"
         @click.stop="$emit('execute', activity)"
       >
         <Play class="h-3.5 w-3.5 fill-current" />
       </Button>
+      
+      <!-- Step Indicator & Time (Badges) - moved to end -->
+      <div class="flex flex-col items-end gap-1.5 flex-shrink-0">
+        <!-- Step Badge -->
+        <div class="flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-muted/50 border border-border">
+          <span class="text-[10px] font-medium text-muted-foreground tracking-wider whitespace-nowrap">
+            {{ activity.stepNumber }}/{{ activity.totalSteps }}
+          </span>
+        </div>
+
+        <!-- Overdue Badge -->
+        <div 
+          v-if="activity.status === 'pending' && isOverdue"
+          class="flex items-center gap-1 px-2 py-0.5 rounded-full bg-muted/50 dark:bg-muted/30 border border-border"
+        >
+          <span class="text-[10px] font-medium text-muted-foreground whitespace-nowrap">
+            {{ overdueText.replace('Atrasado ', '') }}
+          </span>
+        </div>
+
+        <!-- Completed/Skipped Time -->
+        <div v-if="activity.status !== 'pending'" class="flex items-center gap-1.5 whitespace-nowrap px-1">
+          <span class="text-[10px] font-medium text-muted-foreground bg-muted px-2 py-0.5 rounded-full">
+            {{ completedTime }}
+          </span>
+        </div>
+      </div>
     </div>
   </div>
 </template>

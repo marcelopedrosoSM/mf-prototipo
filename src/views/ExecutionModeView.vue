@@ -63,7 +63,7 @@
                 <SelectContent>
                   <SelectItem value="all">Todos os fluxos</SelectItem>
                   <SelectItem v-for="flow in availableFlows" :key="flow.id" :value="flow.id">
-                    {{ flow.name }}
+                    {{ flow.nome }}
                   </SelectItem>
                 </SelectContent>
               </Select>
@@ -94,60 +94,60 @@
               </Button>
             </div>
 
-            <!-- Stats -->
-            <div class="grid grid-cols-5 gap-4 mb-6">
+
+            <div class="flex flex-wrap gap-4 mb-6">
               <!-- Progress Card -->
-              <Card class="p-4 flex flex-col justify-center">
+              <Card class="flex-1 min-w-[300px] p-4 flex flex-col justify-center">
                  <div class="flex items-center justify-between mb-2">
-                    <span class="text-sm font-medium text-muted-foreground">Progresso Hoje</span>
+                    <span class="text-sm font-medium text-muted-foreground">Progresso</span>
                     <span class="text-lg font-bold text-primary">{{ dailyProgress }}%</span>
                  </div>
                  <Progress :model-value="dailyProgress" class="h-2" />
                  <p class="text-xs text-muted-foreground mt-2">
-                   {{ completedTodayCount }}/{{ dailyWorkloadCount }} atividades
+                   {{ completedCount }}/{{ dailyWorkloadCount }} atividades
                  </p>
               </Card>
 
-              <Card class="p-4">
-                <div class="flex items-center gap-3">
-                  <div class="h-10 w-10 rounded-full bg-yellow-100 dark:bg-yellow-900/30 flex items-center justify-center">
-                    <Clock class="h-5 w-5 text-yellow-600" />
+              <Card class="w-[170px] shrink-0 p-3">
+                <div class="flex items-center gap-2">
+                  <div class="h-8 w-8 rounded-full bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center">
+                    <Clock class="h-4 w-4 text-blue-600" />
                   </div>
                   <div>
-                    <p class="text-2xl font-bold">{{ pendingCount }}</p>
+                    <p class="text-xl font-bold">{{ pendingCount }}</p>
                     <p class="text-xs text-muted-foreground">Pendentes</p>
                   </div>
                 </div>
               </Card>
-              <Card class="p-4">
-                <div class="flex items-center gap-3">
-                  <div class="h-10 w-10 rounded-full bg-red-100 dark:bg-red-900/30 flex items-center justify-center">
-                    <AlertTriangle class="h-5 w-5 text-red-600" />
+              <Card class="w-[170px] shrink-0 p-3">
+                <div class="flex items-center gap-2">
+                  <div class="h-8 w-8 rounded-full bg-orange-100 dark:bg-orange-900/30 flex items-center justify-center">
+                    <AlertTriangle class="h-4 w-4 text-orange-600" />
                   </div>
                   <div>
-                    <p class="text-2xl font-bold">{{ overdueCount }}</p>
+                    <p class="text-xl font-bold">{{ overdueCount }}</p>
                     <p class="text-xs text-muted-foreground">Atrasadas</p>
                   </div>
                 </div>
               </Card>
-              <Card class="p-4">
-                <div class="flex items-center gap-3">
-                  <div class="h-10 w-10 rounded-full bg-green-100 dark:bg-green-900/30 flex items-center justify-center">
-                    <CheckCircle2 class="h-5 w-5 text-green-600" />
+              <Card class="w-[170px] shrink-0 p-3">
+                <div class="flex items-center gap-2">
+                  <div class="h-8 w-8 rounded-full bg-green-100 dark:bg-green-900/30 flex items-center justify-center">
+                    <CheckCircle2 class="h-4 w-4 text-green-600" />
                   </div>
                   <div>
-                    <p class="text-2xl font-bold">{{ completedTodayCount }}</p>
-                    <p class="text-xs text-muted-foreground">Concluídas hoje</p>
+                    <p class="text-xl font-bold">{{ completedCount }}</p>
+                    <p class="text-xs text-muted-foreground">Concluídas</p>
                   </div>
                 </div>
               </Card>
-              <Card class="p-4">
-                <div class="flex items-center gap-3">
-                  <div class="h-10 w-10 rounded-full bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center">
-                    <TrendingUp class="h-5 w-5 text-blue-600" />
+              <Card class="w-[170px] shrink-0 p-3">
+                <div class="flex items-center gap-2">
+                  <div class="h-8 w-8 rounded-full bg-muted dark:bg-muted/50 flex items-center justify-center">
+                    <TrendingUp class="h-4 w-4 text-muted-foreground" />
                   </div>
                   <div>
-                    <p class="text-2xl font-bold">{{ totalCount }}</p>
+                    <p class="text-xl font-bold">{{ totalCount }}</p>
                     <p class="text-xs text-muted-foreground">Total</p>
                   </div>
                 </div>
@@ -189,17 +189,35 @@
             <!-- Activity List (Timeline) -->
             <div v-if="viewMode === 'list'" class="space-y-6">
               <div v-for="group in groupedActivities" :key="group.status" class="space-y-3">
-                <!-- Date Header -->
-                <div class="flex items-center gap-3">
+                <!-- Collapsible Header -->
+                <div 
+                  class="flex items-center gap-3 cursor-pointer group select-none"
+                  @click="toggleSection(group.status)"
+                >
                   <div class="h-px flex-1 bg-border" />
-                  <span class="text-sm font-medium text-muted-foreground px-2">
-                    {{ group.label }}
-                  </span>
+                  <div class="flex items-center gap-2 px-2 py-1 rounded-full hover:bg-muted/50 transition-colors">
+                    <ChevronDown 
+                      class="h-4 w-4 text-muted-foreground transition-transform duration-200"
+                      :class="collapsedSections[group.status] && '-rotate-90'"
+                    />
+                    <span class="text-sm font-medium text-muted-foreground">
+                      {{ group.label }}
+                    </span>
+                    <Badge 
+                      variant="outline"
+                      :class="['h-6 px-2.5 text-xs font-semibold border-transparent', getGroupBadgeClass(group.status)]"
+                    >
+                      {{ group.activities.length }}
+                    </Badge>
+                  </div>
                   <div class="h-px flex-1 bg-border" />
                 </div>
                 
                 <!-- Activity Cards -->
-                <div class="space-y-2">
+                <div 
+                  v-show="!collapsedSections[group.status]"
+                  class="space-y-2 transition-all duration-300"
+                >
                   <ActivityCard
                     v-for="activity in group.activities"
                     :key="activity.id"
@@ -240,7 +258,7 @@
                   <div class="flex items-center gap-2">
                     <div :class="['h-2 w-2 rounded-full shadow-[0_0_8px_rgba(0,0,0,0.2)]', ACTIVITY_STATUS_METADATA.overdue.dotClass]" />
                     <h3 class="font-semibold text-sm uppercase tracking-wider text-muted-foreground">Atrasadas</h3>
-                    <span class="ml-1 text-xs font-bold bg-red-100 text-red-600 dark:bg-red-900/30 px-2 py-0.5 rounded-full">
+                    <span class="ml-1 text-xs font-bold bg-orange-100 text-orange-600 dark:bg-orange-900/30 px-2 py-0.5 rounded-full">
                       {{ kanbanAtrasadas.length }}
                     </span>
                   </div>
@@ -248,7 +266,7 @@
                 
                 <div 
                   class="flex-1 space-y-3 p-2 rounded-xl border-2 border-transparent transition-colors bg-muted/30"
-                  :class="isDraggingOverInProgress && 'border-red-500/20 bg-red-500/5'"
+                  :class="isDraggingOverInProgress && 'border-orange-500/20 bg-orange-500/5'"
                 >
                   <ActivityCard
                     v-for="activity in kanbanAtrasadas"
@@ -275,7 +293,7 @@
                   <div class="flex items-center gap-2">
                     <div :class="['h-2 w-2 rounded-full shadow-[0_0_8px_rgba(0,0,0,0.1)]', ACTIVITY_STATUS_METADATA.pending.dotClass]" />
                     <h3 class="font-semibold text-sm uppercase tracking-wider text-muted-foreground">Pendentes</h3>
-                    <span class="ml-1 text-xs font-bold bg-yellow-100 text-yellow-600 dark:bg-yellow-900/30 px-2 py-0.5 rounded-full">
+                    <span class="ml-1 text-xs font-bold bg-blue-100 text-blue-600 dark:bg-blue-900/30 px-2 py-0.5 rounded-full">
                       {{ kanbanPendentes.length }}
                     </span>
                   </div>
@@ -283,7 +301,7 @@
 
                 <div 
                   class="flex-1 space-y-3 p-2 rounded-xl border-2 border-transparent transition-colors bg-muted/30"
-                  :class="isDraggingOverPending && 'border-yellow-500/20 bg-yellow-500/5'"
+                  :class="isDraggingOverPending && 'border-blue-500/20 bg-blue-500/5'"
                 >
                   <ActivityCard
                     v-for="activity in kanbanPendentes"
@@ -387,6 +405,7 @@
                 :type="currentActivity.type"
                 :initial-data="editableData"
                 :show-call-result="isCallInProgress"
+                :disabled="currentActivity.status === 'completed' || currentActivity.status === 'skipped'"
                 @update:data="handleFormUpdate"
               />
             </div>
@@ -473,45 +492,65 @@
 
         <!-- Footer Actions -->
         <template #actions>
-          <div class="flex items-center justify-between gap-2">
-            <!-- Left: Status Actions -->
-            <div class="flex gap-2">
-              <Button variant="outline" size="sm" class="text-green-600 hover:text-green-700" @click="handleWin">
-                <Trophy class="h-4 w-4 mr-1" />
-                Ganho
-              </Button>
-              <Button variant="outline" size="sm" class="text-red-600 hover:text-red-700" @click="handleLoss">
-                <XCircle class="h-4 w-4 mr-1" />
-                Perdido
-              </Button>
+          <div class="h-10 flex items-center justify-between w-full">
+            <div 
+              v-if="currentActivity?.status === 'pending' || currentActivity?.status === 'in_progress'"
+              class="flex items-center justify-between gap-2 w-full"
+            >
+              <!-- Left: Status Actions -->
+              <div class="flex gap-2">
+                <Button variant="outline" size="sm" class="text-green-600 hover:text-green-700" @click="handleWin">
+                  <Trophy class="h-4 w-4 mr-1" />
+                  Ganho
+                </Button>
+                <Button variant="outline" size="sm" class="text-red-600 hover:text-red-700" @click="handleLoss">
+                  <XCircle class="h-4 w-4 mr-1" />
+                  Perdido
+                </Button>
+              </div>
+              
+              <!-- Center: Secondary Actions -->
+              <div class="flex gap-2">
+                <Button variant="ghost" size="sm" @click="handleSkip">
+                  <SkipForward class="h-4 w-4 mr-1" />
+                  Ignorar
+                </Button>
+                <Button variant="ghost" size="sm" @click="handleReschedule">
+                  <Calendar class="h-4 w-4 mr-1" />
+                  Reagendar
+                </Button>
+                <Button variant="ghost" size="sm" @click="handleReassign">
+                  <UserPlus class="h-4 w-4 mr-1" />
+                  Reatribuir
+                </Button>
+              </div>
+              
+              <!-- Right: Primary Actions -->
+              <div class="flex gap-2">
+                <Button variant="outline" @click="handleExecuteOnly">
+                  <Check class="h-4 w-4 mr-1" />
+                  Executar
+                </Button>
+                <Button @click="handleExecuteAndAdvance">
+                  <Play class="h-4 w-4 mr-1" />
+                  Executar e Avançar
+                </Button>
+              </div>
             </div>
             
-            <!-- Center: Secondary Actions -->
-            <div class="flex gap-2">
-              <Button variant="ghost" size="sm" @click="handleSkip">
-                <SkipForward class="h-4 w-4 mr-1" />
-                Ignorar
-              </Button>
-              <Button variant="ghost" size="sm" @click="handleReschedule">
-                <Calendar class="h-4 w-4 mr-1" />
-                Reagendar
-              </Button>
-              <Button variant="ghost" size="sm" @click="handleReassign">
-                <UserPlus class="h-4 w-4 mr-1" />
-                Reatribuir
-              </Button>
-            </div>
-            
-            <!-- Right: Primary Actions -->
-            <div class="flex gap-2">
-              <Button variant="outline" @click="handleExecuteOnly">
-                <Check class="h-4 w-4 mr-1" />
-                Executar
-              </Button>
-              <Button @click="handleExecuteAndAdvance">
-                <Play class="h-4 w-4 mr-1" />
-                Executar e Avançar
-              </Button>
+            <!-- Status Info Message (maintains spacing) -->
+            <div v-else class="flex items-center justify-center w-full text-muted-foreground text-sm font-medium gap-2">
+              <template v-if="currentActivity?.status === 'completed'">
+                <CheckCircle2 class="h-5 w-5 text-green-600" />
+                <span>Atividade realizada em {{ currentActivity.completedAt ? new Date(currentActivity.completedAt).toLocaleDateString('pt-BR') : '' }}</span>
+              </template>
+              <template v-else-if="currentActivity?.status === 'skipped'">
+                <SkipForward class="h-5 w-5 text-slate-500" />
+                <span>Atividade ignorada</span>
+              </template>
+              <template v-else>
+                <span>Atividade finalizada</span>
+              </template>
             </div>
           </div>
         </template>
@@ -622,7 +661,7 @@ import { ref, computed, onMounted } from 'vue';
 import { 
   Plus, List, Kanban, Search, Download, Clock, AlertTriangle, 
   CheckCircle2, TrendingUp, Play, SkipForward, Check, Calendar,
-  UserPlus, Trophy, XCircle, User, FileText, Mic, Paperclip, History
+  UserPlus, Trophy, XCircle, User, FileText, Mic, Paperclip, History, ChevronDown
 } from 'lucide-vue-next';
 import AppLayout from '@/components/layout/AppLayout.vue';
 import { Button } from '@/components/ui/button';
@@ -645,6 +684,7 @@ import ActivityCard from '@/components/execution/ActivityCard.vue';
 import ActivityTypeForm from '@/components/execution/ActivityTypeForm.vue';
 import { ACTIVITY_STATUS_METADATA, getStatusMetadata } from '@/constants/activities';
 import { MOCK_FLOWS_FROM_ACTIVITIES, getSeedActivities } from '@/mocks/data/activities';
+import { MOCK_FLOWS_ATENDIMENTO, MOCK_FLOWS_ATIVIDADES } from '@/mocks/data/flows';
 import { useActivityStore } from '@/stores/activities';
 import { useContactsStore } from '@/stores/contacts';
 import { useFlowsStore } from '@/stores/flows';
@@ -679,6 +719,18 @@ const isDraggingOverPending = ref(false);
 const editableData = ref<Record<string, any>>({});
 const isCallInProgress = ref(false);
 
+// Collapsible Sections State
+const collapsedSections = ref<Record<string, boolean>>({
+  overdue: false,      // Expanded by default
+  pending: false,      // Expanded by default
+  completed: true,     // Collapsed by default
+  skipped: true        // Collapsed by default
+});
+
+const toggleSection = (status: string) => {
+  collapsedSections.value[status] = !collapsedSections.value[status];
+};
+
 // Decision Dialog State
 const decisionDialogOpen = ref(false);
 const pendingExecuteCallback = ref<(() => void) | null>(null);
@@ -688,58 +740,63 @@ onMounted(() => {
   if (activityStore.activities.length === 0) {
     activityStore.initializeWithSeedData(getSeedActivities());
   }
+  
+  // Initialize flows store with mock data if empty
+  if (flowsStore.savedFlows.length === 0) {
+    const allMockFlows = [...MOCK_FLOWS_ATENDIMENTO, ...MOCK_FLOWS_ATIVIDADES];
+    // Convert Flow to SavedFlow format
+    allMockFlows.forEach(flow => {
+      flowsStore.saveFlow({
+        id: flow.id,
+        nome: flow.nome,
+        descricao: flow.descricao,
+        nodes: [],
+        edges: [],
+        isActive: flow.status === 'ativo',
+        createdAt: flow.createdAt,
+        updatedAt: flow.updatedAt,
+      });
+    });
+  }
 });
 
 // Use store activities (reactive)
 const activities = computed(() => activityStore.activities);
 
-// Available flows for filter
-const availableFlows = MOCK_FLOWS_FROM_ACTIVITIES;
+// Available flows for filter - use flows from store
+const availableFlows = computed(() => flowsStore.savedFlows);
 
 // Computed stats
-const pendingCount = computed(() => 
-  activities.value.filter(a => a.status === 'pending').length
-);
+// Computed stats based on FILTERED/GROUPED activities (Visual consistency)
+const pendingCount = computed(() => {
+  const group = groupedActivities.value.find(g => g.status === 'pending');
+  return group ? group.activities.length : 0;
+});
+
 const overdueCount = computed(() => {
-  const now = new Date();
-  return activities.value.filter(a => 
-    a.status === 'pending' && a.dueDate && new Date(a.dueDate) < now
-  ).length;
+  const group = groupedActivities.value.find(g => g.status === 'overdue');
+  return group ? group.activities.length : 0;
 });
-const completedTodayCount = computed(() => {
-  const today = new Date().toDateString();
-  return activities.value.filter(a => 
-    a.status === 'completed' && a.completedAt && new Date(a.completedAt).toDateString() === today
-  ).length;
-});
-const totalCount = computed(() => activities.value.length);
 
-// Daily Progress Logic
+const completedCount = computed(() => {
+  const group = groupedActivities.value.find(g => g.status === 'completed');
+  return group ? group.activities.length : 0;
+});
+
+const totalCount = computed(() => filteredActivities.value.length);
+
+// Progress Logic based on Filtered View
 const dailyWorkloadCount = computed(() => {
-  const now = new Date();
-  const startOfToday = new Date(now);
-  startOfToday.setHours(0, 0, 0, 0);
-  const endOfToday = new Date(now);
-  endOfToday.setHours(23, 59, 59, 999);
-
-  // Completed Today
-  const completed = activities.value.filter(a => 
-    a.status === 'completed' && a.completedAt && 
-    new Date(a.completedAt) >= startOfToday && new Date(a.completedAt) <= endOfToday
-  ).length;
-
-  // Pending/Overdue (excluding future tasks)
-  const pending = activities.value.filter(a => 
-    (a.status === 'pending' || a.status === 'in_progress') && 
-    (!a.dueDate || new Date(a.dueDate) <= endOfToday)
-  ).length;
-
-  return completed + pending;
+  // If we are filtering, the workload is the total visible activities
+  // counting completed + pending + overdue + skipped
+  return filteredActivities.value.length;
 });
 
 const dailyProgress = computed(() => {
   if (dailyWorkloadCount.value === 0) return 0;
-  return Math.round((completedTodayCount.value / dailyWorkloadCount.value) * 100);
+  // Progress is (Completed / Total Filtered)
+  // Or should it be (Completed + Skipped)? Let's stick to Completed for "Progress"
+  return Math.round((completedCount.value / dailyWorkloadCount.value) * 100);
 });
 
 // Filtered activities
@@ -801,7 +858,7 @@ const filteredActivities = computed(() => {
   return result;
 });
 
-// UPDATED: Fixed groups (Atrasadas, Pendentes, Executadas)
+// UPDATED: Fixed groups (Atrasadas, Pendentes, Executadas, Ignoradas)
 const groupedActivities = computed((): ActivityGroup[] => {
   const now = new Date();
   const startOfToday = new Date(now);
@@ -810,10 +867,13 @@ const groupedActivities = computed((): ActivityGroup[] => {
   const overdue: Activity[] = [];
   const pending: Activity[] = [];
   const completed: Activity[] = [];
+  const skipped: Activity[] = [];
 
   filteredActivities.value.forEach(a => {
-    if (a.status === 'completed' || a.status === 'skipped') {
+    if (a.status === 'completed') {
       completed.push(a);
+    } else if (a.status === 'skipped') {
+      skipped.push(a);
     } else {
       const dueDate = a.dueDate ? new Date(a.dueDate) : null;
       if (dueDate && dueDate < startOfToday) {
@@ -824,17 +884,20 @@ const groupedActivities = computed((): ActivityGroup[] => {
     }
   });
 
-  // No need for extra sort here as filteredActivities is already sorted by stepNumber
-  completed.sort((a, b) => {
+  // Sort by most recent
+  const sortByRecent = (a: Activity, b: Activity) => {
     const aDate = a.completedAt ? new Date(a.completedAt) : new Date(a.updatedAt);
     const bDate = b.completedAt ? new Date(b.completedAt) : new Date(b.updatedAt);
-    return bDate.getTime() - aDate.getTime(); // Most recent first
-  });
+    return bDate.getTime() - aDate.getTime();
+  };
+
+  completed.sort(sortByRecent);
+  skipped.sort(sortByRecent);
 
   const finalGroups: ActivityGroup[] = [];
   
   if (overdue.length > 0) {
-    finalGroups.push({ status: 'failed', label: 'Atrasadas', activities: overdue });
+    finalGroups.push({ status: 'overdue', label: 'Atrasadas', activities: overdue });
   }
   
   if (pending.length > 0) {
@@ -845,8 +908,29 @@ const groupedActivities = computed((): ActivityGroup[] => {
     finalGroups.push({ status: 'completed', label: 'Executadas', activities: completed });
   }
 
+  if (skipped.length > 0) {
+    finalGroups.push({ status: 'skipped', label: 'Ignoradas', activities: skipped });
+  }
+
   return finalGroups;
 });
+
+const getGroupBadgeClass = (status: string) => {
+  const metadata = ACTIVITY_STATUS_METADATA[status as keyof typeof ACTIVITY_STATUS_METADATA] || ACTIVITY_STATUS_METADATA.pending;
+  // Get hover color based on status
+  let hoverClass = '';
+  if (status === 'overdue') {
+    hoverClass = 'hover:bg-orange-200 dark:hover:bg-orange-900/40';
+  } else if (status === 'pending') {
+    hoverClass = 'hover:bg-blue-200 dark:hover:bg-blue-900/40';
+  } else if (status === 'completed') {
+    hoverClass = 'hover:bg-green-200 dark:hover:bg-green-900/40';
+  } else if (status === 'skipped') {
+    hoverClass = 'hover:bg-slate-200 dark:hover:bg-slate-800/50';
+  }
+  return `${metadata.bgColorClass} ${metadata.colorClass} ${hoverClass}`;
+};
+
 
 // Kanban views
 const kanbanAtrasadas = computed(() => {

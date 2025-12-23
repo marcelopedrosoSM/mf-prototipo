@@ -64,13 +64,15 @@
   <!-- Estado Vazio -->
   <div
     v-else
-    class="flex flex-col items-center justify-center h-full bg-background"
+    class="flex flex-col items-center justify-center h-full bg-background p-8"
   >
-    <MessageCircle class="h-16 w-16 text-muted-foreground mb-4 animate-float" />
-    <p class="text-lg font-semibold text-foreground mb-2">
+    <div class="h-24 w-24 bg-violet-100 dark:bg-violet-900/20 rounded-full flex items-center justify-center mb-6">
+      <MessageCircle class="h-10 w-10 text-violet-600 dark:text-violet-400 animate-float" />
+    </div>
+    <h2 class="text-2xl font-bold text-foreground mb-2">
       Selecione uma conversa
-    </p>
-    <p class="text-sm text-muted-foreground text-center max-w-md">
+    </h2>
+    <p class="text-muted-foreground text-center max-w-md">
       Escolha uma conversa da lista ao lado para começar a trocar mensagens
     </p>
   </div>

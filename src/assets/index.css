@@ -22,13 +22,13 @@
     /* Branco para contraste */
     --primary-lighten-1: 270 54% 67%;
     /* Roxo secundário mais claro */
-    --secondary: 200 2% 64%;
-    /* MyFlows secondary (#A1A5A6) */
-    --secondary-foreground: 215 28% 18%;
+    --secondary: 220 14% 96%;
+    /* MyFlows secondary (Lighter for contrast) */
+    --secondary-foreground: 220 14% 10%;
     /* MyFlows grey-darken-1 (#1F2937) */
-    --muted: 220 13% 91%;
-    /* MyFlows border-light (#E5E7EB) */
-    --muted-foreground: 215 13% 47%;
+    --muted: 220 14% 96%;
+    /* MyFlows border-light (Lighter for contrast) */
+    --muted-foreground: 220 14% 45%;
     /* MyFlows grey (#6B7280) */
     --accent: 270 54% 55%;
     /* Accent - mesma cor do primary */
@@ -97,14 +97,14 @@
     --primary-lighten-1: 270 54% 67%;
     /* Roxo secundário mais claro */
 
-    --secondary: 270 20% 25%;
+    --secondary: 270 20% 20%;
     /* Secundário escuro (painel-base) */
-    --secondary-foreground: 270 54% 88%;
+    --secondary-foreground: 270 54% 90%;
     /* Texto secundário - roxo claro */
 
-    --muted: 0 0% 20%;
-    /* Elementos muted - cinza médio (painel-base) */
-    --muted-foreground: 0 0% 60%;
+    --muted: 0 0% 15%;
+    /* Elementos muted - cinza mais escuro (painel-base) */
+    --muted-foreground: 0 0% 65%;
     /* Texto muted - cinza claro */
 
     --accent: 270 54% 55%;

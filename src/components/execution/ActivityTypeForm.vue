@@ -4,7 +4,7 @@
     <div class="grid grid-cols-3 gap-4 p-4 rounded-lg bg-muted/30 border">
       <div class="space-y-2">
         <Label class="text-xs text-muted-foreground">Agente Responsável</Label>
-        <Select v-model="formData.agentId">
+        <Select v-model="formData.agentId" :disabled="disabled">
           <SelectTrigger>
             <SelectValue placeholder="Selecionar agente" />
           </SelectTrigger>
@@ -17,7 +17,7 @@
       </div>
       <div class="space-y-2">
         <Label class="text-xs text-muted-foreground">Time</Label>
-        <Select v-model="formData.teamId">
+        <Select v-model="formData.teamId" :disabled="disabled">
           <SelectTrigger>
             <SelectValue placeholder="Selecionar time" />
           </SelectTrigger>
@@ -30,7 +30,7 @@
       </div>
       <div v-if="showInbox" class="space-y-2">
         <Label class="text-xs text-muted-foreground">Caixa de {{ type === 'email' ? 'Saída' : 'Entrada' }}</Label>
-        <Select v-model="formData.inboxId">
+        <Select v-model="formData.inboxId" :disabled="disabled">
           <SelectTrigger>
             <SelectValue placeholder="Selecionar caixa" />
           </SelectTrigger>
@@ -49,26 +49,26 @@
         <div class="grid grid-cols-2 gap-4">
           <div class="space-y-2">
             <Label>Para</Label>
-            <Input v-model="formData.to" placeholder="email@exemplo.com" />
+            <Input v-model="formData.to" placeholder="email@exemplo.com" :disabled="disabled" />
           </div>
           <div class="space-y-2">
             <Label>CC</Label>
-            <Input v-model="formData.cc" placeholder="Opcional" />
+            <Input v-model="formData.cc" placeholder="Opcional" :disabled="disabled" />
           </div>
         </div>
         <div class="space-y-2">
           <Label>Assunto</Label>
-          <Input v-model="formData.subject" />
+          <Input v-model="formData.subject" :disabled="disabled" />
         </div>
         <div class="space-y-2">
           <div class="flex items-center justify-between">
             <Label>Conteúdo</Label>
-            <Button variant="ghost" size="sm" @click="$emit('insert-variable')">
+            <Button variant="ghost" size="sm" @click="$emit('insert-variable')" :disabled="disabled">
               <Code class="h-4 w-4 mr-1" />
               Variáveis
             </Button>
           </div>
-          <Textarea v-model="formData.body" rows="10" />
+          <Textarea v-model="formData.body" rows="10" :disabled="disabled" />
         </div>
         <div class="space-y-2">
           <Label>Anexos</Label>
@@ -86,15 +86,15 @@
         <div class="space-y-2">
           <Label>Telefone</Label>
           <div class="flex gap-2">
-            <Input v-model="formData.phone" class="flex-1" />
-            <Button variant="outline" size="icon" title="Ligar">
+            <Input v-model="formData.phone" class="flex-1" :disabled="disabled" />
+            <Button variant="outline" size="icon" title="Ligar" :disabled="disabled">
               <Phone class="h-4 w-4" />
             </Button>
           </div>
         </div>
         <div class="space-y-2">
           <Label>Script / Roteiro</Label>
-          <Textarea v-model="formData.script" rows="8" placeholder="Roteiro para a ligação..." />
+          <Textarea v-model="formData.script" rows="8" placeholder="Roteiro para a ligação..." :disabled="disabled" />
         </div>
         
         <!-- Call Result Section (shown after execution starts) -->
@@ -103,7 +103,7 @@
           <div class="grid grid-cols-2 gap-4">
             <div class="space-y-2">
               <Label>Resultado</Label>
-              <Select v-model="formData.callResult">
+              <Select v-model="formData.callResult" :disabled="disabled">
                 <SelectTrigger>
                   <SelectValue placeholder="Selecionar resultado" />
                 </SelectTrigger>
@@ -119,7 +119,7 @@
             </div>
             <div class="space-y-2">
               <Label>Duração</Label>
-              <Input v-model="formData.duration" placeholder="00:00" />
+              <Input v-model="formData.duration" placeholder="00:00" :disabled="disabled" />
             </div>
           </div>
           <div class="space-y-2">
@@ -136,7 +136,7 @@
         <div class="grid grid-cols-2 gap-4">
           <div class="space-y-2">
             <Label>Canal</Label>
-            <Select v-model="formData.channel">
+            <Select v-model="formData.channel" :disabled="disabled">
               <SelectTrigger>
                 <SelectValue placeholder="Selecionar canal" />
               </SelectTrigger>
@@ -164,22 +164,22 @@
           </div>
           <div class="space-y-2">
             <Label>Telefone</Label>
-            <Input v-model="formData.phone" />
+            <Input v-model="formData.phone" :disabled="disabled" />
           </div>
         </div>
         <div class="space-y-2">
           <div class="flex items-center justify-between">
             <Label>Mensagem</Label>
             <div class="flex gap-1">
-              <Button variant="ghost" size="sm">
+              <Button variant="ghost" size="sm" :disabled="disabled">
                 <Smile class="h-4 w-4" />
               </Button>
-              <Button variant="ghost" size="sm" @click="$emit('insert-variable')">
+              <Button variant="ghost" size="sm" @click="$emit('insert-variable')" :disabled="disabled">
                 <Code class="h-4 w-4" />
               </Button>
             </div>
           </div>
-          <Textarea v-model="formData.message" rows="6" />
+          <Textarea v-model="formData.message" rows="6" :disabled="disabled" />
         </div>
         <div class="space-y-2">
           <Label>Mídia (opcional)</Label>
@@ -197,7 +197,7 @@
         <div class="grid grid-cols-2 gap-4">
           <div class="space-y-2">
             <Label>Tipo de Atividade</Label>
-            <Select v-model="formData.taskType">
+            <Select v-model="formData.taskType" :disabled="disabled">
               <SelectTrigger>
                 <SelectValue placeholder="Selecionar tipo" />
               </SelectTrigger>
@@ -212,7 +212,7 @@
           </div>
           <div class="space-y-2">
             <Label>Prioridade</Label>
-            <Select v-model="formData.priority">
+            <Select v-model="formData.priority" :disabled="disabled">
               <SelectTrigger class="w-full">
                 <SelectValue>
                   <template v-if="formData.priority">
@@ -259,20 +259,20 @@
         </div>
         <div class="space-y-2">
           <Label>Título</Label>
-          <Input v-model="formData.taskTitle" />
+          <Input v-model="formData.taskTitle" :disabled="disabled" />
         </div>
         <div class="space-y-2">
           <Label>Descrição</Label>
-          <Textarea v-model="formData.description" rows="4" />
+          <Textarea v-model="formData.description" rows="4" :disabled="disabled" />
         </div>
         <div class="grid grid-cols-2 gap-4">
           <div class="space-y-2">
             <Label>Data/Hora</Label>
-            <Input type="datetime-local" v-model="formData.scheduledAt" />
+            <Input type="datetime-local" v-model="formData.scheduledAt" :disabled="disabled" />
           </div>
           <div class="space-y-2">
             <Label>Duração Prevista</Label>
-            <Select v-model="formData.estimatedDuration">
+            <Select v-model="formData.estimatedDuration" :disabled="disabled">
               <SelectTrigger>
                 <SelectValue placeholder="Selecionar" />
               </SelectTrigger>
@@ -288,7 +288,7 @@
         </div>
         <div class="space-y-2">
           <Label>Local / Endereço</Label>
-          <Input v-model="formData.location" placeholder="Endereço ou link da reunião" />
+          <Input v-model="formData.location" placeholder="Endereço ou link da reunião" :disabled="disabled" />
         </div>
       </div>
     </template>
@@ -298,7 +298,7 @@
       <div class="space-y-4">
         <div class="p-4 rounded-lg bg-primary/5 border border-primary/20">
           <h4 class="font-medium mb-3 text-foreground">{{ formData.registryTitle || 'Selecione uma opção' }}</h4>
-          <RadioGroup v-model="formData.selectedOption" class="space-y-2">
+          <RadioGroup v-model="formData.selectedOption" class="space-y-2" :disabled="disabled">
             <div 
               v-for="option in registryOptions" 
               :key="option.value"
@@ -334,7 +334,7 @@
           </div>
         </div>
         <div class="flex items-center gap-2 p-3 rounded-lg bg-muted/50">
-          <Checkbox v-model="formData.autoExecute" id="auto-execute" />
+          <Checkbox v-model="formData.autoExecute" id="auto-execute" :disabled="disabled" />
           <Label for="auto-execute" class="text-sm">
             Executar automaticamente quando chegar a vez
           </Label>
@@ -347,11 +347,11 @@
       <div class="space-y-4">
         <div class="space-y-2">
           <Label>Título da Ação</Label>
-          <Input v-model="formData.actionName" placeholder="Ex: Atualizar CRM, Enviar Contrato..." />
+          <Input v-model="formData.actionName" placeholder="Ex: Atualizar CRM, Enviar Contrato..." :disabled="disabled" />
         </div>
         <div class="space-y-2">
           <Label>Instruções</Label>
-          <Textarea v-model="formData.description" rows="4" placeholder="Descreva o que deve ser feito..." />
+          <Textarea v-model="formData.description" rows="4" placeholder="Descreva o que deve ser feito..." :disabled="disabled" />
         </div>
       </div>
     </template>
@@ -401,11 +401,13 @@ interface Props {
   type: 'email' | 'call' | 'message' | 'task' | 'registry' | 'chat_flow' | 'action' | 'wait';
   initialData?: Record<string, any>;
   showCallResult?: boolean;
+  disabled?: boolean;
 }
 
 const props = withDefaults(defineProps<Props>(), {
   initialData: () => ({}),
   showCallResult: false,
+  disabled: false,
 });
 
 const emit = defineEmits<{

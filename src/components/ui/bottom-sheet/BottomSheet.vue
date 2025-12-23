@@ -16,7 +16,7 @@
         
         <!-- Bottom Sheet -->
         <div 
-          class="absolute bottom-0 left-1/2 -translate-x-1/2 w-full max-w-[1100px] h-[85vh] bg-background rounded-t-2xl shadow-2xl flex flex-col overflow-hidden animate-in slide-in-from-bottom duration-300"
+          class="absolute bottom-0 left-1/2 -translate-x-1/2 w-full max-w-[1600px] h-[95vh] bg-background rounded-t-2xl shadow-2xl flex flex-col overflow-hidden animate-in slide-in-from-bottom duration-300"
         >
           <!-- Header -->
           <div class="flex items-center justify-between px-6 py-4 border-b bg-muted/30">

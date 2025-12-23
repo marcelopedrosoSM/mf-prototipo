@@ -205,6 +205,34 @@ export const MOCK_ACTIVITIES: Activity[] = [
   },
 
   // ========================================
+  // ATIVIDADE IGNORADA (EXEMPLO)
+  // ========================================
+  {
+    id: 'act-skipped',
+    type: 'message',
+    status: 'skipped',
+    title: 'Mensagem de Aniversário',
+    description: 'Atividade ignorada manualmente',
+    stepNumber: 3,
+    totalSteps: 5,
+    completedAt: hoursAgo(2),
+    flowId: 'flow-relacionamento-001',
+    flowName: 'Relacionamento com Cliente',
+    blockId: 'message-bday',
+    contactId: '9',
+    contactName: 'Fernanda Souza',
+    contactPhone: '+55 (11) 91234-5678',
+    data: {
+      type: 'message',
+      channel: 'whatsapp',
+      phone: '+55 (11) 91234-5678',
+      message: 'Parabéns pelo seu aniversário!',
+    },
+    createdAt: hoursAgo(4),
+    updatedAt: hoursAgo(2),
+  },
+
+  // ========================================
   // ATIVIDADE CONCLUÍDA (EXEMPLO)
   // ========================================
   {
