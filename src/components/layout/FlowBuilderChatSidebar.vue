@@ -99,20 +99,21 @@ const emit = defineEmits<{
 const searchQuery = ref('');
 
 const blocks = [
-  {
-    key: 'start',
-    label: 'Início',
-    description: 'Ponto de partida do fluxo',
-    icon: h(Zap),
-    colorClass: 'bg-[hsl(var(--primary))]/10 text-[hsl(var(--primary))] dark:bg-[hsl(var(--primary))]/20 dark:text-[hsl(var(--primary))]',
-  },
-  {
-    key: 'end',
-    label: 'Fim',
-    description: 'Encerrar o fluxo',
-    icon: h(ZapOff),
-    colorClass: 'bg-red-500/10 text-red-500 dark:bg-red-500/20 dark:text-red-500',
-  },
+  // Início e Fim ocultos - sempre existem no canvas
+  // {
+  //   key: 'start',
+  //   label: 'Início',
+  //   description: 'Ponto de partida do fluxo',
+  //   icon: h(Zap),
+  //   colorClass: 'bg-[hsl(var(--primary))]/10 text-[hsl(var(--primary))] dark:bg-[hsl(var(--primary))]/20 dark:text-[hsl(var(--primary))]',
+  // },
+  // {
+  //   key: 'end',
+  //   label: 'Fim',
+  //   description: 'Encerrar o fluxo',
+  //   icon: h(ZapOff),
+  //   colorClass: 'bg-red-500/10 text-red-500 dark:bg-red-500/20 dark:text-red-500',
+  // },
   {
     key: 'message',
     label: 'Mensagem',
@@ -153,9 +154,8 @@ const blocks = [
     label: 'Espera',
     description: 'Pausar execução',
     icon: h(Clock),
-    colorClass: 'bg-[hsl(var(--secondary))]/10 text-[hsl(var(--secondary))] dark:bg-[hsl(var(--secondary))]/20 dark:text-[hsl(var(--secondary))]',
+    colorClass: 'bg-orange-500/10 text-orange-500 dark:bg-orange-500/20 dark:text-orange-500',
   },
-
   {
     key: 'note',
     label: 'Nota',

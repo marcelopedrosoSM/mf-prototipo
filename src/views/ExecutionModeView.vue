@@ -39,8 +39,8 @@
                     Nova Atividade
                   </Button>
                   <Button @click="enrollDialogOpen = true">
-                    <UserPlus class="mr-2 h-4 w-4" />
-                    Adicionar Contato
+                    <Play class="mr-2 h-4 w-4" />
+                    Iniciar Fluxo
                   </Button>
                 </div>
               </div>
@@ -97,14 +97,27 @@
 
             <div class="flex flex-wrap gap-4 mb-6">
               <!-- Progress Card -->
-              <Card class="flex-1 min-w-[300px] p-4 flex flex-col justify-center">
+              <Card class="flex-1 min-w-[300px] p-4 flex flex-col justify-center relative group">
                  <div class="flex items-center justify-between mb-2">
-                    <span class="text-sm font-medium text-muted-foreground">Progresso</span>
+             <div class="flex items-center gap-2">
+			   <span class="text-sm font-medium text-muted-foreground">Progresso</span>
+			   <Button
+				 variant="ghost"
+				 size="icon"
+				 class="h-5 w-5 rounded-full hover:bg-muted"
+				 @click="helpDialogOpen = true"
+			   >
+				 <HelpCircle class="h-3.5 w-3.5 text-muted-foreground/50 hover:text-muted-foreground transition-colors" />
+			   </Button>
+			 </div>
                     <span class="text-lg font-bold text-primary">{{ dailyProgress }}%</span>
                  </div>
                  <Progress :model-value="dailyProgress" class="h-2" />
                  <p class="text-xs text-muted-foreground mt-2">
-                   {{ completedCount }}/{{ dailyWorkloadCount }} atividades
+                   {{ completedCount }}/{{ dailyWorkloadCount }} atividades realizadas
+                   <span v-if="skippedCount > 0" class="text-muted-foreground/60 ml-1">
+                     (-{{ skippedCount }} ignoradas)
+                   </span>
                  </p>
               </Card>
 
@@ -636,6 +649,7 @@
                   >
                     {{ flow.nome }}
                   </SelectItem>
+
                 </SelectContent>
               </Select>
             </div>
@@ -652,6 +666,45 @@
           </div>
         </DialogContent>
       </Dialog>
+
+       <!-- Help Dialog (Metrics Explanation) -->
+       <Dialog :open="helpDialogOpen" @update:open="helpDialogOpen = $event">
+         <DialogContent class="sm:max-w-[500px]">
+           <DialogHeader>
+             <DialogTitle class="flex items-center gap-2">
+               <HelpCircle class="h-5 w-5 text-primary" />
+               Como funcionam as métricas?
+             </DialogTitle>
+           </DialogHeader>
+           <div class="space-y-4 py-2">
+             <p class="text-sm text-muted-foreground">
+               Para refletir melhor seu desempenho real, utilizamos a lógica de <strong>Escopo Válido</strong>.
+             </p>
+             
+             <div class="rounded-lg border p-3 space-y-2 bg-muted/30">
+               <h4 class="text-sm font-semibold flex items-center gap-2">
+                 <SkipForward class="h-4 w-4 text-slate-500" />
+                 Atividades Ignoradas
+               </h4>
+               <p class="text-sm text-muted-foreground">
+                 Quando você ignora uma atividade, ela é <strong>removida da sua meta diária</strong> (total), em vez de contar como "não feita".
+               </p>
+             </div>
+
+             <div class="space-y-2">
+                <h4 class="text-sm font-medium">Exemplo de Cálculo:</h4>
+                <ul class="text-sm space-y-1 list-disc pl-4 text-muted-foreground">
+                  <li>Total Inicial: 10 atividades</li>
+                  <li>Você ignorou: <strong>3 atividades</strong></li>
+                  <li>Sua nova meta (100%): <strong>7 atividades</strong></li>
+                </ul>
+             </div>
+           </div>
+           <DialogFooter>
+             <Button @click="helpDialogOpen = false">Entendi</Button>
+           </DialogFooter>
+         </DialogContent>
+       </Dialog>
     </div>
   </AppLayout>
 </template>
@@ -661,7 +714,7 @@ import { ref, computed, onMounted } from 'vue';
 import { 
   Plus, List, Kanban, Search, Download, Clock, AlertTriangle, 
   CheckCircle2, TrendingUp, Play, SkipForward, Check, Calendar,
-  UserPlus, Trophy, XCircle, User, FileText, Mic, Paperclip, History, ChevronDown
+  UserPlus, Trophy, XCircle, User, FileText, Mic, Paperclip, History, ChevronDown, HelpCircle
 } from 'lucide-vue-next';
 import AppLayout from '@/components/layout/AppLayout.vue';
 import { Button } from '@/components/ui/button';
@@ -679,6 +732,7 @@ import {
   DialogHeader,
   DialogTitle,
   DialogDescription,
+  DialogFooter,
 } from '@/components/ui/dialog';
 import ActivityCard from '@/components/execution/ActivityCard.vue';
 import ActivityTypeForm from '@/components/execution/ActivityTypeForm.vue';
@@ -708,6 +762,7 @@ const filterPeriod = ref<'today' | 'last7days' | 'next7days'>('today');
 const selectedActivities = ref<string[]>([]);
 const detailPanelOpen = ref(false);
 const enrollDialogOpen = ref(false);
+const helpDialogOpen = ref(false); // New help dialog state
 const selectedContactId = ref('');
 const selectedFlowId = ref('');
 const currentActivity = ref<Activity | null>(null);
@@ -767,42 +822,66 @@ const activities = computed(() => activityStore.activities);
 const availableFlows = computed(() => flowsStore.savedFlows);
 
 // Computed stats
-// Computed stats based on FILTERED/GROUPED activities (Visual consistency)
+// Computed stats based on PERIOD ACTIVITIES (Context)
+// This ensures stats don't change just because I filtered the list view
 const pendingCount = computed(() => {
-  const group = groupedActivities.value.find(g => g.status === 'pending');
-  return group ? group.activities.length : 0;
+  const now = new Date();
+  const startOfToday = new Date(now);
+  startOfToday.setHours(0, 0, 0, 0);
+
+  return periodActivities.value.filter(a => 
+    (a.status === 'pending' || a.status === 'in_progress') && 
+    (!a.dueDate || new Date(a.dueDate) >= startOfToday)
+  ).length;
 });
 
 const overdueCount = computed(() => {
-  const group = groupedActivities.value.find(g => g.status === 'overdue');
-  return group ? group.activities.length : 0;
+  const now = new Date();
+  const startOfToday = new Date(now);
+  startOfToday.setHours(0, 0, 0, 0);
+
+  return periodActivities.value.filter(a => 
+    (a.status === 'pending' || a.status === 'in_progress') && 
+    a.dueDate && new Date(a.dueDate) < startOfToday
+  ).length;
 });
 
 const completedCount = computed(() => {
-  const group = groupedActivities.value.find(g => g.status === 'completed');
-  return group ? group.activities.length : 0;
+  return periodActivities.value.filter(a => a.status === 'completed').length;
 });
 
-const totalCount = computed(() => filteredActivities.value.length);
+const skippedCount = computed(() => {
+  return periodActivities.value.filter(a => a.status === 'skipped').length;
+});
 
-// Progress Logic based on Filtered View
+const totalCount = computed(() => periodActivities.value.length - skippedCount.value);
+
+// Progress Logic based on PERIOD
 const dailyWorkloadCount = computed(() => {
-  // If we are filtering, the workload is the total visible activities
-  // counting completed + pending + overdue + skipped
-  return filteredActivities.value.length;
+  // Option 3: Ignored activities are REMOVED from the scope
+  return periodActivities.value.length - skippedCount.value;
 });
 
 const dailyProgress = computed(() => {
-  if (dailyWorkloadCount.value === 0) return 0;
-  // Progress is (Completed / Total Filtered)
-  // Or should it be (Completed + Skipped)? Let's stick to Completed for "Progress"
+  if (dailyWorkloadCount.value <= 0) {
+    // Edge case: if workload is 0. 
+    // If I completed something (and the rest was skipped, making workload 0? No, workload = completed + pending)
+    // Wait, Workload = (Completed + Pending + Skipped) - Skipped = Completed + Pending
+    // So if Completed + Pending = 0, check if I did anything?
+    // If total activities is 0, progress is 0.
+    return 0; 
+  }
+  
+  // Progress is (Completed / Valid Workload)
   return Math.round((completedCount.value / dailyWorkloadCount.value) * 100);
 });
 
 // Filtered activities
-const filteredActivities = computed(() => {
+// 1. Context: Activities for the selected period (ignores Status filter)
+const periodActivities = computed(() => {
   let result = [...activities.value];
   
+  // 1.1 Search
   if (searchQuery.value) {
     const query = searchQuery.value.toLowerCase();
     result = result.filter(a => 
@@ -812,20 +891,12 @@ const filteredActivities = computed(() => {
     );
   }
   
+  // 1.2 Flow Filter
   if (filterFlow.value !== 'all') {
     result = result.filter(a => a.flowId === filterFlow.value);
   }
   
-  if (filterStatus.value !== 'all') {
-    if (filterStatus.value === 'overdue') {
-      const now = new Date();
-      result = result.filter(a => a.status === 'pending' && a.dueDate && new Date(a.dueDate) < now);
-    } else {
-      result = result.filter(a => a.status === filterStatus.value);
-    }
-  }
-  
-  // UPDATED: Date period filter logic
+  // 1.3 Date Period Filter
   const now = new Date();
   const startOfToday = new Date(now);
   startOfToday.setHours(0, 0, 0, 0);
@@ -851,7 +922,35 @@ const filteredActivities = computed(() => {
     }
     return true;
   });
-  
+
+  return result;
+});
+
+// 2. View: Filtered activities displayed in the list/kanban (Applies Status filter)
+const filteredActivities = computed(() => {
+  let result = [...periodActivities.value];
+
+  // Apply Status Filter
+  if (filterStatus.value !== 'all') {
+    const now = new Date();
+    const startOfToday = new Date(now);
+    startOfToday.setHours(0, 0, 0, 0);
+
+    if (filterStatus.value === 'overdue') {
+      result = result.filter(a => 
+        (a.status === 'pending' || a.status === 'in_progress') && 
+        a.dueDate && new Date(a.dueDate) < startOfToday
+      );
+    } else if (filterStatus.value === 'pending') {
+      result = result.filter(a => 
+        (a.status === 'pending' || a.status === 'in_progress') && 
+        (!a.dueDate || new Date(a.dueDate) >= startOfToday)
+      );
+    } else {
+      result = result.filter(a => a.status === filterStatus.value);
+    }
+  }
+
   // Sorting: By step number to follow the flow sequence
   result.sort((a, b) => a.stepNumber - b.stepNumber);
   

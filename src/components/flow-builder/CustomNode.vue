@@ -284,7 +284,7 @@ const previewContent = computed(() => {
   
   if (type.value === 'wait') {
     if (props.data.waitDuration) {
-      return `Aguardando ${props.data.waitDuration / 1000} segundos...`;
+      return formatWaitDuration(props.data.waitDuration, props.data.waitUnit);
     }
     return 'Defina o tempo de espera';
   }

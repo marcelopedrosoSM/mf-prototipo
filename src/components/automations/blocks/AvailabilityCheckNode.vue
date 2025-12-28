@@ -22,7 +22,7 @@
           }"
         >
           <p :style="{ color: colors.textSecondary }" class="text-[10px] leading-relaxed">
-            Verifica <strong>Feriados</strong> e <strong>Horário de Atendimento</strong>.
+            Verifica <strong>Ausências</strong> e <strong>Horário de Atendimento</strong>.
           </p>
         </div>
         
@@ -46,32 +46,30 @@
       <!-- Two Fixed Outputs -->
       <div class="mt-auto border-t divide-y" :style="{ borderColor: colors.previewBorder }">
         <!-- Output 1: Disponível -->
-        <div class="relative px-3 py-2 text-[11px] flex items-center justify-between bg-emerald-500/5 group">
+        <div class="relative px-3 py-2 text-[11px] flex items-center justify-between bg-muted/50 group">
           <div class="flex items-center gap-1.5">
-             <div class="w-1.5 h-1.5 rounded-full bg-emerald-500"></div>
-             <span class="font-medium text-emerald-700 dark:text-emerald-400">Disponível</span>
+             <span class="font-medium text-muted-foreground">Disponível</span>
           </div>
           <Handle 
             type="source" 
             :position="Position.Right" 
             id="source-available"
             class="!w-4 !h-4 !border-4 !border-background !-right-2 z-50 transition-all hover:!w-5 hover:!h-5"
-            :style="{ backgroundColor: '#10B981' }"
+            :style="{ backgroundColor: '#b1b1b7' }"
           />
         </div>
 
         <!-- Output 2: Indisponível -->
-        <div class="relative px-3 py-2 text-[11px] flex items-center justify-between bg-red-500/5 rounded-b-xl">
+        <div class="relative px-3 py-2 text-[11px] flex items-center justify-between bg-muted/50 rounded-b-xl">
           <div class="flex items-center gap-1.5">
-             <div class="w-1.5 h-1.5 rounded-full bg-red-500"></div>
-             <span class="font-medium text-red-700 dark:text-red-400">Indisponível</span>
+             <span class="font-medium text-muted-foreground">Indisponível</span>
           </div>
           <Handle 
             type="source" 
             :position="Position.Right" 
             id="source-unavailable"
             class="!w-4 !h-4 !border-4 !border-background !-right-2 z-50 transition-all hover:!w-5 hover:!h-5"
-            :style="{ backgroundColor: '#EF4444' }"
+            :style="{ backgroundColor: '#b1b1b7' }"
           />
         </div>
       </div>

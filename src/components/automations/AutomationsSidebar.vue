@@ -37,8 +37,8 @@
             </div>
           </div>
 
-          <!-- Gatilhos Section -->
-          <div v-if="triggerBlocks.length > 0" class="space-y-2">
+          <!-- Gatilhos Section - OCULTA -->
+          <!-- <div v-if="triggerBlocks.length > 0" class="space-y-2">
             <p class="text-xs font-semibold text-muted-foreground uppercase tracking-wide px-2">Gatilhos</p>
             <div class="space-y-1">
               <div
@@ -60,29 +60,26 @@
                 </div>
               </div>
             </div>
-          </div>
+          </div> -->
 
-          <!-- Ações e Condições Section -->
-          <div v-if="actionBlocks.length > 0" class="space-y-2">
-            <p class="text-xs font-semibold text-muted-foreground uppercase tracking-wide px-2">Ações e Condições</p>
-            <div class="space-y-1">
-              <div
-                v-for="block in actionBlocks"
-                :key="block.type"
-                draggable="true"
-                @dragstart="handleDragStart($event, block)"
-                class="flex items-start gap-2 rounded-md p-2 cursor-move interactive hover:bg-muted/50"
+          <!-- Blocos (sem separação de seção) -->
+          <div v-if="actionBlocks.length > 0" class="space-y-1">
+            <div
+              v-for="block in actionBlocks"
+              :key="block.type"
+              draggable="true"
+              @dragstart="handleDragStart($event, block)"
+              class="flex items-start gap-2 rounded-md p-2 cursor-move interactive hover:bg-muted/50"
+            >
+              <div 
+                class="flex-shrink-0 rounded-md p-1.5"
+                :style="{ backgroundColor: block.color + '20', color: block.color }"
               >
-                <div 
-                  class="flex-shrink-0 rounded-md p-1.5"
-                  :style="{ backgroundColor: block.color + '20', color: block.color }"
-                >
-                  <component :is="getIcon(block.icon)" class="h-4 w-4" />
-                </div>
-                <div class="flex-1 min-w-0">
-                  <p class="text-xs font-medium leading-tight">{{ block.label }}</p>
-                  <p class="text-xs text-muted-foreground leading-tight mt-0.5">{{ block.description }}</p>
-                </div>
+                <component :is="getIcon(block.icon)" class="h-4 w-4" />
+              </div>
+              <div class="flex-1 min-w-0">
+                <p class="text-xs font-medium leading-tight">{{ block.label }}</p>
+                <p class="text-xs text-muted-foreground leading-tight mt-0.5">{{ block.description }}</p>
               </div>
             </div>
           </div>
@@ -95,8 +92,8 @@
             <p>Nenhum bloco encontrado</p>
           </div>
 
-          <!-- Fixed Blocks: Fim (disabled, já está no canvas) -->
-          <div class="space-y-1 mt-2">
+          <!-- Fixed Blocks: Fim - OCULTA -->
+          <!-- <div class="space-y-1 mt-2">
             <p class="text-xs font-semibold text-muted-foreground uppercase tracking-wide px-2">Fim</p>
             <div class="flex items-start gap-2 rounded-md p-2 opacity-50 cursor-not-allowed">
               <div class="flex-shrink-0 rounded-md p-1.5 bg-red-500/10 text-red-500">
@@ -107,7 +104,7 @@
                 <p class="text-xs text-muted-foreground leading-tight mt-0.5">Já adicionado</p>
               </div>
             </div>
-          </div>
+          </div> -->
         </div>
       </ScrollArea>
 
@@ -126,10 +123,10 @@
           <component :is="getIcon(block.icon)" class="h-4 w-4" />
         </button>
         
-        <!-- Fim (disabled) -->
-        <div class="flex h-8 w-8 items-center justify-center rounded-md p-1.5 opacity-50 cursor-not-allowed bg-red-500/10 text-red-500" title="Fim">
+        <!-- Fim (disabled) - OCULTA -->
+        <!-- <div class="flex h-8 w-8 items-center justify-center rounded-md p-1.5 opacity-50 cursor-not-allowed bg-red-500/10 text-red-500" title="Fim">
           <ZapOff class="h-4 w-4" />
-        </div>
+        </div> -->
       </div>
     </nav>
   </aside>
@@ -137,7 +134,7 @@
 
 <script setup lang="ts">
 import { ref, computed } from 'vue';
-import { PanelLeftClose, PanelLeftOpen, Search, ZapOff, CalendarOff, Clock, MessageSquare, MessageSquarePlus, CheckCircle2, HelpCircle, Sparkles, Calendar, Play, CalendarClock } from 'lucide-vue-next';
+import { PanelLeftClose, PanelLeftOpen, Search, ZapOff, CalendarOff, Clock, MessageSquare, MessageSquarePlus, CheckCircle2, HelpCircle, Sparkles, Calendar, Play, CalendarClock, Workflow, ListTodo } from 'lucide-vue-next';
 import { cn } from '@/lib/utils';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Input } from '@/components/ui/input';
@@ -161,11 +158,39 @@ defineEmits<{
 
 const searchQuery = ref('');
 
-const availableBlocks = computed(() => AUTOMATION_BLOCKS[props.triggerType] || []);
+const availableBlocks = computed(() => {
+  const blocks = AUTOMATION_BLOCKS[props.triggerType];
+  // If specific trigger has no blocks defined, use fluxo_unificado blocks
+  if (!blocks || blocks.length === 0) {
+    return AUTOMATION_BLOCKS.fluxo_unificado || [];
+  }
+  return blocks;
+});
 
-// Separate triggers from actions
+// Map triggerType to block type
+const TRIGGER_TYPE_TO_BLOCK_TYPE: Record<AutomationTrigger, string> = {
+  conversa_criada: 'trigger_conversation_created',
+  mensagem_recebida: 'trigger_message_received',
+  mensagem_enviada: 'trigger_message_received', // mapped to message_received
+  conversa_finalizada: 'trigger_conversation_closed',
+  fluxo_unificado: '', // shows all
+  horario_atendimento: '',
+};
+
+// Only show the trigger that matches the current automation type
 const triggerBlocks = computed(() => {
   const blocks = availableBlocks.value.filter(b => b.type.startsWith('trigger_'));
+  
+  // If specific trigger type, only show that one
+  const expectedBlockType = TRIGGER_TYPE_TO_BLOCK_TYPE[props.triggerType];
+  if (expectedBlockType) {
+    const filtered = blocks.filter(b => b.type === expectedBlockType);
+    if (!searchQuery.value) return filtered;
+    const query = searchQuery.value.toLowerCase();
+    return filtered.filter(b => b.label.toLowerCase().includes(query) || b.description.toLowerCase().includes(query));
+  }
+  
+  // Otherwise show all triggers (for fluxo_unificado)
   if (!searchQuery.value) return blocks;
   const query = searchQuery.value.toLowerCase();
   return blocks.filter(b => b.label.toLowerCase().includes(query) || b.description.toLowerCase().includes(query));
@@ -200,6 +225,8 @@ const ICON_MAP: Record<string, any> = {
   Calendar,
   Play,
   CalendarClock,
+  Workflow,
+  ListTodo,
 };
 
 function getIcon(iconName: string) {

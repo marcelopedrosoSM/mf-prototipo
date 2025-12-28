@@ -115,6 +115,7 @@ import {
   Phone,
   CheckSquare,
   Workflow,
+  ListTodo,
 } from 'lucide-vue-next';
 
 const props = defineProps<NodeProps<CustomNodeData>>();
@@ -139,6 +140,7 @@ const BLOCK_ICONS: Record<BlockType, any> = {
   call: Phone,
   task: CheckSquare,
   chat_flow: Workflow,
+  task_flow: ListTodo,
   trigger_manual: Play,
   trigger_message_received: MessageSquare,
   trigger_conversation_created: Zap,
@@ -173,7 +175,7 @@ const optionsCount = computed(() => Array.isArray(props.data.options) ? props.da
 const conditionsCount = computed(() => Array.isArray(props.data.conditions) ? props.data.conditions.length : 0);
 
 const hasMultipleOutputs = computed(() => {
-  const typesWithConditions = ['question', 'switch', 'condition_weekday', 'condition_time_range', 'condition_holiday'];
+  const typesWithConditions = ['question', 'switch', 'condition_weekday', 'condition_time_range', 'condition_holiday', 'chat_flow', 'task_flow', 'task', 'call', 'email'];
   if (type.value === 'question' && optionsCount.value > 0) return true;
   if (type.value === 'condition_holiday') return true;
   return typesWithConditions.includes(type.value) && conditionsCount.value > 0;
@@ -187,11 +189,11 @@ const visibleOutputs = computed(() => {
     }));
   }
   
-  const typesWithConditions = ['switch', 'condition_weekday', 'condition_time_range', 'condition_holiday'];
+  const typesWithConditions = ['switch', 'condition_weekday', 'condition_time_range', 'condition_holiday', 'chat_flow', 'task_flow', 'task', 'call', 'email'];
   if (typesWithConditions.includes(type.value) && Array.isArray(props.data.conditions)) {
     return props.data.conditions.map((cond, i) => ({
       id: `condition-${i}`,
-      label: cond.label || `Condição ${i + 1}`
+      label: typeof cond === 'string' ? cond : (cond.label || `Condição ${i + 1}`)
     }));
   }
   return [];
@@ -228,7 +230,7 @@ const previewContent = computed(() => {
   
   if (type.value === 'wait') {
     if (props.data.waitDuration) {
-      return `Aguardando ${props.data.waitDuration / 1000} segundos...`;
+      return formatWaitDuration(props.data.waitDuration, props.data.waitUnit);
     }
     return 'Defina o tempo de espera';
   }
@@ -239,4 +241,52 @@ const previewContent = computed(() => {
 
   return props.data.content || 'Configure este bloco';
 });
+
+// Função para formatar duração de espera com unidade
+function formatWaitDuration(milliseconds: number, unit?: string) {
+  const seconds = milliseconds / 1000;
+  
+  // Se tem unidade definida, usar ela
+  if (unit) {
+    const value = getWaitValueFromMs(milliseconds, unit);
+    const labels: Record<string, string> = {
+      seconds: 'segundo',
+      minutes: 'minuto',
+      hours: 'hora',
+      days: 'dia',
+    };
+    const label = labels[unit] || 'segundo';
+    const plural = value !== 1 ? 's' : '';
+    return `Aguardando ${value} ${label}${plural}...`;
+  }
+  
+  // Se não tem unidade, inferir a melhor
+  if (seconds >= 86400) {
+    const days = Math.floor(seconds / 86400);
+    return `Aguardando ${days} ${days === 1 ? 'dia' : 'dias'}...`;
+  }
+  if (seconds >= 3600) {
+    const hours = Math.floor(seconds / 3600);
+    return `Aguardando ${hours} ${hours === 1 ? 'hora' : 'horas'}...`;
+  }
+  if (seconds >= 60) {
+    const minutes = Math.floor(seconds / 60);
+    return `Aguardando ${minutes} ${minutes === 1 ? 'minuto' : 'minutos'}...`;
+  }
+  return `Aguardando ${seconds} ${seconds === 1 ? 'segundo' : 'segundos'}...`;
+}
+
+function getWaitValueFromMs(milliseconds: number, unit: string) {
+  const seconds = milliseconds / 1000;
+  switch (unit) {
+    case 'days':
+      return Math.floor(seconds / 86400);
+    case 'hours':
+      return Math.floor(seconds / 3600);
+    case 'minutes':
+      return Math.floor(seconds / 60);
+    default:
+      return seconds;
+  }
+}
 </script>

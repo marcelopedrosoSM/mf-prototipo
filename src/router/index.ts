@@ -9,41 +9,42 @@ const routes: RouteRecordRaw[] = [
     component: () => import('@/views/LoginView.vue'),
   },
   {
-    path: '/dashboard',
-    name: 'dashboard',
+    path: '/painel',
+    name: 'painel',
     component: () => import('@/views/DashboardView.vue'),
     meta: { requiresAuth: true },
   },
   {
-    path: '/conversations',
+    path: '/conversas',
     name: 'conversations',
     component: () => import('@/views/ConversationsView.vue'),
     meta: { requiresAuth: true },
   },
   {
-    path: '/flows',
-    redirect: '/flows/atendimento',
+    path: '/fluxos',
+    redirect: '/fluxos/atendimento',
   },
   {
-    path: '/flows/atendimento',
-    name: 'flows-atendimento',
+    path: '/fluxos/atendimento',
+    name: 'flows-atendimento-list',
     component: () => import('@/views/FlowsView.vue'),
-    meta: { requiresAuth: true },
+    meta: { requiresAuth: true, hideList: true },
   },
   {
-    path: '/flows/atividades',
-    name: 'flows-atividades',
+    path: '/fluxos/atividades',
+    name: 'flows-atividades-list',
     component: () => import('@/views/FlowsView.vue'),
-    meta: { requiresAuth: true },
+    meta: { requiresAuth: true, hideList: true },
   },
+
   {
-    path: '/fluxos/:id',
+    path: '/configuracoes/fluxos/:id',
     name: 'fluxos-edit',
     component: () => import('@/views/flowBuilderChat.vue'),
     meta: { requiresAuth: true },
   },
   {
-    path: '/fluxos-atividades/:id',
+    path: '/configuracoes/fluxos-atividades/:id',
     name: 'fluxos-atividades-edit',
     component: () => import('@/views/flowBuilderTask.vue'),
     meta: { requiresAuth: true },
@@ -55,16 +56,16 @@ const routes: RouteRecordRaw[] = [
     meta: { requiresAuth: true },
   },
   {
-    path: '/contacts',
+    path: '/contatos',
     name: 'contacts',
     component: () => import('@/views/ContactsView.vue'),
     meta: { requiresAuth: true },
   },
   {
-    path: '/settings',
+    path: '/configuracoes',
     name: 'settings',
     component: () => import('@/views/SettingsView.vue'),
-    redirect: '/settings/preferencias',
+    redirect: '/configuracoes/fluxos',
     meta: { requiresAuth: true },
     children: [
       {
@@ -88,19 +89,14 @@ const routes: RouteRecordRaw[] = [
         component: () => import('@/views/CaixasEntradaView.vue'),
       },
       {
-        path: 'notificacoes',
-        name: 'settings-notificacoes',
-        component: () => import('@/views/NotificacoesView.vue'),
-      },
-      {
         path: 'mensagens-rapidas',
         name: 'settings-mensagens-rapidas',
         component: () => import('@/views/MensagensRapidasView.vue'),
       },
       {
-        path: 'feriados-inatividades',
-        name: 'settings-feriados-inatividades',
-        component: () => import('@/views/HolidaysAndInactivitiesView.vue'),
+        path: 'ausencias',
+        name: 'settings-ausencias',
+        component: () => import('@/views/AusenciasView.vue'),
       },
       {
         path: 'tokens-api',
@@ -111,6 +107,20 @@ const routes: RouteRecordRaw[] = [
         path: 'automacoes',
         name: 'settings-automacoes',
         component: () => import('@/views/AutomacoesView.vue'),
+      },
+      {
+        path: 'fluxos',
+        redirect: '/configuracoes/fluxos/atendimento',
+      },
+      {
+        path: 'fluxos/atendimento',
+        name: 'flows-atendimento',
+        component: () => import('@/views/FlowsView.vue'),
+      },
+      {
+        path: 'fluxos/atividades',
+        name: 'flows-atividades',
+        component: () => import('@/views/FlowsView.vue'),
       },
     ],
   },
@@ -142,10 +152,10 @@ const router = createRouter({
 router.beforeEach((to, _from, next) => {
   try {
     const authStore = useAuthStore();
-    
+
     // Verifica se a rota requer autenticação
     const requiresAuth = to.matched.some(record => record.meta.requiresAuth);
-    
+
     if (!requiresAuth) {
       // Rotas públicas - permite acesso
       if (to.name === 'login') {
@@ -164,17 +174,17 @@ router.beforeEach((to, _from, next) => {
       }
       return;
     }
-    
+
     // Rotas protegidas - verifica autenticação
     const hasToken = !!authStore.token;
     const hasUser = !!authStore.user;
     const isAuthenticated = hasToken && hasUser;
-    
+
     if (!isAuthenticated) {
       // Não autenticado - redireciona para login
-      next({ 
-        name: 'login', 
-        query: { redirect: to.fullPath } 
+      next({
+        name: 'login',
+        query: { redirect: to.fullPath }
       });
     } else {
       // Autenticado - permite acesso

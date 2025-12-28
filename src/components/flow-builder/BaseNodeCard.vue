@@ -48,15 +48,16 @@ defineExpose({ colors });
 
 <template>
   <div 
-    class="relative shadow-md transition-all duration-200 rounded-xl border-2 overflow-visible"
+    class="relative transition-all duration-200 rounded-xl border-2 overflow-visible"
     :class="[
       isEntryExit ? 'w-[140px] rounded-full' : 'w-[200px]',
-      { 'ring-2 ring-primary ring-offset-2': selected }
     ]"
     :style="{
       backgroundColor: colors.bg,
-      borderColor: accentColor,
-      transform: selected ? 'scale(1.02)' : 'scale(1)',
+      borderColor: selected ? 'hsl(var(--primary))' : '#9ca3af',
+      boxShadow: selected 
+        ? `0 8px 16px -4px hsl(var(--primary) / 0.4), 0 4px 8px -2px rgba(0, 0, 0, 0.1)`
+        : '0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px -1px rgba(0, 0, 0, 0.1)',
     }"
   >
     <!-- Content Wrapper -->

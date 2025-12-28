@@ -23,7 +23,7 @@
             </div>
             <Button @click="handleCreate">
               <Plus class="mr-2 h-4 w-4" />
-              Cadastrar caixa de entrada
+              Nova Caixa de Entrada
             </Button>
           </div>
 

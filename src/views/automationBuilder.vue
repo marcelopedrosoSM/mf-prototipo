@@ -5,10 +5,13 @@
       :automation-name="automationName"
       :trigger-type="triggerType"
       :is-active="isActive"
+      :has-unsaved-changes="hasUnsavedChanges"
       v-model:view-mode="viewMode"
       @update:is-active="isActive = $event"
       @save="handleSave"
       @back="handleBack"
+      @export="handleExport"
+      @import="handleImport"
     />
 
     <!-- Main Content Area -->
@@ -37,8 +40,6 @@
             :default-viewport="{ zoom: 1 }"
             :min-zoom="0.2"
             :max-zoom="4"
-            :snap-to-grid="true"
-            :snap-grid="[20, 20]"
             :connection-mode="ConnectionMode.Loose"
             :delete-key-code="['Backspace', 'Delete']"
             :node-types="nodeTypes"
@@ -112,7 +113,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, onUnmounted, provide } from 'vue';
+import { ref, computed, onMounted, onUnmounted, provide, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { 
   VueFlow, 
@@ -125,7 +126,8 @@ import {
   type Edge,
   type NodeChange,
   type EdgeChange,
-  type Connection
+  type Connection,
+  type GraphNode
 } from '@vue-flow/core';
 import { MiniMap } from '@vue-flow/minimap';
 import { Background } from '@vue-flow/background';
@@ -138,6 +140,7 @@ import AutomationsSidebar from '@/components/automations/AutomationsSidebar.vue'
 import FlowToolbar from '@/components/flow-builder/FlowToolbar.vue';
 import BlockConfigPanel from '@/components/flow-builder/BlockConfigPanel.vue';
 import HelperLines from '@/components/flow-builder/HelperLines.vue';
+import { getHelperLines } from '@/components/flow-builder/utils';
 import CustomNode from '@/components/flow-builder/CustomNode.vue';
 import CustomNodeHorizontal from '@/components/flow-builder/CustomNodeHorizontal.vue';
 import CustomNodeVertical from '@/components/flow-builder/CustomNodeVertical.vue';
@@ -167,6 +170,7 @@ const {
   onViewportChange,
   addEdges,
   onNodeClick,
+  onPaneClick,
   project,
   fitView,
   zoomIn,
@@ -184,6 +188,8 @@ const isSidebarCollapsed = ref(false);
 const automationName = ref('Nova Automação');
 const isActive = ref(true);
 const layoutMode = ref<'horizontal' | 'vertical'>('horizontal');
+// Provide layoutMode to child components
+provide('layoutMode', layoutMode);
 const viewMode = ref<ViewMode>('edit');
 
 // Vue Flow elements managed as local refs
@@ -195,6 +201,17 @@ const { undo, redo, canUndo, canRedo } = useRefHistory(nodes, {
   deep: true,
   capacity: 20 
 });
+
+// Dirty state tracking
+const hasUnsavedChanges = ref(true);
+const lastSavedState = ref(false);
+
+// Watch for ANY changes (including position changes from dragging)
+watch([nodes, edges, isActive], () => {
+  if (lastSavedState.value) {
+    hasUnsavedChanges.value = true;
+  }
+}, { deep: true });
 
 // Config panel state
 const showConfigPanel = ref(false);
@@ -243,9 +260,95 @@ function isValidConnection(_connection: Connection): boolean {
 }
 
 
+function updateHelperLines(changes: NodeChange[], nodesList: GraphNode[]) {
+  helperLineHorizontal.value = undefined;
+  helperLineVertical.value = undefined;
+
+  if (changes.length === 1 && changes[0].type === 'position' && changes[0].dragging && changes[0].position) {
+    const helperLines = getHelperLines(changes[0] as any, nodesList);
+
+    // Snap position
+    changes[0].position.x = helperLines.snapPosition.x ?? changes[0].position.x;
+    changes[0].position.y = helperLines.snapPosition.y ?? changes[0].position.y;
+
+    // Set helper lines
+    helperLineHorizontal.value = helperLines.horizontal;
+    helperLineVertical.value = helperLines.vertical;
+  }
+
+  return changes;
+}
+
 // Handle element changes
 function onNodesChange(changes: NodeChange[]) {
-  nodes.value = applyNodeChanges(changes, nodes.value as any);
+  // Verificar se há tentativa de remover nós protegidos (gatilho ou fim)
+  const protectedNodesToRestore: Node[] = [];
+  let showMessage = false;
+  let messageTitle = '';
+  let messageDescription = '';
+  
+  // Primeiro, verificar todas as tentativas de remoção
+  changes.forEach(change => {
+    if (change.type === 'remove') {
+      // Buscar o nó na lista atual antes da remoção
+      const nodeToRemove = nodes.value.find(n => n.id === change.id);
+      
+      if (nodeToRemove) {
+        // Verificar se é um nó de gatilho (trigger)
+        const isTrigger = nodeToRemove.type === 'triggerNode' || nodeToRemove.data?.type?.startsWith('trigger_');
+        // Verificar se é o bloco "Fim"
+        const isEnd = nodeToRemove.data?.type === 'end';
+        
+        if (isTrigger || isEnd) {
+          // Adicionar à lista de nós protegidos para restaurar
+          protectedNodesToRestore.push(nodeToRemove);
+          showMessage = true;
+          
+          // Definir mensagem de erro
+          if (isTrigger) {
+            messageTitle = 'Ação não permitida';
+            messageDescription = 'Não é possível remover o gatilho da automação. O gatilho é obrigatório e deve sempre existir.';
+          } else if (isEnd) {
+            messageTitle = 'Ação não permitida';
+            messageDescription = 'Não é possível remover o bloco "Fim" da automação. O bloco "Fim" é obrigatório e deve sempre existir.';
+          }
+        }
+      }
+    }
+  });
+  
+  // Mostrar mensagem de erro ANTES de processar as mudanças
+  if (showMessage) {
+    toast.error(messageTitle, messageDescription);
+  }
+  
+  // Filtrar mudanças de remoção para nós protegidos
+  const filteredChanges = changes.filter(change => {
+    if (change.type === 'remove') {
+      const isProtected = protectedNodesToRestore.some(n => n.id === change.id);
+      return !isProtected; // Não permitir remoção de nós protegidos
+    }
+    return true; // Permitir outras mudanças
+  });
+  
+  // Update helper lines and apply node changes
+  const updatedChanges = updateHelperLines(filteredChanges, nodes.value as unknown as GraphNode[]);
+  nodes.value = applyNodeChanges(updatedChanges, nodes.value as any);
+  
+  // Restaurar nós protegidos que foram removidos (garantir que sempre existam)
+  if (protectedNodesToRestore.length > 0) {
+    protectedNodesToRestore.forEach(protectedNode => {
+      // Verificar se o nó ainda não existe (foi removido)
+      const nodeExists = nodes.value.some(n => n.id === protectedNode.id);
+      if (!nodeExists) {
+        // Restaurar o nó protegido com deletable: false
+        nodes.value = [...nodes.value, { ...protectedNode, deletable: false } as any];
+      }
+    });
+  }
+  
+  // Sempre garantir que nós protegidos tenham deletable: false
+  ensureProtectedNodes();
 }
 
 function onEdgesChange(changes: EdgeChange[]) {
@@ -317,7 +420,12 @@ function loadAutomation() {
     const defaults = createDefaultNodes(triggerType.value);
     nodes.value = defaults.nodes as any;
     edges.value = defaults.edges as any;
-    automationName.value = 'Nova Automação';
+    
+    // Garantir que nós protegidos tenham deletable: false
+    ensureProtectedNodes();
+    // Get name from query parameter or use default
+    const nomeFromQuery = route.query.nome as string;
+    automationName.value = nomeFromQuery ? decodeURIComponent(nomeFromQuery) : 'Nova Automação';
     isActive.value = true;
   } else {
     // Load existing automation
@@ -327,21 +435,39 @@ function loadAutomation() {
       edges.value = [...automation.edges] as any;
       automationName.value = automation.nome;
       isActive.value = automation.ativo;
+      
+      // Garantir que nós protegidos tenham deletable: false
+      ensureProtectedNodes();
     } else {
       toast.error('Erro', 'Automação não encontrada');
-      router.push('/settings/automacoes');
+      router.push('/configuracoes/automacoes');
     }
   }
 }
 
+// Função para garantir que nós protegidos sempre tenham deletable: false
+function ensureProtectedNodes() {
+  nodes.value = nodes.value.map(node => {
+    const isTrigger = node.type === 'triggerNode' || node.data?.type?.startsWith('trigger_');
+    const isEnd = node.data?.type === 'end';
+    
+    if (isTrigger || isEnd) {
+      return {
+        ...node,
+        deletable: false,
+      };
+    }
+    return node;
+  });
+}
+
 // Handlers
 function handleBack() {
-  router.push('/settings/automacoes');
+  router.push('/configuracoes/automacoes');
 }
 
 function handleSave() {
   if (isNewAutomation.value) {
-    // Create new automation
     const newAutomation = automationsStore.addAutomation({
       nome: automationName.value,
       caixaId: caixaId.value,
@@ -353,7 +479,6 @@ function handleSave() {
     toast.success('Automação criada', `${newAutomation.nome} foi criada com sucesso`);
     router.replace(`/automacoes/${caixaId.value}/${triggerType.value}/${newAutomation.id}`);
   } else {
-    // Update existing automation
     automationsStore.updateAutomation(automationId.value, {
       nome: automationName.value,
       ativo: isActive.value,
@@ -361,6 +486,60 @@ function handleSave() {
       edges: edges.value as any,
     });
     toast.success('Automação salva', `${automationName.value} foi atualizada`);
+  }
+  
+  // Mark as saved
+  lastSavedState.value = true;
+  hasUnsavedChanges.value = false;
+}
+
+// Export automation as JSON file
+function handleExport() {
+  const automationData = {
+    id: automationId.value,
+    nome: automationName.value,
+    caixaId: caixaId.value,
+    gatilho: triggerType.value,
+    ativo: isActive.value,
+    nodes: nodes.value,
+    edges: edges.value,
+    exportedAt: new Date().toISOString(),
+  };
+  
+  const dataStr = JSON.stringify(automationData, null, 2);
+  const dataBlob = new Blob([dataStr], { type: 'application/json' });
+  const url = URL.createObjectURL(dataBlob);
+  
+  const link = document.createElement('a');
+  link.href = url;
+  const fileName = automationName.value.toLowerCase().replace(/\s+/g, '-');
+  link.download = `automacao-${fileName}-${Date.now()}.json`;
+  link.click();
+  
+  URL.revokeObjectURL(url);
+  
+  toast.success('Automação exportada', 'O arquivo JSON foi baixado com sucesso.');
+}
+
+// Import automation from JSON file
+async function handleImport(file: File) {
+  try {
+    const text = await file.text();
+    const data = JSON.parse(text);
+    
+    if (!data.nodes || !data.edges) {
+      throw new Error('Arquivo JSON inválido: deve conter nodes e edges');
+    }
+    
+    // Apply imported data to current automation
+    nodes.value = data.nodes;
+    edges.value = data.edges;
+    if (data.nome) automationName.value = data.nome;
+    
+    toast.success('Automação importada', 'Os dados foram carregados. Clique em Salvar para persistir.');
+  } catch (error) {
+    console.error('Erro ao importar automação:', error);
+    toast.error('Erro ao importar', error instanceof Error ? error.message : 'Arquivo JSON inválido.');
   }
 }
 
@@ -384,10 +563,24 @@ onNodeClick(({ node }) => {
   showConfigPanel.value = true;
 });
 
+// Handler para clique no canvas (fecha o painel)
+onPaneClick(() => {
+  if (showConfigPanel.value) {
+    closeConfigPanel();
+  }
+});
+
 function closeConfigPanel() {
   showConfigPanel.value = false;
   selectedNodeId.value = null;
 }
+
+// Watcher para fechar o painel quando selectedNodeId for null
+watch(selectedNodeId, (newId) => {
+  if (!newId) {
+    showConfigPanel.value = false;
+  }
+});
 
 function handleSaveBlock({ id, data }: { id: string, data: any }) {
   const nodeIndex = nodes.value.findIndex(n => n.id === id);
@@ -423,6 +616,17 @@ function onDrop(event: DragEvent) {
   try {
     const block = JSON.parse(blockDataStr);
     
+    // Check if dropping a trigger block when one already exists
+    if (block.key.startsWith('trigger_')) {
+      const existingTrigger = nodes.value.find((n: any) => 
+        n.type === 'triggerNode' || n.data?.type?.startsWith('trigger_')
+      );
+      if (existingTrigger) {
+        toast.error('Gatilho duplicado', 'Já existe um gatilho nesta automação. Cada automação pode ter apenas um gatilho.');
+        return;
+      }
+    }
+    
     // Get the VueFlow container for correct coordinates
     const container = (event.currentTarget as HTMLElement).querySelector('.vue-flow-container') || (event.currentTarget as HTMLElement);
     const rect = container.getBoundingClientRect();
@@ -447,11 +651,19 @@ function onDrop(event: DragEvent) {
     }
     
     // Create new node
+    // Default conditions for chat_flow block
+    const defaultConditions = block.key === 'chat_flow' 
+      ? ['Ganho', 'Perdido'] 
+      : undefined;
+    
     const newNode = {
       id: `${block.key}-${Date.now()}`,
       type: nodeType,
       position,
-      data: block.data || { type: block.key, title: block.label },
+      data: {
+        ...(block.data || { type: block.key, title: block.label }),
+        ...(defaultConditions ? { conditions: defaultConditions } : {}),
+      },
     };
     
     // Add node using direct array assignment (avoids VueFlow reactivity issues)

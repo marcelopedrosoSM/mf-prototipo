@@ -7,7 +7,7 @@
           <div class="mb-6 flex items-center justify-between">
             <div>
               <div class="flex items-center gap-2">
-                <h1 class="text-2xl font-semibold">Tokens de API</h1>
+                <h1 class="text-2xl font-semibold">Chaves de API</h1>
                 <Button
                   variant="ghost"
                   size="icon"
@@ -18,12 +18,12 @@
                 </Button>
               </div>
               <p class="text-sm text-muted-foreground mt-1">
-                Gerencie os tokens de API para integração
+                Gerencie as chaves de API para integração
               </p>
             </div>
             <Button @click="handleCreate">
               <Plus class="mr-2 h-4 w-4" />
-              Cadastrar token de API
+              Nova Chave API
             </Button>
           </div>
 

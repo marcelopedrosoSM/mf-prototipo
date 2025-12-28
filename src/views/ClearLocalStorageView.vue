@@ -17,15 +17,19 @@ const message = ref('Limpando localStorage...');
 
 onMounted(() => {
   try {
-    // Limpar apenas a chave específica myflows-executions
+    // Limpar todas as chaves do MyFlows
     localStorage.removeItem('myflows-executions');
-    message.value = '✅ myflows-executions removido com sucesso!';
+    localStorage.removeItem('myflows-saved-flows');
+    localStorage.removeItem('myflows-user-preferences');
+    localStorage.removeItem('myflows-auth');
     
-    console.log('✅ myflows-executions removido do localStorage!');
+    message.value = '✅ Dados do MyFlows limpos com sucesso!';
     
-    // Redirecionar para o dashboard após 2 segundos
+    console.log('✅ Todas as chaves myflows-* removidas do localStorage!');
+    
+    // Redirecionar para o login após 2 segundos
     setTimeout(() => {
-      router.push('/dashboard');
+      router.push('/');
     }, 2000);
   } catch (error) {
     message.value = '❌ Erro ao limpar localStorage';

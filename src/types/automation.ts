@@ -111,7 +111,8 @@ export type AutomationBlockType =
     | 'action'
     | 'condition'
     | 'wait'
-    | 'chat_flow';
+    | 'chat_flow'
+    | 'task_flow';
 
 // Intervalo de horário de atendimento
 export interface BusinessHoursInterval {
@@ -167,6 +168,13 @@ export const AUTOMATION_BLOCKS: Record<AutomationTrigger, AutomationBlockConfig[
         // AÇÕES E CONDIÇÕES
 
         {
+            type: 'availability_check',
+            label: 'Disponibilidade',
+            icon: 'CalendarClock',
+            color: '#F59E0B', // Amber
+            description: 'Verifica horário de atendimento e feriados',
+        },
+        {
             type: 'message',
             label: 'Mensagem',
             icon: 'MessageSquare',
@@ -199,7 +207,14 @@ export const AUTOMATION_BLOCKS: Record<AutomationTrigger, AutomationBlockConfig[
             label: 'Fluxo de Atendimento',
             icon: 'Workflow',
             color: '#8B5CF6', // Violet
-            description: 'Conectar a outro fluxo',
+            description: 'Disparar um fluxo de atendimento',
+        },
+        {
+            type: 'task_flow',
+            label: 'Fluxo de Atividades',
+            icon: 'ListTodo',
+            color: '#10B981', // Emerald
+            description: 'Disparar um fluxo de atividades',
         },
     ],
     horario_atendimento: [
@@ -280,6 +295,13 @@ export function getDefaultBlockData(type: AutomationBlockType): Record<string, a
             return {
                 type: 'chat_flow',
                 title: 'Fluxo de Atendimento',
+                conditions: ['Ganho', 'Perdido'],
+            };
+        case 'task_flow':
+            return {
+                type: 'task_flow',
+                title: 'Fluxo de Atividades',
+                conditions: ['Ganho', 'Perdido'],
             };
         default:
             return { type };

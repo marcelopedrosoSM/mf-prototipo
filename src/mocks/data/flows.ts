@@ -581,7 +581,7 @@ export const MOCK_FLOWS_ATIVIDADES: Flow[] = [
     nome: 'Lembrete de Pagamento',
     descricao: 'Atividade para lembrar clientes sobre pagamentos pendentes',
     tipo: 'atividades',
-    status: 'inativo',
+    status: 'ativo',
     createdAt: '2024-01-20T13:20:00Z',
     updatedAt: '2024-01-20T13:20:00Z',
   },

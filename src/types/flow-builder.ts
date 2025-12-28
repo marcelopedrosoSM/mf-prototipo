@@ -22,6 +22,7 @@ export type BlockType =
   | 'call'       // Ligação
   | 'task'       // Tarefa
   | 'chat_flow'  // Fluxo de Atendimento
+  | 'task_flow'  // Fluxo de Atividades
   | 'trigger_manual'
   | 'trigger_message_received'
   | 'trigger_conversation_created'
@@ -89,7 +90,7 @@ export const BLOCK_COLORS: Record<BlockType, string> = {
   api: '#3B82F6',                             // Azul
   integration: '#3B82F6',                     // Azul (mesmo que api)
   action: '#A855F7',                          // Roxo secundário
-  wait: '#6B7280',                            // Cinza
+  wait: '#F97316',                            // Laranja
   note: '#EAB308',                            // Amarelo
   condition_holiday: '#F59E0B',               // Ambar 
   condition_weekday: '#F59E0B',               // Ambar
@@ -99,6 +100,7 @@ export const BLOCK_COLORS: Record<BlockType, string> = {
   call: '#14B8A6',                            // Teal
   task: '#F59E0B',                            // Ambar
   chat_flow: '#8B5CF6',                       // Roxo
+  task_flow: '#10B981',                       // Verde Esmeralda
   trigger_manual: '#6366F1',                  // Indigo
   trigger_message_received: '#3B82F6',        // Azul
   trigger_conversation_created: '#10B981',    // Verde

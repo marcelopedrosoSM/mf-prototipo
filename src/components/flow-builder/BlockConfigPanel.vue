@@ -291,19 +291,36 @@
         <!-- WAIT -->
         <div v-if="blockType === 'wait' && flowContext !== 'atividades'" class="space-y-4">
           <div class="space-y-2">
-            <Label>Tempo de Espera (segundos)</Label>
-            <div class="flex items-center gap-2">
+            <Label>Tempo de Espera</Label>
+            <div class="flex items-center gap-3">
               <Input 
                 type="number" 
-                :model-value="(formData.waitDuration || 0) / 1000"
-                @update:model-value="(v) => formData.waitDuration = Number(v) * 1000"
-                min="0"
+                :model-value="getWaitValue()"
+                @update:model-value="(v) => setWaitValue(Number(v))"
+                :min="0"
+                :max="getMaxValue()"
                 step="1"
                 placeholder="0"
+                class="w-24"
               />
-              <Clock class="text-muted-foreground w-4 h-4" />
+              <Select :model-value="getWaitUnit()" @update:model-value="(v) => setWaitUnit(v)">
+                <SelectTrigger class="flex-1">
+                  <SelectValue placeholder="Unidade" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="seconds">Segundos</SelectItem>
+                  <SelectItem value="minutes">Minutos</SelectItem>
+                  <SelectItem value="hours">Horas</SelectItem>
+                  <SelectItem value="days">Dias</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
-            <p class="text-xs text-muted-foreground">O fluxo irá aguardar este tempo antes de prosseguir.</p>
+            <p class="text-xs text-muted-foreground">
+              O fluxo irá aguardar este tempo antes de prosseguir.
+              <span class="block mt-1 text-muted-foreground/80">
+                Máximo: {{ getMaxValue() }} {{ getUnitLabel(getWaitUnit()) }}
+              </span>
+            </p>
           </div>
         </div>
 
@@ -704,8 +721,8 @@
                  <h4 class="text-sm font-medium text-amber-800 dark:text-amber-200">Verificação de Disponibilidade</h4>
                  <p class="text-xs text-amber-700 dark:text-amber-300">
                    Este bloco verifica automaticamente:
-                   <br>1. Se é <strong>Feriado</strong> (conforme configurações globais)
-                   <br>2. Se está dentro do <strong>Horário de Atendimento</strong>
+                   <br>1. Se está dentro do <strong>Horário de Atendimento</strong>
+                   <br>2. Se é <strong>Feriado</strong> (conforme configurações globais)
                  </p>
                </div>
              </div>
@@ -724,26 +741,24 @@
            <div class="space-y-3">
             <Label>Saídas do Bloco</Label>
             <div class="space-y-2">
-                <div class="flex items-center justify-between p-3 border rounded-lg bg-emerald-50/50 dark:bg-emerald-900/10">
+                <div class="flex items-center justify-between p-3 border rounded-lg bg-muted/50">
                   <div class="flex items-center gap-2">
-                    <div class="w-3 h-3 rounded-full bg-emerald-500"></div>
                     <div class="flex flex-col">
-                        <span class="text-sm font-medium">Disponível</span>
+                        <span class="text-sm font-medium text-muted-foreground">Disponível</span>
                         <span class="text-[10px] text-muted-foreground">Dia útil e dentro do horário</span>
                     </div>
                   </div>
-                  <Badge variant="outline" class="bg-emerald-100 text-emerald-800 border-emerald-200">Saída 1</Badge>
+                  <Badge variant="outline" class="bg-muted text-muted-foreground">Saída 1</Badge>
                 </div>
                 
-                <div class="flex items-center justify-between p-3 border rounded-lg bg-red-50/50 dark:bg-red-900/10">
+                <div class="flex items-center justify-between p-3 border rounded-lg bg-muted/50">
                   <div class="flex items-center gap-2">
-                    <div class="w-3 h-3 rounded-full bg-red-500"></div>
                     <div class="flex flex-col">
-                        <span class="text-sm font-medium">Indisponível</span>
+                        <span class="text-sm font-medium text-muted-foreground">Indisponível</span>
                         <span class="text-[10px] text-muted-foreground">Feriado ou fora do horário</span>
                     </div>
                   </div>
-                  <Badge variant="outline" class="bg-red-100 text-red-800 border-red-200">Saída 2</Badge>
+                  <Badge variant="outline" class="bg-muted text-muted-foreground">Saída 2</Badge>
                 </div>
             </div>
            </div>
@@ -1032,45 +1047,34 @@
           <div class="space-y-2">
             <Label>Tempo de Espera</Label>
             <div class="flex items-center gap-3">
-              <Input v-model="formData.duration" type="number" placeholder="1" class="w-24" />
-              <Select v-model="formData.unit" class="flex-1">
+              <Input 
+                :model-value="getWaitValueActivities()"
+                @update:model-value="(v) => setWaitValueActivities(Number(v))"
+                type="number" 
+                :min="0"
+                :max="getMaxValueActivities()"
+                step="1"
+                placeholder="0" 
+                class="w-24" 
+              />
+              <Select :model-value="getWaitUnitActivities()" @update:model-value="(v) => setWaitUnitActivities(v)" class="flex-1">
                 <SelectTrigger>
                   <SelectValue placeholder="Unidade" />
                 </SelectTrigger>
                 <SelectContent>
+                  <SelectItem value="seconds">Segundos</SelectItem>
                   <SelectItem value="minutes">Minutos</SelectItem>
                   <SelectItem value="hours">Horas</SelectItem>
                   <SelectItem value="days">Dias</SelectItem>
                 </SelectContent>
               </Select>
             </div>
-          </div>
-
-          <Separator />
-          
-          <!-- Condições -->
-          <div class="space-y-3">
-            <div class="flex items-center justify-between">
-              <Label>Condições de Resultado</Label>
-              <Button variant="outline" size="sm" @click="addCondition" class="h-8" :disabled="(formData.conditions?.length || 0) >= 10">
-                <Plus class="mr-1 h-3 w-3" /> Adicionar
-              </Button>
-            </div>
-            <div class="space-y-2">
-              <div 
-                v-for="(condition, index) in formData.conditions" 
-                :key="index"
-                class="flex items-center gap-2 p-2 border rounded-md bg-card animate-in slide-in-from-top-1 duration-200"
-              >
-                <Input v-model="condition.label" placeholder="Ex: Tempo expirou" class="h-8 flex-1" />
-                <Button variant="ghost" size="icon" class="h-7 w-7 shrink-0 text-muted-foreground hover:text-destructive" @click="removeCondition(index)">
-                  <X class="h-3.5 w-3.5" />
-                </Button>
-              </div>
-              <p v-if="!formData.conditions?.length" class="text-xs text-center py-3 text-muted-foreground border border-dashed rounded">
-                Adicione condições como "Tempo expirou", "Interação ocorreu"
-              </p>
-            </div>
+            <p class="text-xs text-muted-foreground">
+              O fluxo irá aguardar este tempo antes de prosseguir.
+              <span class="block mt-1 text-muted-foreground/80">
+                Máximo: {{ getMaxValueActivities() }} {{ getUnitLabel(getWaitUnitActivities()) }}
+              </span>
+            </p>
           </div>
         </div>
 
@@ -1125,28 +1129,75 @@
 
           <Separator />
           
-          <!-- Condições -->
+          <!-- Saídas Fixas (não editáveis) -->
           <div class="space-y-3">
-            <div class="flex items-center justify-between">
-              <Label>Condições de Resultado</Label>
-              <Button variant="outline" size="sm" @click="addCondition" class="h-8" :disabled="(formData.conditions?.length || 0) >= 10">
-                <Plus class="mr-1 h-3 w-3" /> Adicionar
-              </Button>
-            </div>
+            <Label>Condições de Resultado</Label>
             <div class="space-y-2">
-              <div 
-                v-for="(condition, index) in formData.conditions" 
-                :key="index"
-                class="flex items-center gap-2 p-2 border rounded-md bg-card animate-in slide-in-from-top-1 duration-200"
-              >
-                <Input v-model="condition.label" placeholder="Ex: Concluído" class="h-8 flex-1" />
-                <Button variant="ghost" size="icon" class="h-7 w-7 shrink-0 text-muted-foreground hover:text-destructive" @click="removeCondition(index)">
-                  <X class="h-3.5 w-3.5" />
-                </Button>
-              </div>
-              <p v-if="!formData.conditions?.length" class="text-xs text-center py-3 text-muted-foreground border border-dashed rounded">
-                Adicione condições como "Concluído", "Abandonado", "Transferido"
-              </p>
+                <div class="flex items-center justify-between p-3 border rounded-lg bg-muted/50">
+                  <div class="flex items-center gap-2">
+                    <div class="flex flex-col">
+                        <span class="text-sm font-medium text-muted-foreground">Ganho</span>
+                        <span class="text-[10px] text-muted-foreground">Quando o fluxo termina com resultado positivo</span>
+                    </div>
+                  </div>
+                  <Badge variant="outline" class="bg-muted text-muted-foreground">Saída 1</Badge>
+                </div>
+                
+                <div class="flex items-center justify-between p-3 border rounded-lg bg-muted/50">
+                  <div class="flex items-center gap-2">
+                    <div class="flex flex-col">
+                        <span class="text-sm font-medium text-muted-foreground">Perdido</span>
+                        <span class="text-[10px] text-muted-foreground">Quando o fluxo termina com resultado negativo</span>
+                    </div>
+                  </div>
+                  <Badge variant="outline" class="bg-muted text-muted-foreground">Saída 2</Badge>
+                </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- TASK_FLOW (FLUXO DE ATIVIDADES) -->
+        <div v-if="blockType === 'task_flow'" class="space-y-6">
+          <div class="space-y-2">
+            <Label>Fluxo de Atividades</Label>
+            <Select v-model="formData.flowId">
+              <SelectTrigger>
+                <SelectValue placeholder="Selecione o fluxo" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="1">Prospecção Ativa</SelectItem>
+                <SelectItem value="2">Onboarding Cliente</SelectItem>
+                <SelectItem value="3">Cobrança</SelectItem>
+              </SelectContent>
+            </Select>
+            <p class="text-xs text-muted-foreground">O fluxo de atividades será iniciado com o contato atual.</p>
+          </div>
+
+          <Separator />
+          
+          <!-- Saídas Fixas (não editáveis) -->
+          <div class="space-y-3">
+            <Label>Condições de Resultado</Label>
+            <div class="space-y-2">
+                <div class="flex items-center justify-between p-3 border rounded-lg bg-muted/50">
+                  <div class="flex items-center gap-2">
+                    <div class="flex flex-col">
+                        <span class="text-sm font-medium text-muted-foreground">Ganho</span>
+                        <span class="text-[10px] text-muted-foreground">Quando o fluxo termina com resultado positivo</span>
+                    </div>
+                  </div>
+                  <Badge variant="outline" class="bg-muted text-muted-foreground">Saída 1</Badge>
+                </div>
+                
+                <div class="flex items-center justify-between p-3 border rounded-lg bg-muted/50">
+                  <div class="flex items-center gap-2">
+                    <div class="flex flex-col">
+                        <span class="text-sm font-medium text-muted-foreground">Perdido</span>
+                        <span class="text-[10px] text-muted-foreground">Quando o fluxo termina com resultado negativo</span>
+                    </div>
+                  </div>
+                  <Badge variant="outline" class="bg-muted text-muted-foreground">Saída 2</Badge>
+                </div>
             </div>
           </div>
         </div>
@@ -1246,6 +1297,19 @@ watch(() => props.modelValue, (newValue) => {
     ensureHolidayConditions();
   } else if (props.blockType === 'condition_weekday') {
     ensureWeekdayConditions();
+  } else if (props.blockType === 'wait') {
+    // Garantir que waitUnit existe
+    if (!formData.value.waitUnit) {
+      formData.value.waitUnit = 'seconds';
+    }
+  } else if (props.blockType === 'chat_flow') {
+    // Inicializar condições padrão para chat_flow se não existirem
+    if (!formData.value.conditions || formData.value.conditions.length === 0) {
+      formData.value.conditions = [
+        { label: 'Ganho', value: 'ganho' },
+        { label: 'Perdido', value: 'perdido' }
+      ];
+    }
   }
 }, { deep: true, immediate: true });
 
@@ -1346,12 +1410,172 @@ const blockTypeLabel = computed(() => {
   }
 });
 
+// Helpers para gerenciar tempo de espera com unidades (ATENDIMENTO)
+// Limites máximos para evitar loops infinitos
+const MAX_VALUES = {
+  seconds: 3600,    // 1 hora em segundos
+  minutes: 1440,    // 24 horas em minutos
+  hours: 168,       // 7 dias em horas
+  days: 30,         // 30 dias
+};
+
+function getWaitUnit() {
+  // Se já existe waitUnit, usar ele
+  if (formData.value.waitUnit) {
+    return formData.value.waitUnit;
+  }
+  
+  // Se não existe, inferir da waitDuration
+  const duration = formData.value.waitDuration || 0;
+  if (duration === 0) return 'seconds';
+  
+  const seconds = duration / 1000;
+  if (seconds >= 86400) return 'days';
+  if (seconds >= 3600) return 'hours';
+  if (seconds >= 60) return 'minutes';
+  return 'seconds';
+}
+
+function getWaitValue() {
+  const unit = getWaitUnit();
+  const duration = formData.value.waitDuration || 0;
+  const seconds = duration / 1000;
+  
+  switch (unit) {
+    case 'days':
+      return Math.floor(seconds / 86400);
+    case 'hours':
+      return Math.floor(seconds / 3600);
+    case 'minutes':
+      return Math.floor(seconds / 60);
+    default:
+      return seconds;
+  }
+}
+
+function setWaitUnit(unit: string) {
+  const currentValue = getWaitValue();
+  formData.value.waitUnit = unit;
+  setWaitValue(currentValue); // Recalcular com a nova unidade
+}
+
+function setWaitValue(value: number) {
+  const unit = getWaitUnit();
+  const maxValue = getMaxValue();
+  const clampedValue = Math.max(0, Math.min(value, maxValue));
+  
+  let milliseconds = 0;
+  switch (unit) {
+    case 'days':
+      milliseconds = clampedValue * 86400 * 1000;
+      break;
+    case 'hours':
+      milliseconds = clampedValue * 3600 * 1000;
+      break;
+    case 'minutes':
+      milliseconds = clampedValue * 60 * 1000;
+      break;
+    default:
+      milliseconds = clampedValue * 1000;
+  }
+  
+  formData.value.waitDuration = milliseconds;
+}
+
+function getMaxValue() {
+  return MAX_VALUES[getWaitUnit() as keyof typeof MAX_VALUES] || MAX_VALUES.seconds;
+}
+
+function getUnitLabel(unit: string) {
+  const labels: Record<string, string> = {
+    seconds: 'segundos',
+    minutes: 'minutos',
+    hours: 'horas',
+    days: 'dias',
+  };
+  return labels[unit] || 'segundos';
+}
+
+// Helpers para gerenciar tempo de espera com unidades (ATIVIDADES)
+function getWaitUnitActivities() {
+  return formData.value.unit || 'minutes';
+}
+
+function getWaitValueActivities() {
+  const unit = getWaitUnitActivities();
+  const duration = formData.value.duration || 0;
+  
+  // Se já está na unidade correta, retornar direto
+  if (formData.value.unit === unit) {
+    return duration;
+  }
+  
+  // Converter waitDuration para a unidade selecionada
+  const waitDuration = formData.value.waitDuration || 0;
+  const seconds = waitDuration / 1000;
+  
+  switch (unit) {
+    case 'days':
+      return Math.floor(seconds / 86400);
+    case 'hours':
+      return Math.floor(seconds / 3600);
+    case 'minutes':
+      return Math.floor(seconds / 60);
+    default:
+      return seconds;
+  }
+}
+
+function setWaitUnitActivities(unit: string) {
+  const currentValue = getWaitValueActivities();
+  formData.value.unit = unit;
+  setWaitValueActivities(currentValue);
+}
+
+function setWaitValueActivities(value: number) {
+  const unit = getWaitUnitActivities();
+  const maxValue = getMaxValueActivities();
+  const clampedValue = Math.max(0, Math.min(value, maxValue));
+  
+  formData.value.duration = clampedValue;
+  
+  // Converter para milissegundos e salvar em waitDuration também
+  let milliseconds = 0;
+  switch (unit) {
+    case 'days':
+      milliseconds = clampedValue * 86400 * 1000;
+      break;
+    case 'hours':
+      milliseconds = clampedValue * 3600 * 1000;
+      break;
+    case 'minutes':
+      milliseconds = clampedValue * 60 * 1000;
+      break;
+    default:
+      milliseconds = clampedValue * 1000;
+  }
+  
+  formData.value.waitDuration = milliseconds;
+}
+
+function getMaxValueActivities() {
+  return MAX_VALUES[getWaitUnitActivities() as keyof typeof MAX_VALUES] || MAX_VALUES.minutes;
+}
+
 const handleSave = () => {
   // Garantir consistência nas opções
   if (props.blockType === 'question' && formData.value.options) {
     formData.value.options.forEach(opt => {
       if (!opt.value) opt.value = opt.label; // Fallback se value estiver vazio
     });
+  }
+
+  // Inicializar condições padrão para chat_flow se não existirem
+  if (props.blockType === 'chat_flow' && (!formData.value.conditions || formData.value.conditions.length === 0)) {
+    formData.value.conditions = [
+      { label: 'Ganho', value: 'ganho' },
+      { label: 'Perdido', value: 'perdido' }
+    ];
   }
 
   // Aqui poderia ter validações

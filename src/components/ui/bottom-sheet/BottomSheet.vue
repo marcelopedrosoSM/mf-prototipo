@@ -18,11 +18,10 @@
         <div 
           class="absolute bottom-0 left-1/2 -translate-x-1/2 w-full max-w-[1600px] h-[95vh] bg-background rounded-t-2xl shadow-2xl flex flex-col overflow-hidden animate-in slide-in-from-bottom duration-300"
         >
-          <!-- Header -->
           <div class="flex items-center justify-between px-6 py-4 border-b bg-muted/30">
             <div class="flex items-center gap-3">
-              <!-- Navigation Arrows -->
-              <div class="flex items-center gap-1">
+              <!-- Navigation Arrows (only show when navigation is enabled) -->
+              <div v-if="showNavigation" class="flex items-center gap-1">
                 <Button 
                   variant="ghost" 
                   size="icon" 
@@ -95,7 +94,7 @@ import { X, ChevronLeft, ChevronRight, Mail, Phone, MessageSquare, CheckSquare, 
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
 
-const props = defineProps<{
+const props = withDefaults(defineProps<{
   open: boolean;
   title: string;
   subtitle?: string;
@@ -104,7 +103,10 @@ const props = defineProps<{
   totalCount?: number;
   hasPrevious?: boolean;
   hasNext?: boolean;
-}>();
+  showNavigation?: boolean;
+}>(), {
+  showNavigation: false,
+});
 
 const emit = defineEmits<{
   close: [];

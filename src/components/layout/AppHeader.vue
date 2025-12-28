@@ -36,7 +36,7 @@
 <script setup lang="ts">
 import { h } from 'vue';
 import { useRoute } from 'vue-router';
-import { LayoutDashboard, MessagesSquare, Contact, Workflow, Play } from 'lucide-vue-next';
+import { LayoutDashboard, MessagesSquare, Contact, Play, Workflow } from 'lucide-vue-next';
 import Logo from '@/components/Logo.vue';
 import UserMenu from './UserMenu.vue';
 
@@ -44,12 +44,12 @@ const route = useRoute();
 
 const navigationItems = [
   {
-    path: '/dashboard',
-    label: 'Dashboard',
+    path: '/painel',
+    label: 'Painel',
     icon: h(LayoutDashboard),
   },
   {
-    path: '/conversations',
+    path: '/conversas',
     label: 'Conversas',
     icon: h(MessagesSquare),
   },
@@ -59,23 +59,24 @@ const navigationItems = [
     icon: h(Play),
   },
   {
-    path: '/flows',
+    path: '/fluxos',
     label: 'Fluxos',
     icon: h(Workflow),
   },
+
   {
-    path: '/contacts',
+    path: '/contatos',
     label: 'Contatos',
     icon: h(Contact),
   },
 ];
 
 function isActiveRoute(path: string): boolean {
-  if (path === '/flows') {
-    // Highlight /flows when on /flows or any /flows/* or /fluxos/* route
-    return route.path === '/flows' 
-      || route.path.startsWith('/flows/')
-      || route.path.startsWith('/fluxos/');
+  if (path === '/fluxos') {
+    // Highlight /fluxos when on any /fluxos sub-route
+    return route.path === '/fluxos' 
+      || route.path.startsWith('/fluxos/')
+      || route.path.startsWith('/flows/'); // Manter compatibilidade se necessário
   }
   return route.path === path;
 }

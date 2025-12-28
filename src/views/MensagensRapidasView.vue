@@ -23,7 +23,7 @@
             </div>
             <Button @click="handleCreate">
               <Plus class="mr-2 h-4 w-4" />
-              Cadastrar mensagem rápida
+              Nova Mensagem Rápida
             </Button>
           </div>
 

@@ -5,12 +5,15 @@
       :flow-name="currentFlow?.nome || 'Novo Fluxo de Atividades'"
       v-model:is-active="isFlowActive"
       v-model:view-mode="viewMode"
+      :has-unsaved-changes="hasUnsavedChanges"
       @toggle-active="isFlowActive = $event"
       @save="handleSave"
       @back="goBack"
       @validate="handleValidate"
       @layout="handleLayout"
       @settings="handleSettings"
+      @export="handleExport"
+      @import="handleImport"
       :hide-simulate="true"
     />
 
@@ -59,8 +62,6 @@
               :default-viewport="{ zoom: 1 }"
               :min-zoom="0.2"
               :max-zoom="4"
-              :snap-to-grid="true"
-              :snap-grid="[20, 20]"
               :node-types="nodeTypes"
               :edge-types="edgeTypes"
               :edges-updatable="true"
@@ -147,7 +148,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, onUnmounted, nextTick, provide } from 'vue';
+import { ref, computed, onMounted, onUnmounted, nextTick, provide, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { VueFlow, useVueFlow, ConnectionMode, Position, MarkerType, applyNodeChanges, applyEdgeChanges } from '@vue-flow/core';
 import { Background } from '@vue-flow/background';
@@ -185,7 +186,7 @@ import type { FlowExecution } from '@/types/execution';
 
 const route = useRoute();
 const router = useRouter();
-const { getViewport, onViewportChange, addEdges, onNodeClick, fitView, zoomIn, zoomOut, project } = useVueFlow();
+const { getViewport, onViewportChange, addEdges, onNodeClick, onPaneClick, fitView, zoomIn, zoomOut, project } = useVueFlow();
 const { toast } = useToast();
 const flowsStore = useFlowsStore();
 const executionsStore = useExecutionsStore();
@@ -222,6 +223,17 @@ const { undo, redo, canUndo, canRedo } = useRefHistory(nodes, {
   deep: true,
   capacity: 20 
 });
+
+// Dirty state tracking
+const hasUnsavedChanges = ref(true);
+const lastSavedState = ref(false);
+
+// Watch for ANY changes (including position changes from dragging)
+watch([nodes, edges, isFlowActive], () => {
+  if (lastSavedState.value) {
+    hasUnsavedChanges.value = true;
+  }
+}, { deep: true });
 
 // Estado para o painel de configuração
 const selectedNodeId = ref<string | null>(null);
@@ -300,6 +312,13 @@ onNodeClick(({ node }) => {
   showConfigPanel.value = true;
 });
 
+// Handler para clique no canvas (fecha o painel)
+onPaneClick(() => {
+  if (showConfigPanel.value) {
+    closeConfigPanel();
+  }
+});
+
 const handleSaveBlock = ({ id, data }: { id: string, data: any }) => {
   const nodeIndex = nodes.value.findIndex(n => n.id === id);
   if (nodeIndex !== -1) {
@@ -318,6 +337,13 @@ const closeConfigPanel = () => {
   showConfigPanel.value = false;
   selectedNodeId.value = null;
 };
+
+// Watcher para fechar o painel quando selectedNodeId for null
+watch(selectedNodeId, (newId) => {
+  if (!newId) {
+    showConfigPanel.value = false;
+  }
+});
 
 // Handlers para FlowConfigSheet
 const handleSettings = () => {
@@ -370,13 +396,121 @@ function initializeFlow() {
       position: { x: 100, y: 100 },
       sourcePosition: sourcePos,
       targetPosition: targetPos,
+      deletable: false, // Não permitir remoção do início
       data: { 
         title: 'Início',
         type: 'start',
         content: 'Início do Fluxo de Atividades',
       },
     },
+    {
+      id: 'end-1',
+      type: nodeType,
+      position: { x: 500, y: 100 },
+      sourcePosition: sourcePos,
+      targetPosition: targetPos,
+      deletable: false, // Não permitir remoção do fim
+      data: { 
+        title: 'Fim',
+        type: 'end',
+        content: 'Fim do Fluxo de Atividades',
+      },
+    },
   ];
+  
+  // Conectar início ao fim por padrão
+  edges.value = [
+    {
+      id: 'edge-start-end',
+      source: 'start-1',
+      target: 'end-1',
+      type: 'smoothstep',
+      markerEnd: MarkerType.ArrowClosed,
+    },
+  ];
+}
+
+// Função para garantir que início e fim sempre existam
+function ensureStartEndNodes() {
+  const nodeType = layoutMode.value === 'horizontal' ? 'customNodeHorizontal' : 'customNodeVertical';
+  const sourcePos = layoutMode.value === 'horizontal' ? Position.Right : Position.Bottom;
+  const targetPos = layoutMode.value === 'horizontal' ? Position.Left : Position.Top;
+  
+  // Verificar se existe início
+  const hasStart = nodes.value.some(n => n.data?.type === 'start');
+  if (!hasStart) {
+    nodes.value = [
+      {
+        id: 'start-1',
+        type: nodeType,
+        position: { x: 100, y: 100 },
+        sourcePosition: sourcePos,
+        targetPosition: targetPos,
+        deletable: false,
+        data: { 
+          title: 'Início',
+          type: 'start',
+          content: 'Início do Fluxo de Atividades',
+        },
+      },
+      ...nodes.value,
+    ];
+  } else {
+    // Garantir que início tenha deletable: false
+    nodes.value = nodes.value.map(node => {
+      if (node.data?.type === 'start') {
+        return { ...node, deletable: false };
+      }
+      return node;
+    });
+  }
+  
+  // Verificar se existe fim
+  const hasEnd = nodes.value.some(n => n.data?.type === 'end');
+  if (!hasEnd) {
+    nodes.value = [
+      ...nodes.value,
+      {
+        id: 'end-1',
+        type: nodeType,
+        position: { x: 500, y: 100 },
+        sourcePosition: sourcePos,
+        targetPosition: targetPos,
+        deletable: false,
+        data: { 
+          title: 'Fim',
+          type: 'end',
+          content: 'Fim do Fluxo de Atividades',
+        },
+      },
+    ];
+  } else {
+    // Garantir que fim tenha deletable: false
+    nodes.value = nodes.value.map(node => {
+      if (node.data?.type === 'end') {
+        return { ...node, deletable: false };
+      }
+      return node;
+    });
+  }
+  
+  // Garantir que só existe 1 início e 1 fim
+  const startNodes = nodes.value.filter(n => n.data?.type === 'start');
+  const endNodes = nodes.value.filter(n => n.data?.type === 'end');
+  
+  if (startNodes.length > 1) {
+    // Manter apenas o primeiro início
+    const firstStart = startNodes[0];
+    const otherStarts = startNodes.slice(1);
+    nodes.value = nodes.value.filter(n => !otherStarts.some(os => os.id === n.id));
+  }
+  
+  if (endNodes.length > 1) {
+    // Manter apenas o primeiro fim
+    const firstEnd = endNodes[0];
+    const otherEnds = endNodes.slice(1);
+    nodes.value = nodes.value.filter(n => !otherEnds.some(oe => oe.id === n.id));
+  }
 }
 
 function loadFlow() {
@@ -423,6 +557,9 @@ function loadFlow() {
       nodeIdCounter = Math.max(...ids, 0);
     }
     
+    // Garantir que início e fim sempre existam
+    ensureStartEndNodes();
+    
     toast({
       title: 'Fluxo carregado',
       description: `Fluxo "${savedFlow.nome}" carregado com sucesso.`,
@@ -464,6 +601,9 @@ function loadFlow() {
         nodeIdCounter = Math.max(...ids, 0);
       }
     }
+    
+    // Garantir que início e fim sempre existam
+    ensureStartEndNodes();
     
     toast({
       title: 'Fluxo carregado',
@@ -758,6 +898,46 @@ function updateHelperLines(changes: NodeChange[], nodes: GraphNode[]) {
 }
 
 function onNodesChange(changes: NodeChange[]) {
+  // Verificar se há tentativa de remover nós protegidos (início ou fim)
+  const protectedNodesToRestore: Node[] = [];
+  let showMessage = false;
+  let messageTitle = '';
+  let messageDescription = '';
+  
+  // Verificar todas as tentativas de remoção
+  changes.forEach(change => {
+    if (change.type === 'remove') {
+      const nodeToRemove = nodes.value.find(n => n.id === change.id);
+      
+      if (nodeToRemove) {
+        const isStart = nodeToRemove.data?.type === 'start';
+        const isEnd = nodeToRemove.data?.type === 'end';
+        
+        if (isStart || isEnd) {
+          protectedNodesToRestore.push(nodeToRemove);
+          showMessage = true;
+          
+          if (isStart) {
+            messageTitle = 'Ação não permitida';
+            messageDescription = 'Não é possível remover o bloco "Início" do fluxo. O bloco "Início" é obrigatório e deve sempre existir.';
+          } else if (isEnd) {
+            messageTitle = 'Ação não permitida';
+            messageDescription = 'Não é possível remover o bloco "Fim" do fluxo. O bloco "Fim" é obrigatório e deve sempre existir.';
+          }
+        }
+      }
+    }
+  });
+  
+  // Mostrar mensagem de erro ANTES de processar as mudanças
+  if (showMessage) {
+    toast({
+      title: messageTitle,
+      description: messageDescription,
+      variant: 'destructive',
+    });
+  }
+  
   if (selectedNodeId.value) {
     const isRemovingSelected = changes.some(c => c.type === 'remove' && c.id === selectedNodeId.value);
     if (isRemovingSelected) {
@@ -765,8 +945,30 @@ function onNodesChange(changes: NodeChange[]) {
     }
   }
 
-  const updatedChanges = updateHelperLines(changes, nodes.value as unknown as GraphNode[]);
+  // Filtrar mudanças de remoção para nós protegidos
+  const filteredChanges = changes.filter(change => {
+    if (change.type === 'remove') {
+      const isProtected = protectedNodesToRestore.some(n => n.id === change.id);
+      return !isProtected; // Não permitir remoção de nós protegidos
+    }
+    return true; // Permitir outras mudanças
+  });
+
+  const updatedChanges = updateHelperLines(filteredChanges, nodes.value as unknown as GraphNode[]);
   nodes.value = applyNodeChanges(updatedChanges, nodes.value as any);
+  
+  // Restaurar nós protegidos que foram removidos
+  if (protectedNodesToRestore.length > 0) {
+    protectedNodesToRestore.forEach(protectedNode => {
+      const nodeExists = nodes.value.some(n => n.id === protectedNode.id);
+      if (!nodeExists) {
+        nodes.value = [...nodes.value, { ...protectedNode, deletable: false } as any];
+      }
+    });
+  }
+  
+  // Sempre garantir que início e fim existam e tenham deletable: false
+  ensureStartEndNodes();
 }
 
 function onEdgesChange(changes: EdgeChange[]) {
@@ -814,6 +1016,11 @@ function addNodeAtPosition(block: any, position: { x: number; y: number }) {
   const sourcePos = layoutMode.value === 'horizontal' ? Position.Right : Position.Bottom;
   const targetPos = layoutMode.value === 'horizontal' ? Position.Left : Position.Top;
   
+  // Default conditions for chat_flow block
+  const defaultConditions = block.key === 'chat_flow' 
+    ? ['Ganho', 'Perdido'] 
+    : undefined;
+  
   const newNode: Node = {
     id: `${block.key}-${++nodeIdCounter}`,
     type: nodeType,
@@ -825,6 +1032,7 @@ function addNodeAtPosition(block: any, position: { x: number; y: number }) {
       type: block.key,
       content: block.description,
       ...(block.key === 'note' ? { color: 'yellow' } : {}),
+      ...(defaultConditions ? { conditions: defaultConditions } : {}),
     },
   };
   
@@ -867,6 +1075,10 @@ function handleSave() {
       title: 'Fluxo salvo',
       description: `Fluxo "${flowData.nome}" salvo com sucesso.`,
     });
+    
+    // Mark as saved
+    lastSavedState.value = true;
+    hasUnsavedChanges.value = false;
     
   } catch (error) {
     console.error('Erro ao salvar fluxo:', error);
@@ -944,8 +1156,79 @@ function handleNoteContentChange(e: CustomEvent) {
   nodes.value = nodes.value.map(n => n.id === id ? { ...n, data: { ...n.data, content } } : n);
 }
 
+// Export flow as JSON file
+function handleExport() {
+  const flowData = {
+    id: flowId.value,
+    nome: currentFlow.value?.nome || 'Fluxo Exportado',
+    descricao: currentFlow.value?.descricao || '',
+    tipo: 'atividades',
+    nodes: nodes.value,
+    edges: edges.value,
+    isActive: isFlowActive.value,
+    config: flowConfig.value,
+    exportedAt: new Date().toISOString(),
+  };
+  
+  const dataStr = JSON.stringify(flowData, null, 2);
+  const dataBlob = new Blob([dataStr], { type: 'application/json' });
+  const url = URL.createObjectURL(dataBlob);
+  
+  const link = document.createElement('a');
+  link.href = url;
+  const fileName = (flowData.nome || 'fluxo').toLowerCase().replace(/\s+/g, '-');
+  link.download = `fluxo-atividades-${fileName}-${Date.now()}.json`;
+  link.click();
+  
+  URL.revokeObjectURL(url);
+  
+  toast({
+    title: 'Fluxo exportado',
+    description: 'O arquivo JSON foi baixado com sucesso.',
+  });
+}
+
+// Import flow from JSON file
+async function handleImport(file: File) {
+  try {
+    const text = await file.text();
+    const flowData = JSON.parse(text);
+    
+    if (!flowData.nodes || !flowData.edges) {
+      throw new Error('Arquivo JSON inválido: deve conter nodes e edges');
+    }
+    
+    const newId = `imported-task-${Date.now()}`;
+    
+    flowsStore.saveFlow({
+      id: newId,
+      nome: flowData.nome || 'Fluxo Importado',
+      descricao: flowData.descricao || '',
+      nodes: flowData.nodes,
+      edges: flowData.edges,
+      isActive: false,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    });
+    
+    toast({
+      title: 'Fluxo importado',
+      description: `"${flowData.nome || 'Fluxo Importado'}" foi importado com sucesso.`,
+    });
+    
+    router.push(`/fluxos-atividades/${newId}`);
+  } catch (error) {
+    console.error('Erro ao importar fluxo:', error);
+    toast({
+      title: 'Erro ao importar',
+      description: error instanceof Error ? error.message : 'Arquivo JSON inválido.',
+      variant: 'destructive',
+    });
+  }
+}
+
 function goBack() {
-  router.push('/flows/atividades');
+  router.push('/configuracoes/fluxos/atividades');
 }
 </script>
 

@@ -12,7 +12,7 @@
       <p class="text-sm text-muted-foreground mb-4">
         Comece criando seu primeiro fluxo
       </p>
-      <Button @click="handleCreate">
+      <Button @click="handleCreate" v-if="!readOnly">
         <Plus class="mr-2 h-4 w-4" />
         Adicionar Primeiro Fluxo
       </Button>
@@ -24,9 +24,11 @@
         v-for="flow in paginatedFlows"
         :key="flow.id"
         :flow="flow"
+        :read-only="readOnly"
         @edit="handleEdit"
         @delete="handleDelete"
         @toggle="handleToggle"
+        @view="handleView"
       />
 
       <!-- Pagination -->
@@ -55,11 +57,13 @@ interface Props {
   flows: Flow[];
   loading?: boolean;
   onCreate?: () => void;
+  readOnly?: boolean;
 }
 
 const props = withDefaults(defineProps<Props>(), {
   loading: false,
   onCreate: undefined,
+  readOnly: false,
 });
 
 const emit = defineEmits<{
@@ -67,6 +71,7 @@ const emit = defineEmits<{
   delete: [flow: Flow];
   create: [];
   toggle: [flow: Flow, active: boolean];
+  view: [flow: Flow];
 }>();
 
 const currentPage = ref(1);
@@ -120,6 +125,10 @@ function handleDelete(flow: Flow) {
 
 function handleToggle(flow: Flow, active: boolean) {
   emit('toggle', flow, active);
+}
+
+function handleView(flow: Flow) {
+  emit('view', flow);
 }
 
 function handleCreate() {

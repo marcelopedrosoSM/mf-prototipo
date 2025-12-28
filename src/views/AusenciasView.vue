@@ -7,7 +7,7 @@
         <div class="mb-6 flex items-center justify-between">
           <div>
             <div class="flex items-center gap-2">
-              <h1 class="text-2xl font-semibold">Feriados e Inatividades</h1>
+              <h1 class="text-2xl font-semibold">Ausências</h1>
               <Button
                 variant="ghost"
                 size="icon"
@@ -18,12 +18,12 @@
               </Button>
             </div>
             <p class="text-sm text-muted-foreground mt-1">
-              Configure datas especiais que afetam o horário de atendimento
+              Configure períodos de ausência do atendimento
             </p>
           </div>
           <Button @click="handleCreate">
             <Plus class="mr-2 h-4 w-4" />
-            Nova Indisponibilidade
+            Nova Ausência
           </Button>
         </div>
 
@@ -72,12 +72,12 @@
             <DialogHeader>
               <DialogTitle class="flex items-center gap-2">
                 <Info class="h-5 w-5 text-primary" />
-                Feriados e Inatividades
+                Ausências
               </DialogTitle>
             </DialogHeader>
             <div class="space-y-4">
               <p class="text-sm text-muted-foreground">
-                Os <strong>Feriados e Inatividades</strong> permitem que você configure períodos em que sua conta não estará disponível para receber ou processar mensagens automaticamente.
+                As <strong>Ausências</strong> permitem que você configure períodos em que não haverá atendimento, seja por feriados, férias ou qualquer outro motivo de indisponibilidade.
               </p>
               
               <div>
@@ -97,7 +97,7 @@
               <div>
                 <h4 class="text-sm font-semibold mb-2">Periodicidade</h4>
                 <p class="text-sm text-muted-foreground">
-                  Você pode configurar feriados e inatividades como eventos únicos ou recorrentes (anual), facilitando o gerenciamento de períodos que se repetem todos os anos.
+                  Você pode configurar ausências como eventos únicos ou recorrentes (anual), facilitando o gerenciamento de períodos que se repetem todos os anos.
                 </p>
               </div>
             </div>
@@ -188,7 +188,7 @@ function confirmDelete() {
     holidaysAndInactivities.value = holidaysAndInactivities.value.filter(
       (item) => item.id !== itemToDelete.value!.id
     );
-    toast.success('Item excluído', `${itemToDelete.value.name} foi removido com sucesso.`);
+    toast.success('Ausência excluída', `${itemToDelete.value.name} foi removida com sucesso.`);
     itemToDelete.value = null;
   }
   deleteDialogOpen.value = false;
@@ -211,14 +211,14 @@ function handleSave(data: Omit<HolidayAndInactivity, 'id' | 'createdAt'>) {
       );
       if (index !== -1) {
         holidaysAndInactivities.value[index] = updated;
-        toast.success('Item atualizado', `${data.name} foi atualizado com sucesso.`);
+        toast.success('Ausência atualizada', `${data.name} foi atualizada com sucesso.`);
       }
     }
   } else {
     // Create
     const newItem = addHolidayAndInactivity(data);
     holidaysAndInactivities.value.push(newItem);
-    toast.success('Item criado', `${data.name} foi criado com sucesso.`);
+    toast.success('Ausência criada', `${data.name} foi criada com sucesso.`);
   }
   dialogOpen.value = false;
   selectedItem.value = null;
@@ -231,4 +231,3 @@ function handleDialogOpenChange(open: boolean) {
   }
 }
 </script>
-

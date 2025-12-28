@@ -1,13 +1,13 @@
 import { defineStore } from 'pinia';
 import { ref } from 'vue';
 
-export type DefaultRoute = 'dashboard' | 'conversations' | 'execucao';
+export type DefaultRoute = 'painel' | 'conversations' | 'execucao';
 
 export const useUserPreferencesStore = defineStore(
     'userPreferences',
     () => {
         // State
-        const defaultRoute = ref<DefaultRoute>('dashboard');
+        const defaultRoute = ref<DefaultRoute>('painel');
 
         // Actions
         function setDefaultRoute(route: DefaultRoute) {

@@ -134,12 +134,12 @@ const aplicarParaTodos = (diaOrigem: WeekdayId) => {
       </p>
     </div>
 
-    <!-- Inativo em feriados -->
+    <!-- Inativo em ausências -->
     <div class="flex items-center justify-between gap-3">
       <div>
-        <Label class="text-sm font-medium">Inativo em feriados e dias de inatividade</Label>
+        <Label class="text-sm font-medium">Inativo em dias de ausência</Label>
         <p class="text-xs text-muted-foreground">
-          Quando ativo, enviamos a mensagem acima nos feriados.
+          Quando ativo, enviamos a mensagem acima nos dias de ausência.
         </p>
       </div>
       <Switch

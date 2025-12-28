@@ -40,7 +40,7 @@
         </a>
       </DropdownMenuItem>
       <DropdownMenuItem as-child>
-        <router-link to="/settings" class="flex w-full items-center">
+        <router-link to="/configuracoes" class="flex w-full items-center">
           <Settings class="mr-2 h-4 w-4" />
           <span>Configurações</span>
         </router-link>

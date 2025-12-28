@@ -40,7 +40,7 @@ const selectedStatus = ref<SidebarStatusType>(SidebarStatusType.ALL_CHATS);
 
 // Verifica se a rota atual é /conversations
 const isConversationsRoute = computed(() => {
-  return route.path === '/conversations' || route.path.startsWith('/conversations');
+  return route.path === '/conversas' || route.path.startsWith('/conversas');
 });
 
 function toggleSidebar() {

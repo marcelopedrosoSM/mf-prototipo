@@ -102,10 +102,10 @@
     --secondary-foreground: 270 54% 90%;
     /* Texto secundário - roxo claro */
 
-    --muted: 0 0% 15%;
-    /* Elementos muted - cinza mais escuro (painel-base) */
-    --muted-foreground: 0 0% 65%;
-    /* Texto muted - cinza claro */
+    --muted: 0 0% 20%;
+    /* Elementos muted - cinza mais claro para melhor contraste */
+    --muted-foreground: 0 0% 75%;
+    /* Texto muted - cinza mais claro para melhor legibilidade */
 
     --accent: 270 54% 55%;
     /* Accent - mesma cor do primary */

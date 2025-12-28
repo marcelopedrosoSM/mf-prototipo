@@ -6,7 +6,7 @@
         <!-- Inbox Title Selector -->
         <Select v-model="selectedInboxId" @update:model-value="handleInboxChange">
           <SelectTrigger class="w-auto h-auto p-0 border-0 shadow-none hover:bg-transparent focus:ring-0 gap-2 group">
-            <SelectValue class="text-lg font-semibold text-foreground group-hover:text-primary transition-colors" :placeholder="selectedInbox?.nome || 'Selecione'" />
+            <SelectValue class="text-lg font-semibold text-foreground group-hover:text-primary dark:group-hover:text-primary-lighten transition-colors" :placeholder="selectedInbox?.nome || 'Selecione'" />
           </SelectTrigger>
           <SelectContent>
             <SelectItem
@@ -137,11 +137,11 @@
 
       <!-- Modern Search Bar -->
       <div class="relative">
-        <Search class="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground/60" />
+        <Search class="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground dark:text-foreground/60" />
         <Input
           v-model="searchQuery"
           placeholder="Buscar conversa..."
-          class="pl-9 bg-muted/50 border-transparent focus:bg-background transition-all hover:bg-muted/80 h-9 rounded-lg"
+          class="pl-9 bg-muted/50 border-transparent focus:bg-background transition-all hover:bg-muted/80 h-9 rounded-lg dark:bg-border dark:text-foreground dark:placeholder:text-foreground/50"
           @input="handleSearch"
         />
       </div>
@@ -151,43 +151,34 @@
     <div class="px-3 py-2 bg-background border-b border-border">
       <div class="flex items-center gap-2 flex-wrap">
         <!-- Filtro: Não lidas -->
-        <button
-          :class="[
-            'h-6 px-2.5 text-xs font-medium rounded-full transition-colors cursor-pointer flex items-center justify-center',
-            activeFilters.has('unread')
-              ? 'bg-primary text-primary-foreground'
-              : 'bg-muted text-muted-foreground hover:bg-muted/80',
-          ]"
-          @click="toggleFilter('unread')"
+        <Toggle
+          :pressed="activeFilters.has('unread')"
+          variant="pill"
+          size="xs"
+          @update:pressed="toggleFilter('unread')"
         >
           Não lidas
-        </button>
+        </Toggle>
         <!-- Filtro: Eu -->
-        <button
-          :class="[
-            'h-6 px-2.5 text-xs font-medium rounded-full transition-colors cursor-pointer flex items-center justify-center',
-            activeFilters.has('me')
-              ? 'bg-primary text-primary-foreground'
-              : 'bg-muted text-muted-foreground hover:bg-muted/80',
-          ]"
-          @click="toggleFilter('me')"
+        <Toggle
+          :pressed="activeFilters.has('me')"
+          variant="pill"
+          size="xs"
+          @update:pressed="toggleFilter('me')"
         >
           Eu
-        </button>
+        </Toggle>
         <!-- Outros filtros adicionais -->
-        <button
+        <Toggle
           v-for="filter in additionalFilters"
           :key="filter.id"
-          :class="[
-            'h-6 px-2.5 text-xs font-medium rounded-full transition-colors cursor-pointer flex items-center justify-center',
-            activeFilters.has(filter.id)
-              ? 'bg-primary text-primary-foreground'
-              : 'bg-muted text-muted-foreground hover:bg-muted/80',
-          ]"
-          @click="toggleFilter(filter.id)"
+          :pressed="activeFilters.has(filter.id)"
+          variant="pill"
+          size="xs"
+          @update:pressed="toggleFilter(filter.id)"
         >
           {{ filter.label }}
-        </button>
+        </Toggle>
 
         <!-- Badges de Filtros Aplicados -->
         <!-- Badge Agentes -->
@@ -282,6 +273,7 @@ import {
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Checkbox } from '@/components/ui/checkbox';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { Toggle } from '@/components/ui/toggle';
 import ChatCard from './ChatCard.vue';
 import StartConversationPopover from './StartConversationPopover.vue';
 import type { ChatSession } from '@/types/conversations';

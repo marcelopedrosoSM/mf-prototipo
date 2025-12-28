@@ -14,7 +14,7 @@
         </Button>
         <div class="flex items-center gap-2">
           <router-link 
-            to="/settings/automacoes" 
+            to="/configuracoes/automacoes" 
             class="text-sm text-muted-foreground hover:text-foreground transition-colors cursor-pointer"
           >
             Automações
@@ -39,46 +39,48 @@
         </div>
       </div>
 
-      <!-- Center - Mode Toggle (pill-style) -->
-      <div class="absolute left-1/2 -translate-x-1/2">
-        <div class="flex items-center p-1 rounded-full border bg-muted/30">
-          <button
-            @click="handleModeChange('edit')"
-            :class="cn(
-              'flex items-center gap-2 px-4 py-1.5 rounded-full text-sm font-medium transition-all',
-              viewMode === 'edit' 
-                ? 'bg-primary text-primary-foreground shadow-sm' 
-                : 'text-muted-foreground hover:text-foreground'
-            )"
-          >
-            <Pencil class="h-4 w-4" />
-            Edição
-          </button>
-          <button
-            @click="handleModeChange('execution')"
-            :class="cn(
-              'flex items-center gap-2 px-4 py-1.5 rounded-full text-sm font-medium transition-all',
-              viewMode === 'execution' 
-                ? 'bg-primary text-primary-foreground shadow-sm' 
-                : 'text-muted-foreground hover:text-foreground'
-            )"
-          >
-            <Radio class="h-4 w-4" />
-            Execução
-          </button>
-        </div>
-      </div>
-
       <!-- Right side - Actions and Toggle -->
       <div class="flex items-center space-x-4">
         <Button 
           variant="outline" 
           size="sm"
+          :disabled="!hasUnsavedChanges"
+          :class="cn(!hasUnsavedChanges && 'opacity-60')"
           @click="$emit('save')"
         >
-          <Save class="mr-2 h-4 w-4" />
-          Salvar
+          <Check v-if="!hasUnsavedChanges" class="mr-2 h-4 w-4" />
+          <Save v-else class="mr-2 h-4 w-4" />
+          {{ hasUnsavedChanges ? 'Salvar' : 'Salvo' }}
         </Button>
+        
+        <!-- Export/Import Dropdown -->
+        <DropdownMenu>
+          <DropdownMenuTrigger as-child>
+            <Button variant="outline" size="sm">
+              <MoreHorizontal class="mr-2 h-4 w-4" />
+              Mais
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end">
+            <DropdownMenuItem @click="$emit('export')">
+              <Download class="mr-2 h-4 w-4" />
+              Exportar JSON
+            </DropdownMenuItem>
+            <DropdownMenuItem @click="triggerImport">
+              <Upload class="mr-2 h-4 w-4" />
+              Importar JSON
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
+        
+        <!-- Hidden file input for import -->
+        <input 
+          ref="fileInput"
+          type="file" 
+          accept=".json"
+          class="hidden"
+          @change="handleFileSelect"
+        />
 
         <div class="flex items-center gap-2 px-3 h-9 rounded-md border border-input bg-background ml-4 w-[138px]">
           <Switch 
@@ -99,11 +101,17 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue';
-import { Save, ArrowLeft, ChevronRight, Clock, MessageSquarePlus, MessageSquare, Send, CheckCircle2, Pencil, Radio } from 'lucide-vue-next';
+import { computed, ref } from 'vue';
+import { Save, ArrowLeft, ChevronRight, Clock, MessageSquarePlus, MessageSquare, Send, CheckCircle2, MoreHorizontal, Download, Upload, Check } from 'lucide-vue-next';
 import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 import { cn } from '@/lib/utils';
 import { TRIGGER_CONFIG, type AutomationTrigger } from '@/types/automation';
 
@@ -114,10 +122,12 @@ interface Props {
   triggerType: AutomationTrigger;
   isActive: boolean;
   viewMode?: ViewMode;
+  hasUnsavedChanges?: boolean;
 }
 
 const props = withDefaults(defineProps<Props>(), {
-  viewMode: 'edit'
+  viewMode: 'edit',
+  hasUnsavedChanges: true,
 });
 
 const emit = defineEmits<{
@@ -125,10 +135,24 @@ const emit = defineEmits<{
   'update:viewMode': [value: ViewMode];
   save: [];
   back: [];
+  export: [];
+  import: [file: File];
 }>();
 
-function handleModeChange(mode: ViewMode) {
-  emit('update:viewMode', mode);
+// File input ref for import
+const fileInput = ref<HTMLInputElement | null>(null);
+
+function triggerImport() {
+  fileInput.value?.click();
+}
+
+function handleFileSelect(event: Event) {
+  const target = event.target as HTMLInputElement;
+  const file = target.files?.[0];
+  if (file) {
+    emit('import', file);
+    target.value = '';
+  }
 }
 
 const triggerConfig = computed(() => TRIGGER_CONFIG[props.triggerType] || TRIGGER_CONFIG.mensagem_recebida);
