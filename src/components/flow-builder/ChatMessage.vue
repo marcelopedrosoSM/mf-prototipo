@@ -45,7 +45,7 @@
 
 <script setup lang="ts">
 import { computed } from 'vue';
-import { Bot, AlertCircle } from 'lucide-vue-next';
+import { Bot } from 'lucide-vue-next';
 import type { SimulatorMessage } from '@/composables/useFlowSimulator';
 
 const props = withDefaults(defineProps<{

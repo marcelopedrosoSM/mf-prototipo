@@ -97,7 +97,7 @@
                     <TableCell class="font-medium">{{ group.name }}</TableCell>
                     <TableCell>
                       <RadioGroup
-                        :model-value="getSelectedPermissionId(group.name)"
+                        :model-value="String(getSelectedPermissionId(group.name) || '')"
                         @update:model-value="(value) => handlePermissionChange(group.name, Number(value))"
                         class="flex flex-col gap-2"
                       >
@@ -107,7 +107,7 @@
                           class="flex items-center space-x-2"
                         >
                           <RadioGroupItem
-                            :value="permission.id"
+                            :value="String(permission.id)"
                             :id="`permission-${permission.id}`"
                           />
                           <Label
@@ -168,7 +168,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
-import { formatDate, dateToInputFormat, inputFormatToDate } from '@/utils/date';
+import { formatDate } from '@/utils/date';
 
 import {
   Table,

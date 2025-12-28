@@ -3,6 +3,7 @@
     <!-- Custom Flow Builder Header -->
     <FlowBuilderHeader 
       :flow-name="currentFlow?.nome || 'Novo Fluxo'"
+      flow-type="atendimento"
       v-model:is-active="isFlowActive"
       v-model:view-mode="viewMode"
       :has-unsaved-changes="hasUnsavedChanges"
@@ -172,6 +173,7 @@ import FlowBuilderChatSidebar from '@/components/layout/FlowBuilderChatSidebar.v
 import FlowBuilderHeader from '@/components/flows/FlowBuilderHeader.vue';
 import FlowToolbar from '@/components/flow-builder/FlowToolbar.vue';
 import { MOCK_FLOWS_ATENDIMENTO, FLOW_DATA_MAP, type Flow } from '@/mocks/data/flows';
+import type { FlowExecution } from '@/types/execution';
 import CustomNode from '@/components/flow-builder/CustomNode.vue';
 import CustomNodeHorizontal from '@/components/flow-builder/CustomNodeHorizontal.vue';
 import CustomNodeVertical from '@/components/flow-builder/CustomNodeVertical.vue';
@@ -185,7 +187,7 @@ import { getHelperLines } from '@/components/flow-builder/utils';
 import { useLayout } from '@/composables/useLayout';
 import type { GraphNode } from '@vue-flow/core';
 import { useRefHistory } from '@vueuse/core';
-import { useFlowsStore, useExecutionsStore } from '@/stores';
+import { useFlowsStore } from '@/stores';
 import { useToast } from '@/components/ui/toast/use-toast';
 import ChatSimulator from '@/components/flow-builder/ChatSimulator.vue';
 import FlowConfigSheet from '@/components/flow-builder/FlowConfigSheet.vue';
@@ -544,14 +546,12 @@ function ensureStartEndNodes() {
   
   if (startNodes.length > 1) {
     // Manter apenas o primeiro início
-    const firstStart = startNodes[0];
     const otherStarts = startNodes.slice(1);
     nodes.value = nodes.value.filter(n => !otherStarts.some(os => os.id === n.id));
   }
   
   if (endNodes.length > 1) {
     // Manter apenas o primeiro fim
-    const firstEnd = endNodes[0];
     const otherEnds = endNodes.slice(1);
     nodes.value = nodes.value.filter(n => !otherEnds.some(oe => oe.id === n.id));
   }

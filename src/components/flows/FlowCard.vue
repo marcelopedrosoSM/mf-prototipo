@@ -101,8 +101,7 @@ import {
   MoreVertical, 
   Edit, 
   Trash2,
-  MessageSquare,
-  Zap,
+  BotIcon,
   Play
 } from 'lucide-vue-next';
 import { Card, CardContent } from '@/components/ui/card';
@@ -136,7 +135,7 @@ const emit = defineEmits<{
 
 // Computed para ícone
 const icon = computed(() => {
-  return props.flow.tipo === 'atendimento' ? MessageSquare : Zap;
+  return props.flow.tipo === 'atendimento' ? BotIcon : CheckCircle2;
 });
 
 const handleCardClick = () => {

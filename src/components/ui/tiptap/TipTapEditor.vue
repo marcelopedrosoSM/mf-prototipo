@@ -9,7 +9,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, watch, onBeforeUnmount, onMounted, computed } from 'vue'
+import { ref, watch, onBeforeUnmount, computed } from 'vue'
 import { useEditor, EditorContent } from '@tiptap/vue-3'
 import StarterKit from '@tiptap/starter-kit'
 import Placeholder from '@tiptap/extension-placeholder'

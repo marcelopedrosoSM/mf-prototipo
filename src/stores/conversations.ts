@@ -288,10 +288,9 @@ export const useConversationsStore = defineStore(
                         status: 'running',
                         currentBlockId: 'start-1',
                         executionNumber: executionsStore.executions.length + 1,
-                        startTime: new Date().toISOString(),
+                        startedAt: new Date().toISOString(),
                         executionPath: ['start-1'],
                         variables: variables,
-                        history: []
                     };
 
                     executionsStore.addExecution(newExecution);

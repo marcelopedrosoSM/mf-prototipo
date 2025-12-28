@@ -4,6 +4,7 @@
     <AutomationBuilderHeader 
       :automation-name="automationName"
       :trigger-type="triggerType"
+      :inbox-name="inboxName"
       :is-active="isActive"
       :has-unsaved-changes="hasUnsavedChanges"
       v-model:view-mode="viewMode"
@@ -153,6 +154,7 @@ import { useLayout } from '@/composables/useLayout';
 import { useAutomationsStore } from '@/stores/automations';
 // Mocks
 import { createDefaultNodes } from '@/mocks/data/automations';
+import { getCaixaEntradaById } from '@/mocks/data/caixas-entrada';
 import { useToast } from '@/composables/useToast';
 import type { AutomationTrigger } from '@/types/automation';
 
@@ -182,6 +184,12 @@ const caixaId = computed(() => route.params.caixaId as string);
 const triggerType = computed(() => route.params.gatilhoTipo as AutomationTrigger);
 const automationId = computed(() => route.params.automacaoId as string);
 const isNewAutomation = computed(() => automationId.value === 'novo');
+
+// Get inbox name
+const inboxName = computed(() => {
+  const caixa = getCaixaEntradaById(caixaId.value);
+  return caixa?.nome || 'Caixa de Entrada';
+});
 
 // State
 const isSidebarCollapsed = ref(false);

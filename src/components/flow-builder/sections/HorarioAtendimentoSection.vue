@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, computed } from 'vue'
+import { ref } from 'vue'
 import { Label } from '@/components/ui/label'
 import { Switch } from '@/components/ui/switch'
 import { Textarea } from '@/components/ui/textarea'

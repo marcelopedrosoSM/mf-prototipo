@@ -195,7 +195,7 @@ const handleUnidadeChange = (unidade: 'minutos' | 'horas') => {
           <Label for="retomada-handoff">Encaminhar para *</Label>
           <Select
             :model-value="config.handoffAgentId"
-            @update:model-value="updateConfig({ handoffAgentId: $event })"
+            @update:model-value="updateConfig({ handoffAgentId: $event as string })"
           >
             <SelectTrigger id="retomada-handoff">
               <SelectValue placeholder="Selecione agente ou time" />

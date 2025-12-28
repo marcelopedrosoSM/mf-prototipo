@@ -156,7 +156,7 @@ export interface ActivityFilters {
 
 // Grouped activities by status
 export interface ActivityGroup {
-    status: ActivityStatus;
-    label: string; // "Pendentes", "Em Andamento", "Concluídas", "Puladas"
+    status: ActivityStatus | 'overdue';
+    label: string; // "Pendentes", "Em Andamento", "Concluídas", "Puladas", "Atrasadas"
     activities: Activity[];
 }

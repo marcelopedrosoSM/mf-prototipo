@@ -86,8 +86,6 @@ import {
   MessageSquare, 
   Sparkles, 
   Clock, 
-  Zap, 
-  ZapOff,
   Mail,
   Phone,
   CheckSquare,

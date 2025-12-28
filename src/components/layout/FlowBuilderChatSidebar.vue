@@ -79,7 +79,7 @@
 
 <script setup lang="ts">
 import { ref, computed, h } from 'vue';
-import { PanelLeftClose, PanelLeftOpen, Search, MessageSquare, HelpCircle, Split, Sparkles, Globe, Clock, StickyNote, Zap, ZapOff } from 'lucide-vue-next';
+import { PanelLeftClose, PanelLeftOpen, Search, MessageSquare, HelpCircle, Split, Sparkles, Globe, Clock, StickyNote } from 'lucide-vue-next';
 import { cn } from '@/lib/utils';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Input } from '@/components/ui/input';

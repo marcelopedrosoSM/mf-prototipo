@@ -234,54 +234,12 @@ export const useActivityStore = defineStore(
                 });
 
                 // Also update data.assignee if it's a task, for consistency
-                if (activity.type === 'task' && activity.data && (activity.data as any).type === 'task') {
-                    // We cast to any or check type safely because TS inheritance can be tricky in partial updates
-                    // But here we are just modifying the object in the array via updateActivity which merges.
-                    // The simple updateActivity above is enough for the base fields.
-                    // Optionally we update the nested 'assignee' for display purposes in task view.
+                if (activity.type === 'task' && activity.data && 'type' in activity.data && activity.data.type === 'task') {
                     const data = { ...activity.data, assignee: agentName };
                     updateActivity(id, { data: data as any });
                 }
             }
         }
-
-        // Action to transfer activity to another agent (manual or automated)
-        function transferActivity(id: string, agentId: string, agentName: string) {
-            updateActivity(id, {
-                // In a real app we would have an 'assignedTo' field. 
-                // For this prototype, we'll store it in metadata or add the field to the type if needed.
-                // Checking Activity type definition might be needed, but for now safely defaulting to metadata logic or just logging it.
-                // Wait, I should verify the Activity type. 
-                // Let's assume we can add 'assignedAgentId' to the updates.
-                // If the type doesn't support it, I might need to update the type or just use the description as a hack for prototype.
-                // Giving the user "option to transfer" usually implies a UI action.
-                // I will add a system-like update to the description to log the transfer for now if the type forbids it.
-                // BETTER: Add `assignedTo` to type in next step if missing.
-            });
-            // Actually, let's verify type first. 
-            // I'll add the function but comment on the type check.
-        }
-
-        function transferActivityToAgent(id: string, agentId: string) {
-            const index = activities.value.findIndex(a => a.id === id);
-            if (index !== -1) {
-                // For prototype, we'll assume the activity can hold assignment info 
-                // We will update the activity with a new property even if strict TS complains, or cast it.
-                // But better to be safe.
-                // Let's check Activity type in a sec.
-                // For now, I will just log it in history/description
-                const activity = activities.value[index];
-                const newHistory = `Transferido para agente ${agentId}`;
-                // ...
-            }
-        }
-
-        // RE-WRITING STRATEGY: 
-        // I will add the method simply updating a hypothetical 'assignedTo' and see if it compiles later? 
-        // No, I want to be precise.
-        // I will check the type file first.
-
-        // Aborting this specific tool call to check type file first.
 
 
         function getActivityById(id: string): Activity | undefined {
@@ -321,6 +279,7 @@ export const useActivityStore = defineStore(
             getActivityById,
             initializeWithSeedData,
             createActivityFromNode,
+            transferActivity,
         };
     }
     // NOTA: Removida persistência para que os mocks resetem ao atualizar a página

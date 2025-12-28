@@ -148,7 +148,6 @@ import {
   Phone,
   CheckSquare,
   Workflow,
-  ListTodo,
 } from 'lucide-vue-next';
 
 const props = defineProps<NodeProps<CustomNodeData>>();
@@ -173,7 +172,12 @@ const BLOCK_ICONS: Record<BlockType, any> = {
   call: Phone,
   task: CheckSquare,
   chat_flow: Workflow,
-  task_flow: ListTodo,
+  task_flow: Workflow,
+  trigger_manual: Play,
+  trigger_message_received: MessageSquare,
+  trigger_conversation_created: MessageSquarePlus,
+  trigger_conversation_closed: CheckCircle2,
+  availability_check: CalendarDays,
 };
 
 const getTriggerIcon = (type: string) => {
@@ -258,7 +262,7 @@ const previewContent = computed(() => {
   
   if (type.value === 'wait') {
     if (props.data.waitDuration) {
-      return formatWaitDuration(props.data.waitDuration, props.data.waitUnit);
+      return formatWaitDuration(Number(props.data.waitDuration), props.data.waitUnit as string);
     }
     return 'Defina o tempo de espera';
   }

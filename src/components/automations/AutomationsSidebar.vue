@@ -134,7 +134,7 @@
 
 <script setup lang="ts">
 import { ref, computed } from 'vue';
-import { PanelLeftClose, PanelLeftOpen, Search, ZapOff, CalendarOff, Clock, MessageSquare, MessageSquarePlus, CheckCircle2, HelpCircle, Sparkles, Calendar, Play, CalendarClock, Workflow, ListTodo } from 'lucide-vue-next';
+import { PanelLeftClose, PanelLeftOpen, Search, CalendarOff, Clock, MessageSquare, MessageSquarePlus, CheckCircle2, HelpCircle, Sparkles, Calendar, Play, CalendarClock, Workflow, ListTodo } from 'lucide-vue-next';
 import { cn } from '@/lib/utils';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Input } from '@/components/ui/input';
@@ -167,34 +167,7 @@ const availableBlocks = computed(() => {
   return blocks;
 });
 
-// Map triggerType to block type
-const TRIGGER_TYPE_TO_BLOCK_TYPE: Record<AutomationTrigger, string> = {
-  conversa_criada: 'trigger_conversation_created',
-  mensagem_recebida: 'trigger_message_received',
-  mensagem_enviada: 'trigger_message_received', // mapped to message_received
-  conversa_finalizada: 'trigger_conversation_closed',
-  fluxo_unificado: '', // shows all
-  horario_atendimento: '',
-};
 
-// Only show the trigger that matches the current automation type
-const triggerBlocks = computed(() => {
-  const blocks = availableBlocks.value.filter(b => b.type.startsWith('trigger_'));
-  
-  // If specific trigger type, only show that one
-  const expectedBlockType = TRIGGER_TYPE_TO_BLOCK_TYPE[props.triggerType];
-  if (expectedBlockType) {
-    const filtered = blocks.filter(b => b.type === expectedBlockType);
-    if (!searchQuery.value) return filtered;
-    const query = searchQuery.value.toLowerCase();
-    return filtered.filter(b => b.label.toLowerCase().includes(query) || b.description.toLowerCase().includes(query));
-  }
-  
-  // Otherwise show all triggers (for fluxo_unificado)
-  if (!searchQuery.value) return blocks;
-  const query = searchQuery.value.toLowerCase();
-  return blocks.filter(b => b.label.toLowerCase().includes(query) || b.description.toLowerCase().includes(query));
-});
 
 const actionBlocks = computed(() => {
   const blocks = availableBlocks.value.filter(b => !b.type.startsWith('trigger_'));

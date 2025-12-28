@@ -36,7 +36,7 @@
 
 <script setup lang="ts">
 import { h } from 'vue';
-import { HelpCircle, BookOpen, MessageCircle, Video, FileText, ExternalLink } from 'lucide-vue-next';
+import { HelpCircle, BookOpen, Video, FileText, ExternalLink } from 'lucide-vue-next';
 import {
   DropdownMenu,
   DropdownMenuContent,

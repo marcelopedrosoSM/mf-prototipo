@@ -61,8 +61,8 @@ const updateConfig = (updates: Partial<TransferenciaConfig>) => {
         </template>
         <template v-else>
           <Select
-            :model-value="config.handoffAgentId"
-            @update:model-value="updateConfig({ handoffAgentId: $event })"
+            :model-value="config.handoffAgentId || ''"
+            @update:model-value="updateConfig({ handoffAgentId: $event as string })"
           >
             <SelectTrigger id="transferencia-handoff">
               <SelectValue placeholder="Selecione agente ou time" />

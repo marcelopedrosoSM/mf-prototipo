@@ -3,6 +3,7 @@
     <!-- Custom Flow Builder Header -->
     <FlowBuilderHeader 
       :flow-name="currentFlow?.nome || 'Novo Fluxo de Atividades'"
+      flow-type="atividades"
       v-model:is-active="isFlowActive"
       v-model:view-mode="viewMode"
       :has-unsaved-changes="hasUnsavedChanges"
@@ -500,14 +501,12 @@ function ensureStartEndNodes() {
   
   if (startNodes.length > 1) {
     // Manter apenas o primeiro início
-    const firstStart = startNodes[0];
     const otherStarts = startNodes.slice(1);
     nodes.value = nodes.value.filter(n => !otherStarts.some(os => os.id === n.id));
   }
   
   if (endNodes.length > 1) {
     // Manter apenas o primeiro fim
-    const firstEnd = endNodes[0];
     const otherEnds = endNodes.slice(1);
     nodes.value = nodes.value.filter(n => !otherEnds.some(oe => oe.id === n.id));
   }

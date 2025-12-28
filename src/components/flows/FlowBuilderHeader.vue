@@ -15,14 +15,20 @@
         <div class="flex items-center gap-2">
           <router-link 
             to="/configuracoes/fluxos" 
-            class="text-sm text-muted-foreground hover:text-foreground transition-colors cursor-pointer"
+            class="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors cursor-pointer"
           >
+            <Workflow class="h-4 w-4" />
             Fluxos
           </router-link>
           <ChevronRight class="h-4 w-4 text-muted-foreground" />
           <div class="flex items-center gap-2">
+            <component :is="flowTypeIcon" class="h-4 w-4 text-muted-foreground" />
+            <span class="text-sm text-muted-foreground">{{ flowTypeLabel }}</span>
+          </div>
+          <ChevronRight class="h-4 w-4 text-muted-foreground" />
+          <div class="flex items-center gap-2">
             <div class="h-6 w-6 rounded-md bg-primary/10 flex items-center justify-center flex-shrink-0">
-              <Workflow class="h-3.5 w-3.5 text-primary" />
+              <component :is="flowTypeIcon" class="h-3.5 w-3.5 text-primary" />
             </div>
             <span class="text-sm font-semibold">{{ flowName }}</span>
           </div>
@@ -139,8 +145,8 @@
 </template>
 
 <script setup lang="ts">
-import { ref, watch } from 'vue';
-import { Workflow, Save, Settings, ArrowLeft, ChevronRight, ShieldCheck, Play, MoreHorizontal, Download, Upload, Check } from 'lucide-vue-next';
+import { ref, watch, computed } from 'vue';
+import { Workflow, Save, Settings, ArrowLeft, ChevronRight, ShieldCheck, Play, MoreHorizontal, Download, Upload, Check, BotIcon, CheckCircle2 } from 'lucide-vue-next';
 import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
@@ -157,20 +163,28 @@ export type ViewMode = 'edit' | 'execution';
 
 interface Props {
   flowName: string;
+  flowType?: 'atendimento' | 'atividades';
   hideSimulate?: boolean;
   hasUnsavedChanges?: boolean;
 }
 
 const props = withDefaults(defineProps<Props>(), {
+  flowType: 'atendimento',
   hideSimulate: false,
   hasUnsavedChanges: true,
+});
+
+const flowTypeLabel = computed(() => {
+  return props.flowType === 'atividades' ? 'Fluxo de Atividades' : 'Fluxo de Atendimento';
+});
+
+const flowTypeIcon = computed(() => {
+  return props.flowType === 'atividades' ? CheckCircle2 : BotIcon;
 });
 
 // 🚀 defineModel simplifica a prop isActive e as emissões update:isActive e toggle-active
 const isActive = defineModel<boolean>('isActive', { default: false });
 
-// 🚀 defineModel para viewMode - permite v-model:view-mode
-const viewMode = defineModel<ViewMode>('viewMode', { default: 'edit' });
 
 const emit = defineEmits<{
   'toggle-active': [value: boolean];

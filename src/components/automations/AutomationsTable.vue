@@ -66,7 +66,7 @@
               </TableCell>
               <TableCell>
                 <span class="text-sm text-muted-foreground">
-                  {{ formatDate(automation.updatedAt) }}
+                  {{ formatDate(automation.updatedAt.toISOString()) }}
                 </span>
               </TableCell>
               <TableCell class="text-right" @click.stop>

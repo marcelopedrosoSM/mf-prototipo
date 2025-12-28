@@ -18,6 +18,7 @@ export const MOCK_EXECUTIONS_ATENDIMENTO: FlowExecution[] = [
         id: 'exec-atend-001',
         executionNumber: 1001,
         flowId: '1',
+        flowName: 'Fluxo de Atendimento Padrão',
         contactId: 'contact-001',
         contactName: 'Maria Silva',
         startedAt: minutesAgo(10),
@@ -31,6 +32,7 @@ export const MOCK_EXECUTIONS_ATENDIMENTO: FlowExecution[] = [
         id: 'exec-atend-002',
         executionNumber: 1000,
         flowId: '1',
+        flowName: 'Fluxo de Atendimento Padrão',
         contactId: 'contact-002',
         contactName: 'João Santos',
         startedAt: hoursAgo(1),
@@ -45,6 +47,7 @@ export const MOCK_EXECUTIONS_ATENDIMENTO: FlowExecution[] = [
         id: 'exec-atend-003',
         executionNumber: 999,
         flowId: '2',
+        flowName: 'Vendas Diretas',
         contactId: 'contact-003',
         contactName: 'Ana Costa',
         startedAt: hoursAgo(3),
@@ -58,6 +61,7 @@ export const MOCK_EXECUTIONS_ATENDIMENTO: FlowExecution[] = [
         id: 'exec-atend-004',
         executionNumber: 998,
         flowId: '3',
+        flowName: 'Suporte VIP',
         contactId: 'contact-004',
         contactName: 'Pedro Oliveira',
         startedAt: daysAgo(1),
@@ -81,6 +85,7 @@ export const MOCK_EXECUTIONS_ATIVIDADES: FlowExecution[] = [
         id: 'exec-ativ-email',
         executionNumber: 510,
         flowId: '4',
+        flowName: 'Follow-up Completo',
         contactId: 'contact-email',
         contactName: '📧 João - No E-mail',
         startedAt: minutesAgo(2),
@@ -90,12 +95,11 @@ export const MOCK_EXECUTIONS_ATIVIDADES: FlowExecution[] = [
         executionPath: ['start-1', 'email-1'],
         variables: { nome: 'João Silva', empresa: 'Empresa A' },
     },
-
-    // 2. Parado no Wait (aguardando tempo)
     {
         id: 'exec-ativ-wait',
         executionNumber: 509,
         flowId: '4',
+        flowName: 'Follow-up Completo',
         contactId: 'contact-wait',
         contactName: '⏳ Maria - Na Espera',
         startedAt: minutesAgo(10),
@@ -105,12 +109,11 @@ export const MOCK_EXECUTIONS_ATIVIDADES: FlowExecution[] = [
         executionPath: ['start-1', 'email-1', 'wait-1'],
         variables: { nome: 'Maria Santos', empresa: 'Empresa B' },
     },
-
-    // 3. Parado no WhatsApp (aguardando resposta)
     {
         id: 'exec-ativ-message',
         executionNumber: 508,
         flowId: '4',
+        flowName: 'Follow-up Completo',
         contactId: 'contact-message',
         contactName: '💬 Pedro - No WhatsApp',
         startedAt: minutesAgo(30),
@@ -120,12 +123,11 @@ export const MOCK_EXECUTIONS_ATIVIDADES: FlowExecution[] = [
         executionPath: ['start-1', 'email-1', 'wait-1', 'message-1'],
         variables: { nome: 'Pedro Costa', empresa: 'Empresa C' },
     },
-
-    // 4. Parado na Ligação (aguardando resultado)
     {
         id: 'exec-ativ-call',
         executionNumber: 507,
         flowId: '4',
+        flowName: 'Follow-up Completo',
         contactId: 'contact-call',
         contactName: '📞 Ana - Na Ligação',
         startedAt: hoursAgo(1),
@@ -135,12 +137,11 @@ export const MOCK_EXECUTIONS_ATIVIDADES: FlowExecution[] = [
         executionPath: ['start-1', 'email-1', 'wait-1', 'message-1', 'call-1'],
         variables: { nome: 'Ana Lima', empresa: 'Empresa D' },
     },
-
-    // 5. Parado na Ação (aguardando classificação NPS)
     {
         id: 'exec-ativ-action',
         executionNumber: 506,
         flowId: '4',
+        flowName: 'Follow-up Completo',
         contactId: 'contact-action',
         contactName: '⚡ Carlos - Na Ação',
         startedAt: hoursAgo(2),
@@ -150,12 +151,11 @@ export const MOCK_EXECUTIONS_ATIVIDADES: FlowExecution[] = [
         executionPath: ['start-1', 'email-1', 'wait-1', 'message-1', 'call-1', 'action-1'],
         variables: { nome: 'Carlos Mendes', empresa: 'Empresa E' },
     },
-
-    // 6. Parado na Tarefa (aguardando conclusão)
     {
         id: 'exec-ativ-task',
         executionNumber: 505,
         flowId: '4',
+        flowName: 'Follow-up Completo',
         contactId: 'contact-task',
         contactName: '✅ Lucia - Na Tarefa',
         startedAt: hoursAgo(3),
@@ -165,12 +165,11 @@ export const MOCK_EXECUTIONS_ATIVIDADES: FlowExecution[] = [
         executionPath: ['start-1', 'email-1', 'wait-1', 'message-1', 'call-1', 'action-1', 'task-1'],
         variables: { nome: 'Lucia Ferreira', empresa: 'Empresa F' },
     },
-
-    // 7. Parado no Fluxo de Atendimento (aguardando resultado)
     {
         id: 'exec-ativ-chatflow',
         executionNumber: 504,
         flowId: '4',
+        flowName: 'Follow-up Completo',
         contactId: 'contact-chatflow',
         contactName: '🔄 Roberto - No Atendimento',
         startedAt: hoursAgo(4),
@@ -180,12 +179,11 @@ export const MOCK_EXECUTIONS_ATIVIDADES: FlowExecution[] = [
         executionPath: ['start-1', 'email-1', 'wait-1', 'message-1', 'call-1', 'action-1', 'chat_flow-1'],
         variables: { nome: 'Roberto Alves', empresa: 'Empresa G' },
     },
-
-    // 8. Execução Completa (sucesso)
     {
         id: 'exec-ativ-complete',
         executionNumber: 503,
         flowId: '4',
+        flowName: 'Follow-up Completo',
         contactId: 'contact-complete',
         contactName: '🎉 Fernanda - Concluído',
         startedAt: hoursAgo(5),
@@ -196,11 +194,11 @@ export const MOCK_EXECUTIONS_ATIVIDADES: FlowExecution[] = [
         executionPath: ['start-1', 'email-1', 'wait-1', 'message-1', 'call-1', 'action-1', 'chat_flow-1', 'end-1'],
         variables: { nome: 'Fernanda Lima', nps: 'Promotor' },
     },
-    // FLUXO 5 - Pesquisa NPS
     {
         id: 'exec-ativ-003',
         executionNumber: 499,
         flowId: '5',
+        flowName: 'Pesquisa NPS',
         contactId: 'contact-103',
         contactName: 'Roberto Alves',
         startedAt: hoursAgo(4),
@@ -214,6 +212,7 @@ export const MOCK_EXECUTIONS_ATIVIDADES: FlowExecution[] = [
         id: 'exec-ativ-004',
         executionNumber: 498,
         flowId: '5',
+        flowName: 'Pesquisa NPS',
         contactId: 'contact-104',
         contactName: 'Juliana Rocha',
         startedAt: daysAgo(1),
@@ -224,11 +223,11 @@ export const MOCK_EXECUTIONS_ATIVIDADES: FlowExecution[] = [
         executionPath: ['start-1', 'email-1', 'action-1', 'chat_flow-1', 'end-1'],
         variables: { nome: 'Juliana Rocha', nps: 'Promotor' },
     },
-    // FLUXO 6 - Cobrança
     {
         id: 'exec-ativ-005',
         executionNumber: 497,
         flowId: '6',
+        flowName: 'Fluxo Recorrência',
         contactId: 'contact-105',
         contactName: 'Marcos Souza',
         startedAt: hoursAgo(6),
@@ -242,6 +241,7 @@ export const MOCK_EXECUTIONS_ATIVIDADES: FlowExecution[] = [
         id: 'exec-ativ-006',
         executionNumber: 496,
         flowId: '6',
+        flowName: 'Fluxo Recorrência',
         contactId: 'contact-106',
         contactName: 'Patricia Gomes',
         startedAt: daysAgo(2),

@@ -87,7 +87,6 @@ import { computed } from 'vue';
 import { Mail, Phone, MessageSquare, CheckSquare, Workflow, Play } from 'lucide-vue-next';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Button } from '@/components/ui/button';
-import { ACTIVITY_STATUS_METADATA } from '@/constants/activities';
 import type { Activity } from '@/types/activity';
 
 const props = defineProps<{

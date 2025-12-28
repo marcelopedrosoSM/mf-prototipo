@@ -737,14 +737,13 @@ import {
 import ActivityCard from '@/components/execution/ActivityCard.vue';
 import ActivityTypeForm from '@/components/execution/ActivityTypeForm.vue';
 import { ACTIVITY_STATUS_METADATA, getStatusMetadata } from '@/constants/activities';
-import { MOCK_FLOWS_FROM_ACTIVITIES, getSeedActivities } from '@/mocks/data/activities';
+import { getSeedActivities } from '@/mocks/data/activities';
 import { MOCK_FLOWS_ATENDIMENTO, MOCK_FLOWS_ATIVIDADES } from '@/mocks/data/flows';
 import { useActivityStore } from '@/stores/activities';
 import { useContactsStore } from '@/stores/contacts';
 import { useFlowsStore } from '@/stores/flows';
-import type { Activity, ActivityGroup, ActivityStatus } from '@/types/activity';
+import type { Activity, ActivityGroup } from '@/types/activity';
 import { useToast } from '@/composables/useToast';
-import type { SavedFlow } from '@/stores/flows';
 
 import { Progress } from '@/components/ui/progress';
 
@@ -1133,7 +1132,11 @@ const handleEnrollContact = () => {
         flow.nome,
         firstStepNode,
         String(contact.id), // Contact ID as string for activity
-        { name: contact.name, email: contact.email, phone: contact.phone }
+        { 
+          name: contact.name, 
+          email: contact.emails?.[0]?.email || '', 
+          phone: contact.phoneNumbers?.[0]?.phoneNumber || '' 
+        }
       );
       
       if (activity) {

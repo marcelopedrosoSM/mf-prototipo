@@ -200,6 +200,12 @@ const BLOCK_ICONS: Record<BlockType, any> = {
   call: Phone,
   task: CheckSquare,
   chat_flow: Workflow,
+  task_flow: Workflow,
+  trigger_manual: Play,
+  trigger_message_received: MessageSquare,
+  trigger_conversation_created: MessageSquarePlus,
+  trigger_conversation_closed: CheckCircle2,
+  availability_check: CalendarDays,
 };
 
 const getTriggerIcon = (type: string) => {
@@ -284,7 +290,7 @@ const previewContent = computed(() => {
   
   if (type.value === 'wait') {
     if (props.data.waitDuration) {
-      return formatWaitDuration(props.data.waitDuration, props.data.waitUnit);
+      return formatWaitDuration(Number(props.data.waitDuration), props.data.waitUnit as string);
     }
     return 'Defina o tempo de espera';
   }
@@ -295,6 +301,54 @@ const previewContent = computed(() => {
 
   return props.data.content || 'Configure este bloco';
 });
+
+// Função para formatar duração de espera com unidade
+function formatWaitDuration(milliseconds: number, unit?: string) {
+  const seconds = milliseconds / 1000;
+  
+  // Se tem unidade definida, usar ela
+  if (unit) {
+    const value = getWaitValueFromMs(milliseconds, unit);
+    const labels: Record<string, string> = {
+      seconds: 'segundo',
+      minutes: 'minuto',
+      hours: 'hora',
+      days: 'dia',
+    };
+    const label = labels[unit] || 'segundo';
+    const plural = value !== 1 ? 's' : '';
+    return `Aguardando ${value} ${label}${plural}...`;
+  }
+  
+  // Se não tem unidade, inferir a melhor
+  if (seconds >= 86400) {
+    const days = Math.floor(seconds / 86400);
+    return `Aguardando ${days} ${days === 1 ? 'dia' : 'dias'}...`;
+  }
+  if (seconds >= 3600) {
+    const hours = Math.floor(seconds / 3600);
+    return `Aguardando ${hours} ${hours === 1 ? 'hora' : 'horas'}...`;
+  }
+  if (seconds >= 60) {
+    const minutes = Math.floor(seconds / 60);
+    return `Aguardando ${minutes} ${minutes === 1 ? 'minuto' : 'minutos'}...`;
+  }
+  return `Aguardando ${seconds} ${seconds === 1 ? 'segundo' : 'segundos'}...`;
+}
+
+function getWaitValueFromMs(milliseconds: number, unit: string) {
+  const seconds = milliseconds / 1000;
+  switch (unit) {
+    case 'days':
+      return Math.floor(seconds / 86400);
+    case 'hours':
+      return Math.floor(seconds / 3600);
+    case 'minutes':
+      return Math.floor(seconds / 60);
+    default:
+      return seconds;
+  }
+}
 </script>
 
 <style scoped>

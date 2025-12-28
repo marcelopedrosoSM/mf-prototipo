@@ -256,14 +256,14 @@ export function useFlowSimulator(options: FlowSimulatorOptions) {
                         // Tentar atribuir usando a store se tivermos contexto (mesmo que mockado)
                         // Em produção, isso usaria o ID real da conversa. Aqui simulamos com um ID fixo ou gerado.
                         const targetConvId = 'mock-conv-id';
-                        const assigned = data.agentId ? conversationsStore.assignAgent(targetConvId, data.agentId) : false;
+                        const assigned = data.agentId ? conversationsStore.assignAgent(targetConvId, data.agentId as string) : false;
 
                         const statusMsg = assigned ? '✅ Sucesso' : '⚠️ Falha (agente não encontrado)';
                         await addMessage('system', `🔄 Atribuído ao agente: ${data.agentId || 'Não especificado'} (${statusMsg})`, blockId);
                     }
                     else if (actionTypeStr === 'assign_team') {
                         const targetConvId = 'mock-conv-id';
-                        const assigned = data.teamId ? conversationsStore.assignTeam(targetConvId, data.teamId) : false;
+                        const assigned = data.teamId ? conversationsStore.assignTeam(targetConvId, data.teamId as string) : false;
 
                         const statusMsg = assigned ? '✅ Sucesso' : '⚠️ Falha (time não encontrado)';
                         await addMessage('system', `👥 Atribuído ao time: ${data.teamId || 'Não especificado'} (${statusMsg})`, blockId);

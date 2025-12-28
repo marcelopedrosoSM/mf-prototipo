@@ -53,3 +53,18 @@ export interface WeekDay {
     label: string
     short: string
 }
+
+// Configuração de horário por dia
+export interface DiaHorario {
+    ativo: boolean
+    horarioInicio: string
+    horarioFim: string
+}
+
+// Configuração completa de horários de funcionamento
+export type HorarioFuncionamento = {
+    [key in WeekdayId]: DiaHorario
+} & {
+    mensagemForaHorario: string
+    inativoFeriados: boolean
+}

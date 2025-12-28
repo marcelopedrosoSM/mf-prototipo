@@ -23,5 +23,5 @@ export { useContactsStore } from './contacts';
 export { useTeamsStore } from './teams';
 export { useInboxesStore } from './inboxes';
 export { useConversationsStore } from './conversations';
-export { useUserPreferencesStore } from './userPreferences';
+export { useUserPreferencesStore, type DefaultRoute } from './userPreferences';
 

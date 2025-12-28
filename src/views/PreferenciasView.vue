@@ -170,7 +170,7 @@ onMounted(() => {
 
 const routeOptions = [
   {
-    value: 'dashboard' as DefaultRoute,
+    value: 'painel' as DefaultRoute,
     label: 'Painel',
     description: 'Visualize um resumo geral das suas atividades e estatísticas',
     icon: h(LayoutDashboard),

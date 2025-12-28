@@ -15,10 +15,16 @@
         <div class="flex items-center gap-2">
           <router-link 
             to="/configuracoes/automacoes" 
-            class="text-sm text-muted-foreground hover:text-foreground transition-colors cursor-pointer"
+            class="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors cursor-pointer"
           >
+            <Zap class="h-4 w-4" />
             Automações
           </router-link>
+          <ChevronRight class="h-4 w-4 text-muted-foreground" />
+          <div class="flex items-center gap-2">
+            <Inbox class="h-4 w-4 text-muted-foreground" />
+            <span class="text-sm text-muted-foreground">{{ inboxName }}</span>
+          </div>
           <ChevronRight class="h-4 w-4 text-muted-foreground" />
           <div class="flex items-center gap-2">
             <div 
@@ -102,7 +108,7 @@
 
 <script setup lang="ts">
 import { computed, ref } from 'vue';
-import { Save, ArrowLeft, ChevronRight, Clock, MessageSquarePlus, MessageSquare, Send, CheckCircle2, MoreHorizontal, Download, Upload, Check } from 'lucide-vue-next';
+import { Save, ArrowLeft, ChevronRight, Clock, MessageSquarePlus, MessageSquare, Send, CheckCircle2, MoreHorizontal, Download, Upload, Check, Inbox, Zap } from 'lucide-vue-next';
 import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
@@ -120,6 +126,7 @@ export type ViewMode = 'edit' | 'execution';
 interface Props {
   automationName: string;
   triggerType: AutomationTrigger;
+  inboxName?: string;
   isActive: boolean;
   viewMode?: ViewMode;
   hasUnsavedChanges?: boolean;

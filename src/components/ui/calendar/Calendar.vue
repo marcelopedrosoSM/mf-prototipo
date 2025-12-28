@@ -8,7 +8,7 @@ import { CalendarCell, CalendarCellTrigger, CalendarGrid, CalendarGridBody, Cale
 const props = defineProps<CalendarRootProps & { class?: HTMLAttributes["class"] }>()
 
 // 🚀 defineModel para o valor da data selecionada
-const model = defineModel()
+const model = defineModel<any>()
 </script>
 
 <template>
