@@ -10,6 +10,9 @@ import { getLabelById } from './labels';
 import { MOCK_AGENTES } from './agentes';
 import { MOCK_TIMES } from './times';
 
+// Data base fixa: 30/12/2025 às 18:00
+const BASE_DATE = new Date('2025-12-30T18:00:00-03:00');
+
 // Nomes brasileiros realistas
 // const NOMES_BRASILEIROS = [
 //   'Ana Paula Silva',
@@ -78,7 +81,7 @@ function createMessage(
     type,
     status,
     senderId: isUser ? '1' : conversationId,
-    senderName: senderName || (isUser ? 'Você' : 'Contato'),
+    senderName: senderName || (isUser ? 'Usuário Protótipo' : 'Contato'),
     senderType,
     timestamp: timestamp.toISOString(),
     date,
@@ -146,7 +149,8 @@ function createFileMessage(
   minutesOffset: number,
   isUser: boolean,
   fileName: string,
-  fileType: 'file' | 'image' | 'video' = 'file'
+  fileType: 'file' | 'image' | 'video' = 'file',
+  senderName?: string
 ): Message {
   const extensions = {
     file: ['pdf', 'docx', 'xlsx', 'zip'],
@@ -173,14 +177,66 @@ function createFileMessage(
     [
       {
         id: `file-${id}`,
-        url: `https://example.com/files/${fileName}.${ext}`,
+        url: fileType === 'image'
+          ? `https://picsum.photos/seed/${id}/800/600`
+          : fileType === 'video'
+            ? `https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4`
+            : `https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf`,
         type: fileType,
         name: `${fileName}.${ext}`,
         size: getRandomElement(sizes[fileType]),
         mimeType: fileType === 'image' ? `image/${ext}` : fileType === 'video' ? `video/${ext}` : `application/${ext}`,
       },
-    ]
+    ],
+    isUser ? 'user' : 'contact',
+    senderName
   );
+}
+
+// Helper to create bot messages with flow context
+function createBotMessage(
+  id: string,
+  conversationId: string,
+  baseDate: Date,
+  minutesOffset: number,
+  content: string,
+  flowContext: {
+    flowId: string;
+    flowName: string;
+    flowType: 'service' | 'activity';
+    stepName?: string;
+    stepNumber?: number;
+    totalSteps?: number;
+  }
+): Message {
+  const timestamp = new Date(baseDate.getTime() - minutesOffset * 60 * 1000);
+  const date = timestamp.toLocaleDateString('pt-BR');
+  const hour = timestamp.toLocaleTimeString('pt-BR', {
+    hour: '2-digit',
+    minute: '2-digit',
+  });
+
+  return {
+    id,
+    conversationId,
+    content,
+    type: 'text',
+    status: 'delivered',
+    senderId: 'bot',
+    senderName: flowContext.flowType === 'service' ? 'Assistente Virtual' : 'Fluxo de Atividades',
+    senderType: 'bot',
+    timestamp: timestamp.toISOString(),
+    date,
+    hour,
+    flowContext: {
+      flowId: flowContext.flowId,
+      flowName: flowContext.flowName,
+      flowType: flowContext.flowType,
+      stepName: flowContext.stepName,
+      stepNumber: flowContext.stepNumber,
+      totalSteps: flowContext.totalSteps,
+    },
+  };
 }
 
 // ============================================================================
@@ -203,17 +259,45 @@ const withoutTeam1: ChatSession = {
     getLabelById('3')!, // Follow-up
   ].filter(Boolean),
   messages: [
+    createBotMessage('msg-1-0', '1', new Date(), 30, '👋 Olá! Sou o assistente virtual do MyFlows. Como posso ajudar você hoje?', {
+      flowId: 'flow-atendimento-1',
+      flowName: 'Atendimento Inicial',
+      flowType: 'service',
+      stepName: 'Boas-vindas',
+    }),
     createMessage('msg-1-1', '1', new Date(), 25, false, 'Olá, bom dia! Gostaria de informações sobre os planos disponíveis.'),
-    createMessage('msg-1-2', '1', new Date(), 20, true, 'Bom dia Ana Paula! Claro, temos três planos: Básico, Profissional e Enterprise. Qual te interessa mais?'),
+    createBotMessage('msg-1-1b', '1', new Date(), 23, 'Claro! Temos três planos: Básico, Profissional e Enterprise. Qual te interessa mais?', {
+      flowId: 'flow-atendimento-1',
+      flowName: 'Atendimento Inicial',
+      flowType: 'service',
+      stepName: 'Qualificação',
+    }),
     createMessage('msg-1-3', '1', new Date(), 15, false, 'O Profissional parece interessante. Quais são os recursos inclusos?'),
     createMessage('msg-1-4', '1', new Date(), 10, true, 'O plano Profissional inclui até 5 usuários, integração com WhatsApp, relatórios avançados e suporte prioritário. Quer que eu envie mais detalhes?'),
     createMessage('msg-1-5', '1', new Date(), 5, false, 'Sim, por favor! Pode enviar também os valores?'),
   ],
-  lastActivityAt: new Date(Date.now() - 5 * 60 * 1000).toISOString(),
-  lastActivityUserAt: new Date(Date.now() - 10 * 60 * 1000).toISOString(),
-  status: 'waiting',
+  lastActivityAt: new Date(Date.now() - 0.5 * 60 * 1000).toISOString(), // 30 segundos atrás
+  lastActivityUserAt: new Date(Date.now() - 1 * 60 * 1000).toISOString(),
+  status: 'open',
   inbox: MOCK_INBOXES[0],
   mentioned: false,
+  linkedServiceFlow: {
+    flowId: 'flow-atendimento-1',
+    flowName: 'Atendimento Inicial',
+    status: 'active',
+  },
+  assignedUser: {
+    id: 'assign-1',
+    user: {
+      id: MOCK_AGENTES[0].id,
+      name: MOCK_AGENTES[0].nome,
+      email: MOCK_AGENTES[0].email,
+    },
+    team: {
+      id: MOCK_TIMES[0].id,
+      name: MOCK_TIMES[0].nome,
+    },
+  },
 };
 
 // Variação 2: Sem etiquetas, sem usuário
@@ -334,12 +418,12 @@ const inService2: ChatSession = {
     getLabelById('3')!, // Follow-up
   ].filter(Boolean),
   messages: [
-    createMessage('msg-5-1', '5', new Date(), 90, false, 'Oi! Preciso de ajuda com a integração da API.'),
-    createMessage('msg-5-2', '5', new Date(), 85, true, 'Oi Juliana! Claro, qual endpoint está dando problema?', 'text', 'delivered', undefined, 'user', MOCK_AGENTES[1].nome),
-    createMessage('msg-5-3', '5', new Date(), 80, false, 'O endpoint de mensagens está retornando erro 500.'),
-    createMessage('msg-5-4', '5', new Date(), 75, true, 'Vou verificar isso. Pode me enviar o log do erro?', 'text', 'delivered', undefined, 'user', MOCK_AGENTES[1].nome),
-    createFileMessage('msg-5-5', '5', new Date(), 70, false, 'log_erro', 'file'),
-    createMessage('msg-5-6', '5', new Date(), 65, true, 'Recebi! Vou analisar e te retorno em até 2 horas.', 'text', 'read', undefined, 'user', MOCK_AGENTES[1].nome),
+    createMessage('msg-5-1', '5', BASE_DATE, 90, false, 'Oi! Preciso de ajuda com a integração da API.'),
+    createMessage('msg-5-2', '5', BASE_DATE, 85, true, 'Oi Juliana! Claro, qual endpoint está dando problema?', 'text', 'delivered', undefined, 'user', MOCK_AGENTES[1].nome),
+    createMessage('msg-5-3', '5', BASE_DATE, 80, false, 'O endpoint de mensagens está retornando erro 500.'),
+    createMessage('msg-5-4', '5', BASE_DATE, 75, true, 'Vou verificar isso. Pode me enviar o log do erro?', 'text', 'delivered', undefined, 'user', MOCK_AGENTES[1].nome),
+    createFileMessage('msg-5-5', '5', BASE_DATE, 70, false, 'log_erro', 'file'),
+    createMessage('msg-5-6', '5', BASE_DATE, 65, true, 'Recebi! Vou analisar e te retorno em até 2 horas.', 'text', 'read', undefined, 'user', MOCK_AGENTES[1].nome),
   ],
   lastActivityAt: new Date(Date.now() - 65 * 60 * 1000).toISOString(),
   lastActivityUserAt: new Date(Date.now() - 65 * 60 * 1000).toISOString(),
@@ -862,9 +946,9 @@ const longConversation: ChatSession = {
       if (msgType === 'audio') {
         messages.push(createAudioMessage(`msg-16-${msgIndex++}`, '16', new Date(), minutesOffset, isUser, Math.floor(Math.random() * 30 + 10)));
       } else if (msgType === 'image') {
-        messages.push(createFileMessage(`msg-16-${msgIndex++}`, '16', new Date(), minutesOffset, isUser, `imagem_${i}`, 'image'));
+        messages.push(createFileMessage(`msg-16-${msgIndex++}`, '16', new Date(), minutesOffset, isUser, `imagem_${i}`, 'image', isUser ? MOCK_AGENTES[0].nome : 'Rodrigo Nascimento'));
       } else if (msgType === 'file') {
-        messages.push(createFileMessage(`msg-16-${msgIndex++}`, '16', new Date(), minutesOffset, isUser, `arquivo_${i}`, 'file'));
+        messages.push(createFileMessage(`msg-16-${msgIndex++}`, '16', new Date(), minutesOffset, isUser, `arquivo_${i}`, 'file', isUser ? MOCK_AGENTES[0].nome : 'Rodrigo Nascimento'));
       } else {
         const texts = isUser
           ? ['Entendi!', 'Perfeito!', 'Vou verificar.', 'Claro!', 'Ótimo!']
@@ -994,6 +1078,100 @@ const threeDaysAgoConversation: ChatSession = {
   mentioned: false,
 };
 
+// ============================================================================
+// CONVERSAS EM ATENDIMENTO SEM USUÁRIO ATRIBUÍDO (BORDA LARANJA)
+// ============================================================================
+
+const inServiceNoUser1: ChatSession = {
+  id: 'in-service-no-user-1',
+  sender: {
+    id: 'contact-no-user-1',
+    name: 'Roberto Mendes',
+    phoneNumber: '+5511976543210',
+    city: 'São Paulo',
+    state: 'SP',
+  },
+  unreadCount: 3,
+  labels: [getLabelById('1')!, getLabelById('2')!],
+  messages: [
+    createMessage('msg-no-user-1-1', 'in-service-no-user-1', BASE_DATE, 45, false, 'Olá! Preciso de ajuda urgente com meu pedido'),
+    createMessage('msg-no-user-1-2', 'in-service-no-user-1', BASE_DATE, 40, true, 'Olá Roberto! Claro, vou te ajudar. Qual o número do seu pedido?'),
+    createMessage('msg-no-user-1-3', 'in-service-no-user-1', BASE_DATE, 35, false, 'É o pedido #12345'),
+    createMessage('msg-no-user-1-4', 'in-service-no-user-1', BASE_DATE, 30, false, 'Está atrasado há 3 dias'),
+  ],
+  lastActivityAt: new Date(BASE_DATE.getTime() - 30 * 60 * 1000).toISOString(),
+  lastActivityUserAt: new Date(BASE_DATE.getTime() - 40 * 60 * 1000).toISOString(),
+  assignedUser: {
+    id: 'assign-no-user-1',
+    team: {
+      id: MOCK_TIMES[0].id,
+      name: MOCK_TIMES[0].nome,
+    },
+  },
+  status: 'open',
+  inbox: MOCK_INBOXES[0],
+  mentioned: false,
+};
+
+const inServiceNoUser2: ChatSession = {
+  id: 'in-service-no-user-2',
+  sender: {
+    id: 'contact-no-user-2',
+    name: 'Carla Rodrigues',
+    phoneNumber: '+5521987654321',
+    city: 'Rio de Janeiro',
+    state: 'RJ',
+  },
+  unreadCount: 5,
+  labels: [getLabelById('3')!],
+  messages: [
+    createMessage('msg-no-user-2-1', 'in-service-no-user-2', BASE_DATE, 60, false, 'Boa tarde! Gostaria de falar sobre o orçamento'),
+    createMessage('msg-no-user-2-2', 'in-service-no-user-2', BASE_DATE, 55, false, 'Vocês podem me enviar mais detalhes?'),
+    createMessage('msg-no-user-2-3', 'in-service-no-user-2', BASE_DATE, 50, false, 'Preciso decidir até amanhã'),
+  ],
+  lastActivityAt: new Date(BASE_DATE.getTime() - 50 * 60 * 1000).toISOString(),
+  lastActivityUserAt: new Date(BASE_DATE.getTime() - 120 * 60 * 1000).toISOString(),
+  assignedUser: {
+    id: 'assign-no-user-2',
+    team: {
+      id: MOCK_TIMES[1].id,
+      name: MOCK_TIMES[1].nome,
+    },
+  },
+  status: 'open',
+  inbox: MOCK_INBOXES[0],
+  mentioned: false,
+};
+
+const inServiceNoUser3: ChatSession = {
+  id: 'in-service-no-user-3',
+  sender: {
+    id: 'contact-no-user-3',
+    name: 'Fernando Costa',
+    phoneNumber: '+5531998765432',
+    city: 'Belo Horizonte',
+    state: 'MG',
+  },
+  unreadCount: 2,
+  labels: [],
+  messages: [
+    createMessage('msg-no-user-3-1', 'in-service-no-user-3', BASE_DATE, 90, false, 'Olá, meu produto chegou com defeito'),
+    createMessage('msg-no-user-3-2', 'in-service-no-user-3', BASE_DATE, 85, false, 'Como faço para trocar?'),
+  ],
+  lastActivityAt: new Date(BASE_DATE.getTime() - 85 * 60 * 1000).toISOString(),
+  lastActivityUserAt: new Date(BASE_DATE.getTime() - 200 * 60 * 1000).toISOString(),
+  assignedUser: {
+    id: 'assign-no-user-3',
+    team: {
+      id: MOCK_TIMES[2].id,
+      name: MOCK_TIMES[2].nome,
+    },
+  },
+  status: 'open',
+  inbox: MOCK_INBOXES[1],
+  mentioned: false,
+};
+
 // Array inicial sem ordenação
 const _MOCK_CHAT_SESSIONS: ChatSession[] = [
   // WITHOUT_TEAM (3 variações)
@@ -1004,6 +1182,10 @@ const _MOCK_CHAT_SESSIONS: ChatSession[] = [
   inService1,
   inService2,
   inService3,
+  // IN_SERVICE SEM USUÁRIO (3 variações - BORDA LARANJA)
+  inServiceNoUser1,
+  inServiceNoUser2,
+  inServiceNoUser3,
   // MENTION (3 variações)
   mention1,
   mention2,

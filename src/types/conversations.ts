@@ -13,9 +13,107 @@ export enum SidebarStatusType {
 
 export type ConversationStatus = 'open' | 'closed' | 'waiting' | 'pending';
 
-export type MessageType = 'text' | 'image' | 'audio' | 'video' | 'file' | 'location' | 'unsupported';
+export type MessageType =
+  | 'text'
+  | 'image'
+  | 'audio'
+  | 'video'
+  | 'file'
+  | 'location'
+  | 'sticker'
+  | 'contact'
+  | 'interactive'
+  | 'template'
+  | 'reaction'
+  | 'order'
+  | 'note'
+  | 'system'
+  | 'unsupported';
+
 export type MessageStatus = 'sent' | 'delivered' | 'read' | 'failed';
-export type SenderType = 'user' | 'contact' | 'system';
+export type SenderType = 'user' | 'contact' | 'system' | 'bot';
+
+/** Type of flow that can be linked to a conversation or message */
+export type FlowType = 'service' | 'activity';
+
+/** Context of the flow that generated a message */
+export interface MessageFlowContext {
+  flowId: string;
+  flowName: string;
+  flowType: FlowType;
+  stepId?: string;
+  stepName?: string;
+  stepNumber?: number;
+  totalSteps?: number;
+}
+
+export interface ContactPayload {
+  name: {
+    formatted_name: string;
+    first_name: string;
+  };
+  phones: {
+    phone: string;
+    type?: string;
+    wa_id?: string;
+  }[];
+}
+
+export interface InteractivePayload {
+  type: 'button' | 'list';
+  header?: {
+    type: 'text' | 'image' | 'video' | 'document';
+    text?: string;
+    image?: { link: string };
+  };
+  body: {
+    text: string;
+  };
+  footer?: {
+    text: string;
+  };
+  action: {
+    buttons?: {
+      type: 'reply';
+      reply: {
+        id: string;
+        title: string;
+      };
+    }[];
+    button?: string;
+    sections?: {
+      title: string;
+      rows: {
+        id: string;
+        title: string;
+        description?: string;
+      }[];
+    }[];
+  };
+}
+
+export interface OrderPayload {
+  catalog_id: string;
+  text?: string;
+  product_items: {
+    product_retailer_id: string;
+    quantity: string;
+    item_price: string;
+    currency: string;
+  }[];
+}
+
+export interface Reaction {
+  emoji: string;
+  userId: string;
+  userName: string;
+  timestamp: string;
+}
+
+export interface ReactionPayload {
+  message_id: string;
+  emoji: string;
+}
 
 export interface Message {
   id: string;
@@ -36,9 +134,23 @@ export interface Message {
     name: string;
     size: number;
     mimeType: string;
+    duration?: number;
   }[];
   quotedMessageId?: string;
   quotedMessage?: Message;
+  location?: {
+    latitude: number;
+    longitude: number;
+    name?: string;
+    address?: string;
+  };
+  contactPayload?: ContactPayload;
+  interactivePayload?: InteractivePayload;
+  orderPayload?: OrderPayload;
+  reactions?: Reaction[];
+  isPinned?: boolean;
+  /** Context of the flow that sent this message (for bot messages) */
+  flowContext?: MessageFlowContext;
 }
 
 export interface Label {
@@ -49,7 +161,7 @@ export interface Label {
 
 export interface AssignedUser {
   id: string;
-  user: {
+  user?: {
     id: string;
     name: string;
     email: string;
@@ -97,6 +209,21 @@ export interface ChatSession {
   status: ConversationStatus;
   inbox: Inbox;
   mentioned?: boolean;
+  isTyping?: boolean;
   updatedAt?: string;
+  /** Linked Service Flow (chatbot) - max 1 */
+  linkedServiceFlow?: {
+    flowId: string;
+    flowName: string;
+    status: 'active' | 'paused' | 'completed';
+  };
+  /** Linked Activity Flow (cadence) - max 1 */
+  linkedActivityFlow?: {
+    flowId: string;
+    flowName: string;
+    currentStep: number;
+    totalSteps: number;
+    currentStepName?: string;
+  };
 }
 

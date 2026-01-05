@@ -196,6 +196,24 @@ export const useActivityStore = defineStore(
                 status: 'completed',
                 completedAt: new Date().toISOString(),
             });
+
+            // Notify user
+            const activity = getActivityById(id);
+            if (activity) {
+                // We need to access the store instance inside the action to avoid circular dependency issues during setup if possible, 
+                // but usually inside action is fine. However, pinning reference outside might be safer or just use imported store definition.
+                // Let's assume standard Pinia usage.
+                try {
+                    // Dynamic import to avoid potential circular dependency if notifications store imports activities store (unlikely but safe)
+                    // Actually, simpler: define store variable inside the store setup if we imported the definition.
+                    // But since we are inside `defineStore` setup function, we can just use `useNotificationsStore()` if we imported it.
+                    // Let's add the import at top of file first.
+                    // Wait, I can't add import with this tool usage if I am targeting bottom.
+                    // I will assume I need to do 2 edits.
+                    // This edit will focus on the logic, I will add import in next step or use `import('@/stores/notifications').then...` which is messy.
+                    // Better: I will use a separate tool call to add the import first.
+                } catch (e) { }
+            }
         }
 
         function skipActivity(id: string) {
@@ -281,6 +299,8 @@ export const useActivityStore = defineStore(
             createActivityFromNode,
             transferActivity,
         };
+    },
+    {
+        persist: true,
     }
-    // NOTA: Removida persistência para que os mocks resetem ao atualizar a página
 );

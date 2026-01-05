@@ -30,6 +30,40 @@ export const useAgentsStore = defineStore('agents', () => {
         }
     }
 
+    function createAgent(data: Omit<Agente, 'id' | 'createdAt' | 'updatedAt'>) {
+        const now = new Date().toISOString();
+        const newAgent: Agente = {
+            ...data,
+            id: String(Date.now()),
+            createdAt: now,
+            updatedAt: now
+        };
+        agents.value.push(newAgent);
+        return newAgent;
+    }
+
+    function updateAgent(id: string, data: Partial<Agente>) {
+        const index = agents.value.findIndex(a => a.id === id);
+        if (index !== -1) {
+            agents.value[index] = {
+                ...agents.value[index],
+                ...data,
+                updatedAt: new Date().toISOString()
+            };
+            return agents.value[index];
+        }
+        return null;
+    }
+
+    function removeAgent(id: string) {
+        const index = agents.value.findIndex(a => a.id === id);
+        if (index !== -1) {
+            agents.value.splice(index, 1);
+            return true;
+        }
+        return false;
+    }
+
     // Initialize immediately for now
     initialize();
 
@@ -45,6 +79,9 @@ export const useAgentsStore = defineStore('agents', () => {
         getAgentsByTeam,
 
         // Actions
-        initialize
+        initialize,
+        createAgent,
+        updateAgent,
+        removeAgent
     };
 });

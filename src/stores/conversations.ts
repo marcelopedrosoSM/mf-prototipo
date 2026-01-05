@@ -11,7 +11,6 @@ import type { ChatSession } from '@/types/conversations';
 // IMPORTS MOCK DATA
 import * as ChatSessionsMock from '@/mocks/data/chatSessions';
 // Data now loaded via store or other means, mock removed
-import { MOCK_TIMES } from '@/mocks/data/times';
 import { useAutomationsStore } from './automations';
 import { useExecutionsStore } from './executions';
 import { useFlowsStore } from './flows';
@@ -46,6 +45,13 @@ export const useConversationsStore = defineStore(
             conversations.value.filter(c => c.assignedUser?.team?.id === teamId)
         );
 
+        // Contador de conversas ativas por agente
+        const getActiveConversationsByAgent = computed(() => (agentId: string) => {
+            return conversations.value.filter(
+                c => c.assignedUser?.user?.id === agentId && c.status !== 'closed'
+            ).length;
+        });
+
         // Actions
         function initialize() {
             if (!isInitialized.value) {
@@ -76,16 +82,19 @@ export const useConversationsStore = defineStore(
             const agent = agentsStore.getAgentById(agentId);
 
             if (conversation && agent) {
-                conversation.assignedUser = {
-                    id: `assign-${Date.now()}`,
-                    user: {
-                        id: agent.id,
-                        name: agent.nome,
-                        email: agent.email,
-                        avatar: ''
-                    },
-                    team: undefined
+                if (!conversation.assignedUser) {
+                    conversation.assignedUser = {
+                        id: `assign-${Date.now()}`
+                    };
+                }
+
+                conversation.assignedUser.user = {
+                    id: agent.id,
+                    name: agent.nome,
+                    email: agent.email,
+                    avatar: ''
                 };
+
                 conversation.status = 'open';
                 conversation.updatedAt = new Date().toISOString();
                 return true;
@@ -96,51 +105,37 @@ export const useConversationsStore = defineStore(
         // BUSINESS LOGIC: Assign Team
         function assignTeam(conversationId: string, teamId: string) {
             const conversation = conversations.value.find(c => c.id === conversationId);
-            // Use store instead of direct mock access
-            // We assume useTeamsStore is available and initialized, or we just access the mock via store if needed.
-            // But wait, I need to import useTeamsStore first. 
-            // I'll add the import in a separate block or assume it's imported?
-            // "MOCK_TIMES" is imported at top. "useTeamsStore" is NOT imported.
-            // I should actually change the whole file content or just this block?
-            // I can't add import here easily without context.
-            // Let's use the MOCK directly for now BUT wrapped better, OR better yet:
-            // I will use replace_file_content to add import AND change function.
-            // Actually, I'll do it in two steps or one big step. 
-            // Let's just fix the logic to use MOCK_TIMES correctly for now as I can't easily add import at top without re-reading. 
-            // WAIT, I have the file content in history. I can see imports.
-            // useTeamsStore is NOT imported. I need to add it.
-
-            // Let's use MOCK_TIMES for now but acknowledges it. 
-            // Actually, the user wants "Application Polished". Using Mock directly is "meh".
-            // I will use `useTeamsStore` but I need to add the import.
-
-            // Strategy: I will replace the logic to use a helper that accesses the store if I can, OR just stick to MOCK_TIMES but clean up the code.
-            // The prompt "what is missing?" implies high quality.
-            // I'll stick to MOCK_TIMES for this specific function to avoid breaking imports blindly, 
-            // BUT I will add a comment that this should be migrated.
-            // OR I can try to replace the top of file to add import.
-
-            // Actually, looking at `assignAgent`, it uses `useAgentsStore`. `useAgentsStore` IS imported.
-            // `useTeamsStore` is likely in `./teams`.
-            // I'll assume I can import it. 
-
-            const teamsStore = useTeamsStore(); // I need to import this!
-            const team = teamsStore.getTeamById(teamId) || MOCK_TIMES.find(t => t.id === teamId);
+            const teamsStore = useTeamsStore();
+            const team = teamsStore.getTeamById(teamId);
 
             if (conversation && team) {
-                conversation.assignedUser = {
-                    id: `assign-${Date.now()}`,
-                    user: { // Placeholder for "No User" or "Queue"
-                        id: 'queue',
-                        name: 'Fila de Atendimento',
-                        email: ''
-                    },
-                    team: {
-                        id: team.id,
-                        name: team.nome
-                    }
+                if (!conversation.assignedUser) {
+                    conversation.assignedUser = {
+                        id: `assign-${Date.now()}`
+                    };
+                }
+
+                conversation.assignedUser.team = {
+                    id: team.id,
+                    name: team.nome
                 };
-                conversation.status = 'pending';
+
+                // If there's no user, it might be pending queue, but if there's already a user, we keep it open
+                if (!conversation.assignedUser.user) {
+                    conversation.status = 'pending';
+                }
+
+                conversation.updatedAt = new Date().toISOString();
+                return true;
+            }
+            return false;
+        }
+
+        function unassign(conversationId: string) {
+            const conversation = conversations.value.find(c => c.id === conversationId);
+            if (conversation) {
+                conversation.assignedUser = undefined;
+                conversation.status = 'open';
                 return true;
             }
             return false;
@@ -150,6 +145,27 @@ export const useConversationsStore = defineStore(
             const conversation = conversations.value.find(c => c.id === conversationId);
             if (conversation) {
                 conversation.status = status;
+                return true;
+            }
+            return false;
+        }
+
+        function addLabel(conversationId: string, label: any) {
+            const conversation = conversations.value.find(c => c.id === conversationId);
+            if (conversation) {
+                // Check if label already exists
+                if (!conversation.labels.some(l => l.id === label.id)) {
+                    conversation.labels.push(label);
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        function removeLabel(conversationId: string, labelId: string) {
+            const conversation = conversations.value.find(c => c.id === conversationId);
+            if (conversation) {
+                conversation.labels = conversation.labels.filter(l => l.id !== labelId);
                 return true;
             }
             return false;
@@ -324,6 +340,208 @@ export const useConversationsStore = defineStore(
             });
         }
 
+        // REACTIONS
+        function addReaction(conversationId: string, messageId: string, emoji: string, userId: string = 'current-user', userName: string = 'Você') {
+            const conversation = conversations.value.find(c => c.id === conversationId);
+            if (conversation) {
+                const message = conversation.messages.find(m => m.id === messageId);
+                if (message) {
+                    if (!message.reactions) message.reactions = [];
+
+                    // Check if user already reacted with this emoji
+                    const existing = message.reactions.find(r => r.userId === userId && r.emoji === emoji);
+                    if (!existing) {
+                        message.reactions.push({
+                            emoji,
+                            userId,
+                            userName,
+                            timestamp: new Date().toISOString()
+                        });
+                        return true;
+                    }
+                }
+            }
+            return false;
+        }
+
+        function removeReaction(conversationId: string, messageId: string, emoji: string, userId: string = 'current-user') {
+            const conversation = conversations.value.find(c => c.id === conversationId);
+            if (conversation) {
+                const message = conversation.messages.find(m => m.id === messageId);
+                if (message && message.reactions) {
+                    message.reactions = message.reactions.filter(r => !(r.userId === userId && r.emoji === emoji));
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        // INTERNAL NOTES
+        function addInternalNote(conversationId: string, content: string) {
+            const conversation = conversations.value.find(c => c.id === conversationId);
+            if (conversation) {
+                const note: any = {
+                    id: `note-${Date.now()}`,
+                    conversationId,
+                    content,
+                    type: 'note',
+                    status: 'read',
+                    senderId: 'current-user',
+                    senderName: 'Você',
+                    senderType: 'user',
+                    timestamp: new Date().toISOString()
+                };
+                conversation.messages.push(note);
+                return true;
+            }
+            return false;
+        }
+
+        // EDIT INTERNAL NOTE
+        function editNote(conversationId: string, noteId: string, content: string) {
+            const conversation = conversations.value.find(c => c.id === conversationId);
+            if (conversation) {
+                const note = conversation.messages.find(m => m.id === noteId && m.type === 'note');
+                if (note) {
+                    note.content = content;
+                    (note as any).editedAt = new Date().toISOString();
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        // DELETE INTERNAL NOTE
+        function deleteNote(conversationId: string, noteId: string) {
+            const conversation = conversations.value.find(c => c.id === conversationId);
+            if (conversation) {
+                const noteIndex = conversation.messages.findIndex(m => m.id === noteId && m.type === 'note');
+                if (noteIndex !== -1) {
+                    conversation.messages.splice(noteIndex, 1);
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        // CLOSE CONVERSATION
+        function closeConversation(conversationId: string) {
+            const conversation = conversations.value.find(c => c.id === conversationId);
+            if (conversation) {
+                conversation.status = 'closed';
+                conversation.updatedAt = new Date().toISOString();
+
+                // Add system message
+                const systemMsg: any = {
+                    id: `sys-close-${Date.now()}`,
+                    conversationId,
+                    content: 'Conversa finalizada',
+                    type: 'text',
+                    status: 'read',
+                    senderId: 'system',
+                    senderName: 'Sistema',
+                    senderType: 'system',
+                    timestamp: new Date().toISOString()
+                };
+                conversation.messages.push(systemMsg);
+                return true;
+            }
+            return false;
+        }
+
+        // PIN/UNPIN MESSAGES
+        function pinMessage(conversationId: string, messageId: string) {
+            const conversation = conversations.value.find(c => c.id === conversationId);
+            if (conversation) {
+                const message = conversation.messages.find(m => m.id === messageId);
+                if (message) {
+                    message.isPinned = true;
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        function unpinMessage(conversationId: string, messageId: string) {
+            const conversation = conversations.value.find(c => c.id === conversationId);
+            if (conversation) {
+                const message = conversation.messages.find(m => m.id === messageId);
+                if (message) {
+                    message.isPinned = false;
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        // REOPEN CONVERSATION
+        function reopenConversation(conversationId: string) {
+            const conversation = conversations.value.find(c => c.id === conversationId);
+            if (conversation) {
+                conversation.status = 'open';
+                conversation.updatedAt = new Date().toISOString();
+
+                // Add system message
+                const systemMsg: any = {
+                    id: `sys-reopen-${Date.now()}`,
+                    conversationId,
+                    content: 'Conversa reaberta',
+                    type: 'text',
+                    status: 'read',
+                    senderId: 'system',
+                    senderName: 'Sistema',
+                    senderType: 'system',
+                    timestamp: new Date().toISOString()
+                };
+                conversation.messages.push(systemMsg);
+                return true;
+            }
+            return false;
+        }
+
+        // AUTO-ASSIGN: Atribuir para mim
+        function assignToMe(conversationId: string, currentUserId: string, currentUserName: string) {
+            const conversation = conversations.value.find(c => c.id === conversationId);
+            if (conversation) {
+                conversation.assignedUser = {
+                    id: `assign-${Date.now()}`,
+                    user: {
+                        id: currentUserId,
+                        name: currentUserName,
+                        email: 'user@myflows.com.br' // Email padrão para usuário atual
+                    },
+                    team: conversation.assignedUser?.team
+                };
+                conversation.updatedAt = new Date().toISOString();
+                return true;
+            }
+            return false;
+        }
+
+        // PAUSE SERVICE FLOW: Transfer to human
+        function pauseServiceFlow(conversationId: string) {
+            const conversation = conversations.value.find(c => c.id === conversationId);
+            if (conversation && conversation.linkedServiceFlow) {
+                conversation.linkedServiceFlow.status = 'paused';
+                conversation.updatedAt = new Date().toISOString();
+                // Add system message
+                const systemMsg = {
+                    id: `msg-${Date.now()}`,
+                    conversationId,
+                    content: 'Fluxo de atendimento pausado. Conversa transferida para agente humano.',
+                    type: 'system' as const,
+                    status: 'sent' as const,
+                    senderId: 'system',
+                    senderName: 'Sistema',
+                    senderType: 'system' as const,
+                    timestamp: new Date().toISOString(),
+                };
+                conversation.messages.push(systemMsg);
+                return true;
+            }
+            return false;
+        }
+
         return {
             conversations,
             isInitialized, // Added to fix lint error
@@ -333,13 +551,28 @@ export const useConversationsStore = defineStore(
             getConversationsByInbox,
             getConversationsByAgent,
             getConversationsByTeam,
+            getActiveConversationsByAgent,
             // Actions
             initialize,
             assignAgent,
             assignTeam,
+            unassign,
             updateStatus,
+            addLabel,
+            removeLabel,
             receiveMessage,
-            createConversation
+            createConversation,
+            addReaction,
+            removeReaction,
+            addInternalNote,
+            editNote,
+            deleteNote,
+            closeConversation,
+            reopenConversation,
+            pinMessage,
+            unpinMessage,
+            assignToMe,
+            pauseServiceFlow
         };
     }
 );

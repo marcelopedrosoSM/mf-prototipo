@@ -9,7 +9,8 @@ export type AutomationTrigger =
     | 'conversa_criada'
     | 'mensagem_recebida'
     | 'mensagem_enviada'
-    | 'conversa_finalizada';
+    | 'conversa_finalizada'
+    | 'contato_criado';
 
 export interface AutomationNode {
     id: string;
@@ -84,6 +85,12 @@ export const TRIGGER_CONFIG: Record<AutomationTrigger, TriggerConfig> = {
         description: 'Quando uma conversa é encerrada',
         color: '#EF4444' // Red
     },
+    contato_criado: {
+        label: 'Contato Criado',
+        icon: 'UserPlus',
+        description: 'Quando um novo contato é cadastrado',
+        color: '#EC4899' // Pink
+    },
 };
 
 // Lista ordenada de gatilhos para exibição
@@ -101,10 +108,13 @@ import type { WeekdayId } from './flow-config';
 export type AutomationBlockType =
     | 'start'
     | 'end'
+    | 'start'
+    | 'end'
     | 'trigger_message_received'
     | 'trigger_conversation_created'
     | 'trigger_conversation_closed'
     | 'trigger_manual'
+    | 'trigger_contact_created'
     | 'availability_check'
     | 'message'
     | 'question'
@@ -237,6 +247,50 @@ export const AUTOMATION_BLOCKS: Record<AutomationTrigger, AutomationBlockConfig[
     mensagem_recebida: [],
     mensagem_enviada: [],
     conversa_finalizada: [],
+    contato_criado: [
+        {
+            type: 'trigger_contact_created',
+            label: 'Contato Criado',
+            icon: 'UserPlus',
+            color: '#EC4899', // Pink
+            description: 'Dispara quando um novo contato é adicionado',
+        },
+        {
+            type: 'task_flow',
+            label: 'Fluxo de Atividades',
+            icon: 'ListTodo',
+            color: '#10B981', // Emerald
+            description: 'Iniciar uma cadência de atividades',
+        },
+        {
+            type: 'chat_flow',
+            label: 'Fluxo de Atendimento',
+            icon: 'Workflow',
+            color: '#8B5CF6', // Violet
+            description: 'Disparar um fluxo de atendimento (se houver canal)',
+        },
+        {
+            type: 'wait',
+            label: 'Espera',
+            icon: 'Clock',
+            color: '#F97316', // Orange
+            description: 'Aguardar um tempo',
+        },
+        {
+            type: 'condition', // Added missing generic condition block type if needed, or re-use others.
+            label: 'Condição', // Assuming 'condition' type exists or we need to add it to AutomationBlockType if it wasn't there (it is in list above)
+            icon: 'Split', // Assuming Split icon or similar exists, using HelpCircle/GitBranch metaphor
+            color: '#64748B', // Slate
+            description: 'Verificar condições do contato',
+        },
+        {
+            type: 'action',
+            label: 'Ação',
+            icon: 'Sparkles',
+            color: '#8B5CF6', // Violet
+            description: 'Executar ação do sistema',
+        },
+    ],
 };
 
 // Dados padrão para novos blocos
@@ -266,6 +320,8 @@ export function getDefaultBlockData(type: AutomationBlockType): Record<string, a
             return { type: 'trigger_conversation_created', title: 'Conversa Criada' };
         case 'trigger_conversation_closed':
             return { type: 'trigger_conversation_closed', title: 'Conversa Finalizada' };
+        case 'trigger_contact_created':
+            return { type: 'trigger_contact_created', title: 'Contato Criado' };
 
         case 'message':
             return {

@@ -7,18 +7,18 @@
 
     <div class="space-y-4">
       <div class="p-4 border rounded-lg">
-        <h2 class="text-2xl font-semibold mb-2">Pinia Store Example</h2>
-        <p class="mb-4">Count: {{ exampleStore.count }}</p>
+        <h2 class="text-2xl font-semibold mb-2">Exemplo Pinia Store</h2>
+        <p class="mb-4">Contador: {{ exampleStore.count }}</p>
         <div class="flex gap-2">
-          <Button @click="exampleStore.increment">Increment</Button>
-          <Button @click="exampleStore.decrement" variant="outline">Decrement</Button>
+          <Button @click="exampleStore.increment">Incrementar</Button>
+          <Button @click="exampleStore.decrement" variant="outline">Decrementar</Button>
         </div>
       </div>
 
       <div class="p-4 border rounded-lg">
-        <h2 class="text-2xl font-semibold mb-2">API Example (MSW Mocked)</h2>
+        <h2 class="text-2xl font-semibold mb-2">Exemplo API (Mock MSW)</h2>
         <Button @click="fetchUsers" :disabled="loading">
-          {{ loading ? 'Loading...' : 'Fetch Users' }}
+          {{ loading ? 'Carregando...' : 'Buscar Usuários' }}
         </Button>
         <div v-if="users.length > 0" class="mt-4">
           <ul class="space-y-2">

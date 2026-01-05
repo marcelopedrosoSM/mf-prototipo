@@ -1,5 +1,8 @@
 <template>
   <AppLayout>
+    <!-- Confetti celebration -->
+    <Confetti :active="showConfetti" @complete="showConfetti = false" />
+    
     <div class="flex h-full flex-col">
       <ScrollArea class="flex-1">
         <div class="p-6">
@@ -165,6 +168,24 @@
                   </div>
                 </div>
               </Card>
+              <!-- Streak Card -->
+              <Card class="w-[170px] shrink-0 p-3">
+                <div class="flex items-center gap-2">
+                  <div 
+                    class="h-8 w-8 rounded-full flex items-center justify-center"
+                    :class="streakDays > 0 ? 'bg-orange-100 dark:bg-orange-900/30' : 'bg-muted'"
+                  >
+                    <Flame 
+                      class="h-4 w-4" 
+                      :class="streakDays > 0 ? 'text-orange-500' : 'text-muted-foreground'"
+                    />
+                  </div>
+                  <div>
+                    <p class="text-xl font-bold">{{ streakDays }}</p>
+                    <p class="text-xs text-muted-foreground">{{ streakDays === 1 ? 'dia' : 'dias' }} de sequência</p>
+                  </div>
+                </div>
+              </Card>
             </div>
 
 
@@ -200,7 +221,10 @@
             </div>
 
             <!-- Activity List (Timeline) -->
-            <div v-if="viewMode === 'list'" class="space-y-6">
+            <div v-if="loading && viewMode === 'list'" class="space-y-6">
+               <CardListSkeleton :items="3" />
+            </div>
+            <div v-else-if="viewMode === 'list'" class="space-y-6">
               <div v-for="group in groupedActivities" :key="group.status" class="space-y-3">
                 <!-- Collapsible Header -->
                 <div 
@@ -667,6 +691,68 @@
         </DialogContent>
       </Dialog>
 
+       <!-- Create Activity Dialog -->
+       <Dialog :open="createActivityDialogOpen" @update:open="createActivityDialogOpen = $event">
+         <DialogContent class="sm:max-w-[500px]">
+           <DialogHeader>
+             <DialogTitle>Nova Atividade Manual</DialogTitle>
+             <DialogDescription>
+               Crie uma atividade avulsa para um contato.
+             </DialogDescription>
+           </DialogHeader>
+           
+           <div class="grid gap-4 py-4">
+             <div class="space-y-2">
+               <label class="text-sm font-medium">Título</label>
+               <Input v-model="newActivityData.title" placeholder="Ex: Ligar para verificar interesse" />
+             </div>
+             
+             <div class="space-y-2">
+                <label class="text-sm font-medium">Contato</label>
+                <Select v-model="newActivityData.contactId">
+                  <SelectTrigger>
+                    <SelectValue placeholder="Selecione um contato" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem 
+                      v-for="contact in contactStore.allContacts" 
+                      :key="contact.id" 
+                      :value="String(contact.id)"
+                    >
+                      {{ contact.name }}
+                    </SelectItem>
+                  </SelectContent>
+                </Select>
+             </div>
+             
+             <div class="space-y-2">
+               <label class="text-sm font-medium">Tipo</label>
+               <Select v-model="newActivityData.type">
+                 <SelectTrigger>
+                   <SelectValue />
+                 </SelectTrigger>
+                 <SelectContent>
+                   <SelectItem value="task">Tarefa</SelectItem>
+                   <SelectItem value="call">Ligação</SelectItem>
+                   <SelectItem value="email">E-mail</SelectItem>
+                   <SelectItem value="message">WhatsApp</SelectItem>
+                 </SelectContent>
+               </Select>
+             </div>
+             
+             <div class="space-y-2">
+               <label class="text-sm font-medium">Descrição (Opcional)</label>
+               <Input v-model="newActivityData.description" placeholder="Detalhes adicionais..." />
+             </div>
+           </div>
+           
+           <DialogFooter>
+             <Button variant="ghost" @click="createActivityDialogOpen = false">Cancelar</Button>
+             <Button @click="handleCreateActivity">Criar Atividade</Button>
+           </DialogFooter>
+         </DialogContent>
+       </Dialog>
+
        <!-- Help Dialog (Metrics Explanation) -->
        <Dialog :open="helpDialogOpen" @update:open="helpDialogOpen = $event">
          <DialogContent class="sm:max-w-[500px]">
@@ -714,7 +800,7 @@ import { ref, computed, onMounted } from 'vue';
 import { 
   Plus, List, Kanban, Search, Download, Clock, AlertTriangle, 
   CheckCircle2, TrendingUp, Play, SkipForward, Check, Calendar,
-  UserPlus, Trophy, XCircle, User, FileText, Mic, Paperclip, History, ChevronDown, HelpCircle
+  UserPlus, Trophy, XCircle, User, FileText, Mic, Paperclip, History, ChevronDown, HelpCircle, Flame
 } from 'lucide-vue-next';
 import AppLayout from '@/components/layout/AppLayout.vue';
 import { Button } from '@/components/ui/button';
@@ -722,6 +808,7 @@ import { Input } from '@/components/ui/input';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { CardListSkeleton } from '@/components/ui/skeleton';
 import { 
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue 
 } from '@/components/ui/select';
@@ -746,6 +833,7 @@ import type { Activity, ActivityGroup } from '@/types/activity';
 import { useToast } from '@/composables/useToast';
 
 import { Progress } from '@/components/ui/progress';
+import Confetti from '@/components/ui/confetti/Confetti.vue';
 
 const toast = useToast();
 const activityStore = useActivityStore();
@@ -758,6 +846,9 @@ const searchQuery = ref('');
 const filterFlow = ref('all');
 const filterStatus = ref('all');
 const filterPeriod = ref<'today' | 'last7days' | 'next7days'>('today'); 
+const loading = ref(true);
+const showConfetti = ref(false);
+const streakDays = ref(3); // Mock: dias consecutivos completando atividades
 const selectedActivities = ref<string[]>([]);
 const detailPanelOpen = ref(false);
 const enrollDialogOpen = ref(false);
@@ -790,7 +881,12 @@ const decisionDialogOpen = ref(false);
 const pendingExecuteCallback = ref<(() => void) | null>(null);
 
 // Initialize store with seed data if empty
+// Lifecycle
 onMounted(() => {
+  // Simulate loading
+  setTimeout(() => {
+    loading.value = false;
+  }, 800);
   if (activityStore.activities.length === 0) {
     activityStore.initializeWithSeedData(getSeedActivities());
   }
@@ -1030,12 +1126,12 @@ const getGroupBadgeClass = (status: string) => {
 };
 
 
-// Kanban views
+// Kanban views - Use periodActivities to avoid double filtering by status
 const kanbanAtrasadas = computed(() => {
   const startOfToday = new Date();
   startOfToday.setHours(0, 0, 0, 0);
 
-  return filteredActivities.value
+  return periodActivities.value
     .filter(a => (a.status === 'pending' || a.status === 'in_progress') && a.dueDate && new Date(a.dueDate) < startOfToday)
     .sort((a, b) => a.stepNumber - b.stepNumber);
 });
@@ -1044,7 +1140,7 @@ const kanbanPendentes = computed(() => {
   const startOfToday = new Date();
   startOfToday.setHours(0, 0, 0, 0);
 
-  return filteredActivities.value
+  return periodActivities.value
     .filter(a => (a.status === 'pending' || a.status === 'in_progress') && (!a.dueDate || new Date(a.dueDate) >= startOfToday))
     .sort((a, b) => a.stepNumber - b.stepNumber);
 });
@@ -1059,19 +1155,16 @@ const selectAllActivities = () => {
   selectedActivities.value = selectableActivities.value.map(a => a.id);
 };
 const kanbanConcluidas = computed(() => 
-  filteredActivities.value.filter(a => a.status === 'completed')
+  periodActivities.value.filter(a => a.status === 'completed')
 );
 const kanbanPuladas = computed(() => 
-  filteredActivities.value.filter(a => a.status === 'skipped')
+  periodActivities.value.filter(a => a.status === 'skipped')
 );
 
-// Handle form data updates
 // Handle form data updates
 const handleFormUpdate = (data: Record<string, any>) => {
   editableData.value = { ...editableData.value, ...data };
 };
-
-
 
 // Handle Manual Enrollment
 const handleEnrollContact = () => {
@@ -1088,18 +1181,6 @@ const handleEnrollContact = () => {
     return;
   }
 
-  // 1. Find Start Node
-  // We look for any node that is a trigger (starts with 'trigger_') or explicitly 'start' 
-  // OR we look for the node that has no incoming edges (simplified check).
-  // Better: look for trigger_manual or just first node in nodes array if simple.
-  // The correct way logic-wise for simulator was:
-  /*
-    const manualTrigger = nodes.value.find(n => n.data.type === 'trigger_manual');
-    if (manualTrigger) return manualTrigger;
-    // Fallback
-    return nodes.value.find(n => n.data.type && n.data.type.startsWith('trigger_'))
-  */
-
   const startNode = flow.nodes.find(n => n.data.type === 'trigger_manual') || 
                    flow.nodes.find(n => n.type === 'trigger' || (n.data.type && String(n.data.type).startsWith('trigger_'))) ||
                    flow.nodes.find(n => n.type === 'start' || n.data.type === 'start');
@@ -1109,7 +1190,6 @@ const handleEnrollContact = () => {
     return;
   }
 
-  // 2. Find Next Node (The actual first step)
   const edge = flow.edges.find(e => e.source === startNode.id);
   if (!edge) {
     toast.error('Erro no Fluxo', 'O ponto de início não está conectado a nada.');
@@ -1122,16 +1202,14 @@ const handleEnrollContact = () => {
     return;
   }
 
-  // 3. Check if it is an Activity
   const type = firstStepNode.data.type;
   if (['email', 'call', 'task', 'chat_flow'].includes(String(type))) {
     try {
-      // Create Activity
       const activity = activityStore.createActivityFromNode(
         flow.id,
         flow.nome,
         firstStepNode,
-        String(contact.id), // Contact ID as string for activity
+        String(contact.id),
         { 
           name: contact.name, 
           email: contact.emails?.[0]?.email || '', 
@@ -1142,7 +1220,6 @@ const handleEnrollContact = () => {
       if (activity) {
         toast.success('Sucesso', `Fluxo iniciado! Atividade "${activity.title}" criada.`);
         enrollDialogOpen.value = false;
-        // Reset selection
         selectedContactId.value = '';
         selectedFlowId.value = '';
       }
@@ -1151,12 +1228,9 @@ const handleEnrollContact = () => {
       toast.error('Erro', 'Falha ao criar atividade.');
     }
   } else {
-    // For MVP, warn user
     toast.warning('Atenção', 'O fluxo deve começar com uma Atividade (Email, Ligação, Chat) para inscrição manual.');
   }
 };
-
-
 
 // Current activity index for navigation
 const currentActivityIndex = computed(() => {
@@ -1195,10 +1269,6 @@ const toggleActivitySelection = (id: string) => {
   }
 };
 
-const handleAddActivity = () => {
-  toast.info('Funcionalidade', 'Criação de atividade ad-hoc em desenvolvimento');
-};
-
 const handleExecuteActivity = async (activity: Activity, selectedDecision?: string) => {
   // Simulate execution animation
   activityStore.updateActivity(activity.id, { status: 'in_progress' });
@@ -1209,6 +1279,14 @@ const handleExecuteActivity = async (activity: Activity, selectedDecision?: stri
   
   const decisionText = selectedDecision ? ` (${selectedDecision})` : '';
   toast.success('Atividade executada', `${activity.title} foi concluída${decisionText}`);
+  
+  // Check if all activities are completed - show confetti!
+  setTimeout(() => {
+    if (dailyProgress.value === 100 && dailyWorkloadCount.value > 0) {
+      showConfetti.value = true;
+      toast.success('🎉 Parabéns!', 'Você completou todas as atividades do dia!');
+    }
+  }, 100);
 };
 
 // Check if activity has conditions/decisions
@@ -1242,7 +1320,6 @@ const handleDecisionSelect = async (conditionLabel: string, _conditionValue: str
 const handleExecuteAndAdvance = async () => {
   if (!currentActivity.value) return;
   
-  // Check if activity has decision
   if (hasDecision(currentActivity.value)) {
     pendingExecuteCallback.value = () => {
       const pending = activityStore.pendingActivities;
@@ -1259,7 +1336,6 @@ const handleExecuteAndAdvance = async () => {
   
   await handleExecuteActivity(currentActivity.value);
   
-  // Find next pending activity
   const pending = activityStore.pendingActivities;
   if (pending.length > 0) {
     openDetailPanel(pending[0]);
@@ -1272,7 +1348,6 @@ const handleExecuteAndAdvance = async () => {
 const handleExecuteOnly = async () => {
   if (!currentActivity.value) return;
   
-  // Check if activity has decision
   if (hasDecision(currentActivity.value)) {
     pendingExecuteCallback.value = null;
     decisionDialogOpen.value = true;
@@ -1308,19 +1383,30 @@ const handleLoss = () => {
   detailPanelOpen.value = false;
 };
 
+// ... existing code ...
+
 const handleBulkExecute = async () => {
-  for (const id of selectedActivities.value) {
-    const activity = activityStore.getActivityById(id);
-    if (activity) await handleExecuteActivity(activity);
-  }
+  const count = selectedActivities.value.length;
+  // Use store bulk action for instant execution
+  activityStore.bulkExecute(selectedActivities.value);
+  
+  toast.success('Execução em massa', `${count} atividades foram concluídas com sucesso.`);
   selectedActivities.value = [];
+  
+  // Check completion
+  setTimeout(() => {
+    if (dailyProgress.value === 100 && dailyWorkloadCount.value > 0) {
+      showConfetti.value = true;
+      toast.success('🎉 Parabéns!', 'Você completou todas as atividades do dia!');
+    }
+  }, 100);
 };
 
 const handleBulkSkip = () => {
   const count = selectedActivities.value.length;
   activityStore.bulkSkip(selectedActivities.value);
   selectedActivities.value = [];
-  toast.info('Atividades puladas', `${count} atividades foram puladas`);
+  toast.info('Atividades puladas', `${count} atividades foram ignoradas`);
 };
 // Kanban Drag and Drop handlers
 const onDragOverPending = (_event: DragEvent) => {
@@ -1378,4 +1464,75 @@ const onDropInProgress = (event: DragEvent) => {
   }
 };
 
+// Create Activity Dialog State
+const createActivityDialogOpen = ref(false);
+const newActivityData = ref({
+  title: '',
+  description: '',
+  contactId: '',
+  type: 'task' as const
+});
+
+const handleAddActivity = () => {
+  newActivityData.value = {
+    title: '',
+    description: '',
+    contactId: '',
+    type: 'task'
+  };
+  createActivityDialogOpen.value = true;
+};
+
+const handleCreateActivity = () => {
+  if (!newActivityData.value.title) {
+    toast.error('Erro', 'O título da atividade é obrigatório');
+    return;
+  }
+  
+  if (!newActivityData.value.contactId) {
+     toast.error('Erro', 'Selecione um contato');
+     return;
+  }
+
+  // Find contact
+  const contactIdNum = parseInt(newActivityData.value.contactId);
+  const contact = contactStore.getContactById(contactIdNum);
+  
+  if (!contact) {
+    toast.error('Erro', 'Contato inválido');
+    return;
+  }
+
+  const now = new Date().toISOString();
+  
+  const activity: Activity = {
+    id: `ad-hoc-${Date.now()}`,
+    type: newActivityData.value.type,
+    status: 'pending',
+    title: newActivityData.value.title,
+    description: newActivityData.value.description,
+    stepNumber: 1,
+    totalSteps: 1,
+    flowId: 'ad-hoc',
+    flowName: 'Atividade Manual',
+    blockId: 'manual',
+    contactId: String(contact.id),
+    contactName: contact.name,
+    contactEmail: contact.emails?.[0]?.email,
+    contactPhone: contact.phoneNumbers?.[0]?.phoneNumber,
+    data: {
+      type: newActivityData.value.type,
+      taskTitle: newActivityData.value.title
+    },
+    createdAt: now,
+    updatedAt: now,
+    dueDate: now // For now set to immediately
+  };
+  
+  activityStore.addActivity(activity);
+  toast.success('Atividade criada', `Atividade "${activity.title}" adicionada com sucesso.`);
+  createActivityDialogOpen.value = false;
+};
+
+// ... existing code ...
 </script>

@@ -1,8 +1,8 @@
 <template>
   <div class="space-y-6">
     <!-- Loading State -->
-    <div v-if="loading" class="flex items-center justify-center p-8">
-      <Loader2 class="h-6 w-6 animate-spin text-muted-foreground" />
+    <div v-if="loading" class="space-y-4">
+      <CardListSkeleton :items="5" />
     </div>
 
     <!-- Empty State -->
@@ -46,9 +46,10 @@
 
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue';
-import { Loader2, Workflow, Plus } from 'lucide-vue-next';
+import { Workflow, Plus } from 'lucide-vue-next';
 import { Button } from '@/components/ui/button';
 import TablePagination from '@/components/ui/table/TablePagination.vue';
+import { CardListSkeleton } from '@/components/ui/skeleton';
 import FlowCard from './FlowCard.vue';
 import { usePagination } from '@/composables/usePagination';
 import type { Flow } from '@/mocks/data/flows';

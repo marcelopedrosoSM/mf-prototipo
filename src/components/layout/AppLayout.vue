@@ -9,6 +9,7 @@
       <AppSidebar
         v-if="isConversationsRoute"
         :collapsed="isSidebarCollapsed"
+        :active-status="selectedStatus"
         @toggle="toggleSidebar"
         @status-select="handleStatusSelect"
       />
@@ -35,7 +36,25 @@ import AppSidebar from './AppSidebar.vue';
 import { SidebarStatusType } from '@/types/conversations';
 
 const route = useRoute();
-const isSidebarCollapsed = ref(false);
+const props = withDefaults(defineProps<{
+  collapsed?: boolean
+}>(), {
+  collapsed: undefined
+});
+
+const emit = defineEmits<{
+  'update:collapsed': [value: boolean]
+}>();
+
+const localCollapsed = ref(false);
+const isSidebarCollapsed = computed({
+  get: () => props.collapsed !== undefined ? props.collapsed : localCollapsed.value,
+  set: (val) => {
+    localCollapsed.value = val;
+    emit('update:collapsed', val);
+  }
+});
+
 const selectedStatus = ref<SidebarStatusType>(SidebarStatusType.ALL_CHATS);
 
 // Verifica se a rota atual é /conversations

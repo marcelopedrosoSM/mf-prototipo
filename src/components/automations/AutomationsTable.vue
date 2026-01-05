@@ -1,8 +1,8 @@
 <template>
   <Card>
     <CardContent class="p-0">
-      <div v-if="loading" class="flex items-center justify-center p-8">
-        <Loader2 class="h-6 w-6 animate-spin text-muted-foreground" />
+      <div v-if="loading" class="p-0">
+        <TableSkeleton :rows="5" :columns="5" show-header />
       </div>
       <div v-else-if="automations.length === 0" class="flex flex-col items-center justify-center p-8">
         <Zap class="h-12 w-12 text-muted-foreground mb-4" />
@@ -97,10 +97,9 @@
 </template>
 
 <script setup lang="ts">
-import { 
+import {
   Plus, 
   Zap, 
-  Loader2, 
   MoreVertical, 
   Edit, 
   Trash2,
@@ -112,6 +111,7 @@ import {
 } from 'lucide-vue-next';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
+import { TableSkeleton } from '@/components/ui/skeleton';
 import {
   Table,
   TableBody,

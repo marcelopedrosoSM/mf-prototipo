@@ -63,5 +63,8 @@ export const useContactsStore = defineStore(
             updateContact,
             removeContact
         };
+    },
+    {
+        persist: true,
     }
 );

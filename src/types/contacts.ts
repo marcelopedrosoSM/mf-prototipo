@@ -33,3 +33,16 @@ export const DEFAULT_CONTACT: Omit<Contact, 'id' | 'accountId'> = {
   notes: '',
 };
 
+export type ContactHistoryType = 'chat' | 'activity' | 'note' | 'system';
+
+export interface ContactHistoryItem {
+  id: string;
+  contactId: number;
+  type: ContactHistoryType;
+  title: string;
+  description?: string;
+  date: Date;
+  metadata?: Record<string, any>; // For extra info (e.g., activity status, channel name)
+  authorName?: string;
+}
+

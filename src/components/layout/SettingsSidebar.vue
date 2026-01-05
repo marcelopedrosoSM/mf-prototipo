@@ -8,8 +8,9 @@
   />
 </template>
 
+
 <script setup lang="ts">
-import { h } from 'vue';
+import { shallowRef } from 'vue';
 import {
   User,
   UsersRound,
@@ -32,62 +33,62 @@ const emit = defineEmits<{
   toggle: [];
 }>();
 
-const settingsItems: SidebarItem[] = [
+const settingsItems = shallowRef<SidebarItem[]>([
   {
     key: 'fluxos',
     to: '/configuracoes/fluxos',
     label: 'Fluxos',
-    icon: h(Workflow),
+    icon: Workflow,
   },
   {
     key: 'automacoes',
     to: '/configuracoes/automacoes',
     label: 'Automações',
-    icon: h(Zap),
+    icon: Zap,
   },
   {
     key: 'agentes',
     to: '/configuracoes/agentes',
     label: 'Agentes',
-    icon: h(User),
+    icon: User,
   },
   {
     key: 'times',
     to: '/configuracoes/times',
     label: 'Times',
-    icon: h(UsersRound),
+    icon: UsersRound,
   },
   {
     key: 'caixas-entrada',
     to: '/configuracoes/caixas-entrada',
     label: 'Caixas de Entrada',
-    icon: h(Inbox),
+    icon: Inbox,
   },
   {
     key: 'mensagens-rapidas',
     to: '/configuracoes/mensagens-rapidas',
     label: 'Mensagens Rápidas',
-    icon: h(Zap),
+    icon: Zap,
   },
   {
     key: 'ausencias',
     to: '/configuracoes/ausencias',
     label: 'Ausências',
-    icon: h(CalendarOff),
+    icon: CalendarOff,
   },
   {
     key: 'tokens-api',
     to: '/configuracoes/tokens-api',
     label: 'Chaves de API',
-    icon: h(Key),
+    icon: Key,
   },
   {
     key: 'preferencias',
     to: '/configuracoes/preferencias',
     label: 'Preferências',
-    icon: h(Settings),
+    icon: Settings,
   },
-];
+]);
 
 const handleItemClick = (_item: SidebarItem) => {
   // Router-link já cuida da navegação

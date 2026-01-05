@@ -65,6 +65,15 @@ export const MOCK_AGENTES: Agente[] = [
     createdAt: '2024-01-18T10:00:00Z',
     updatedAt: '2024-01-18T10:00:00Z',
   },
+  {
+    id: '5',
+    nome: 'Larissa Barbosa',
+    email: 'larissa.barbosa@myflows.com.br',
+    telefone: '+55 (11) 95555-4444',
+    timesIds: ['1', '2'],
+    createdAt: '2024-01-19T10:00:00Z',
+    updatedAt: '2024-01-19T10:00:00Z',
+  },
 ];
 
 export function getAgentes(): Agente[] {

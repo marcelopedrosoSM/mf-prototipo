@@ -1,0 +1,7 @@
+
+> mf-prototipo@0.1.0 build
+> vue-tsc && vite build
+
+src/views/automationBuilder.vue(436,21): error TS6133: 'to' is declared but its value is never read.
+src/views/automationBuilder.vue(436,25): error TS6133: 'from' is declared but its value is never read.
+src/views/DashboardView.vue(133,10): error TS6133: 'ref' is declared but its value is never read.

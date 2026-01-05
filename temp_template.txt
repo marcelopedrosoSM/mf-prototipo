@@ -1,0 +1,78 @@
+        <!-- Team Selection -->
+        <div class="p-4 border-b border-border">
+          <div v-if="!selectedTeam">
+            <h3 class="text-sm font-semibold mb-3">Selecione o Time</h3>
+            <div class="space-y-1">
+              <Button
+                v-for="team in teamsStore.allTeams"
+                :key="team.id"
+                variant="ghost"
+                size="sm"
+                class="w-full justify-start"
+                @click="selectTeam(team)"
+              >
+                <UsersIcon class="h-4 w-4 mr-2" />
+                {{ team.nome }}
+              </Button>
+            </div>
+          </div>
+          
+          <div v-else>
+            <div class="flex items-center justify-between mb-3">
+              <div class="flex items-center gap-2">
+                <UsersIcon class="h-4 w-4 text-primary" />
+                <span class="text-sm font-semibold">{{ selectedTeam.nome }}</span>
+              </div>
+              <Button variant="ghost" size="icon" @click="clearTeamSelection">
+                <UserMinus class="h-4 w-4" />
+              </Button>
+            </div>
+            
+            <!-- Assign Team Only -->
+            <Button
+              variant="outline"
+              size="sm"
+              class="w-full mb-3"
+              @click="handleAssignTeamOnly"
+            >
+              Atribuir apenas {{ selectedTeam.nome }}
+            </Button>
+            
+            <!-- Filtered Agents -->
+            <div class="border-t border-border pt-3">
+              <h4 class="text-xs font-medium text-muted-foreground mb-2">Ou selecione um agente:</h4>
+              <Command>
+                <CommandInput placeholder="Buscar agente..." />
+                <CommandList class="max-h-[200px]">
+                  <CommandEmpty>Nenhum agente neste time.</CommandEmpty>
+                  <CommandGroup>
+                    <CommandItem
+                      v-for="agent in filteredAgents"
+                      :key="agent.id"
+                      :value="agent.nome"
+                      @select="handleAssignAgentWithTeam(agent)"
+                      class="cursor-pointer"
+                    >
+                      <div class="flex items-center gap-2 w-full">
+                        <div class="h-6 w-6 rounded-full bg-primary/10 flex items-center justify-center text-[10px] font-bold text-primary">
+                          {{ getInitials(agent.nome) }}
+                        </div>
+                        <div class="flex flex-col flex-1 min-w-0">
+                          <div class="flex items-center gap-2">
+                            <span class="text-sm font-medium truncate">{{ agent.nome }}</span>
+                            <span class="h-2 w-2 rounded-full bg-success flex-shrink-0" title="Online"></span>
+                          </div>
+                          <div class="flex items-center gap-2">
+                            <span class="text-xs text-muted-foreground truncate">{{ agent.email }}</span>
+                            <span class="text-xs text-muted-foreground">•</span>
+                            <span class="text-xs font-medium text-primary flex-shrink-0">{{ getAgentConversationCount(agent.id) }} conversas</span>
+                          </div>
+                        </div>
+                      </div>
+                    </CommandItem>
+                  </CommandGroup>
+                </CommandList>
+              </Command>
+            </div>
+          </div>
+        </div>

@@ -26,6 +26,9 @@
 
       <!-- Right side - Actions -->
       <div class="flex items-center space-x-4">
+        <!-- Notifications -->
+        <NotificationsMenu />
+        
         <!-- User Menu -->
         <UserMenu />
       </div>
@@ -39,6 +42,7 @@ import { useRoute } from 'vue-router';
 import { LayoutDashboard, MessagesSquare, Contact, Play, Workflow } from 'lucide-vue-next';
 import Logo from '@/components/Logo.vue';
 import UserMenu from './UserMenu.vue';
+import NotificationsMenu from './NotificationsMenu.vue';
 
 const route = useRoute();
 

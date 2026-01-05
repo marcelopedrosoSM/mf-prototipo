@@ -405,6 +405,7 @@ const handleViewportChange = () => {
 onMounted(() => {
   // Initialize viewport listener
   onViewportChange(handleViewportChange);
+  window.addEventListener('beforeunload', handleBeforeUnload);
 });
 
 // Vue Flow Pane Ready handler - melhor lugar para fitView e inicialização
@@ -419,6 +420,29 @@ function onPaneReady() {
 onUnmounted(() => {
   if (minimapTimeout) {
     clearTimeout(minimapTimeout);
+  }
+  window.removeEventListener('beforeunload', handleBeforeUnload);
+});
+
+function handleBeforeUnload(e: BeforeUnloadEvent) {
+  if (hasUnsavedChanges.value) {
+    e.preventDefault();
+    e.returnValue = '';
+  }
+}
+
+// Navigation Guard
+import { onBeforeRouteLeave } from 'vue-router';
+onBeforeRouteLeave((_to, _from, next) => {
+  if (hasUnsavedChanges.value) {
+    const answer = window.confirm('Você tem alterações não salvas. Tem certeza que deseja sair?');
+    if (answer) {
+      next();
+    } else {
+      next(false);
+    }
+  } else {
+    next();
   }
 });
 

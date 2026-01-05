@@ -38,14 +38,14 @@
               <h3 class="text-sm font-semibold text-foreground">Filtros</h3>
             </div>
             <div class="flex-1 min-h-0 overflow-hidden">
-              <ScrollArea class="h-full">
+              <div class="h-full overflow-y-auto">
                 <div class="p-4 space-y-4">
                   <!-- Filtro por Agentes -->
                   <div class="space-y-2">
                     <label class="text-xs font-medium text-muted-foreground">Agentes</label>
-                    <div class="h-40 overflow-hidden">
-                      <ScrollArea class="h-full">
-                        <div class="space-y-2 pr-4">
+                      <div class="h-40 overflow-hidden">
+                        <div class="h-full overflow-y-auto">
+                          <div class="space-y-2 pr-4">
                           <label
                             v-for="agent in agents"
                             :key="agent.id"
@@ -58,7 +58,7 @@
                             <span class="text-sm text-foreground">{{ agent.nome }}</span>
                           </label>
                         </div>
-                      </ScrollArea>
+                      </div>
                     </div>
                   </div>
 
@@ -66,8 +66,8 @@
                   <div class="space-y-2">
                     <label class="text-xs font-medium text-muted-foreground">Times</label>
                     <div class="h-40 overflow-hidden">
-                      <ScrollArea class="h-full">
-                        <div class="space-y-2 pr-4">
+                        <div class="h-full overflow-y-auto">
+                          <div class="space-y-2 pr-4">
                           <label
                             v-for="team in teams"
                             :key="team.id"
@@ -80,7 +80,7 @@
                             <span class="text-sm text-foreground">{{ team.nome }}</span>
                           </label>
                         </div>
-                      </ScrollArea>
+                      </div>
                     </div>
                   </div>
 
@@ -109,7 +109,7 @@
                     </div>
                   </div>
                 </div>
-              </ScrollArea>
+              </div>
             </div>
             <!-- Botão Limpar Filtros -->
             <div class="p-4 border-t border-border flex-shrink-0">
@@ -151,34 +151,42 @@
     <div class="px-3 py-2 bg-background border-b border-border">
       <div class="flex items-center gap-2 flex-wrap">
         <!-- Filtro: Não lidas -->
-        <Toggle
-          :pressed="activeFilters.has('unread')"
-          variant="pill"
-          size="xs"
-          @update:pressed="toggleFilter('unread')"
+        <FilterPill
+          :active="activeFilters.has('unread')"
+          @update:active="toggleFilter('unread')"
         >
           Não lidas
-        </Toggle>
+        </FilterPill>
         <!-- Filtro: Eu -->
-        <Toggle
-          :pressed="activeFilters.has('me')"
-          variant="pill"
-          size="xs"
-          @update:pressed="toggleFilter('me')"
+        <FilterPill
+          :active="activeFilters.has('me')"
+          @update:active="toggleFilter('me')"
         >
           Eu
-        </Toggle>
+        </FilterPill>
+
+        <!-- Filtro: Sem Agente (Apenas Em Atendimento) -->
+        <FilterPill
+          v-if="statusFilter === SidebarStatusType.IN_SERVICE"
+          :active="activeFilters.has('unassigned')"
+          @update:active="toggleFilter('unassigned')"
+          class="bg-orange-100 text-orange-700 border-orange-200 hover:bg-orange-200 dark:bg-orange-900/30 dark:text-orange-300 dark:border-orange-800 dark:hover:bg-orange-900/50"
+          :class="{ 'bg-orange-200 border-orange-300 ring-1 ring-orange-300 dark:bg-orange-900/50 dark:border-orange-700 dark:ring-orange-700': activeFilters.has('unassigned') }"
+        >
+          Sem Agente
+          <span v-if="unassignedCount > 0" class="ml-1 px-1.5 py-0.5 text-[10px] bg-orange-500 text-white dark:bg-orange-600 rounded-full">
+            {{ unassignedCount }}
+          </span>
+        </FilterPill>
         <!-- Outros filtros adicionais -->
-        <Toggle
+        <FilterPill
           v-for="filter in additionalFilters"
           :key="filter.id"
-          :pressed="activeFilters.has(filter.id)"
-          variant="pill"
-          size="xs"
-          @update:pressed="toggleFilter(filter.id)"
+          :active="activeFilters.has(filter.id)"
+          @update:active="toggleFilter(filter.id)"
         >
           {{ filter.label }}
-        </Toggle>
+        </FilterPill>
 
         <!-- Badges de Filtros Aplicados -->
         <!-- Badge Agentes -->
@@ -224,6 +232,10 @@
     <!-- Lista de Conversas -->
     <ScrollArea class="flex-1 bg-background">
       <div class="flex flex-col">
+        <div v-if="loading" class="p-2 space-y-2">
+          <CardListSkeleton :items="6" />
+        </div>
+        <template v-else>
         <ChatCard
           v-for="(chat, index) in filteredConversations"
           :key="chat.id"
@@ -253,6 +265,7 @@
             <span>🎉</span>
           </p>
         </div>
+        </template>
       </div>
     </ScrollArea>
   </div>
@@ -261,6 +274,7 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, watch } from 'vue';
 import { Search, Filter, MessageSquarePlus, MessageCircle, X } from 'lucide-vue-next';
+import { ScrollArea } from '@/components/ui/scroll-area';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import {
@@ -272,8 +286,8 @@ import {
 } from '@/components/ui/select';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Checkbox } from '@/components/ui/checkbox';
-import { ScrollArea } from '@/components/ui/scroll-area';
-import { Toggle } from '@/components/ui/toggle';
+import { FilterPill } from '@/components/ui/filter-pill';
+import { CardListSkeleton } from '@/components/ui/skeleton';
 import ChatCard from './ChatCard.vue';
 import StartConversationPopover from './StartConversationPopover.vue';
 import type { ChatSession } from '@/types/conversations';
@@ -323,6 +337,13 @@ const selectedAgentIds = ref<string[]>([]);
 const selectedTeamIds = ref<string[]>([]);
 const selectedLabelIds = ref<string[]>([]);
 
+// Count unassigned chats (but 'In Service')
+const unassignedCount = computed(() => {
+  return conversationsStore.allConversations.filter(
+    (chat) => chat.status === 'open' && !chat.assignedUser?.user
+  ).length;
+});
+
 // Data from Stores (Reactive)
 const inboxes = computed(() => inboxesStore.allInboxes);
 const agents = computed(() => agentsStore.allAgents);
@@ -353,7 +374,7 @@ const filteredConversations = computed(() => {
         break;
       case SidebarStatusType.IN_SERVICE:
         filtered = filtered.filter(
-          (chat) => chat.status === 'open' && chat.assignedUser?.user
+          (chat) => chat.status === 'open'
         );
         break;
       case SidebarStatusType.MENTION:
@@ -378,6 +399,10 @@ const filteredConversations = computed(() => {
   // 4. Quick Filters
   if (activeFilters.value.has('unread')) {
     filtered = filtered.filter((chat) => chat.unreadCount > 0);
+  }
+
+  if (activeFilters.value.has('unassigned')) {
+    filtered = filtered.filter((chat) => !chat.assignedUser?.user);
   }
 
   if (activeFilters.value.has('me')) {

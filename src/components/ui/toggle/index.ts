@@ -12,7 +12,7 @@ export const toggleVariants = cva(
         outline:
           "border border-input bg-transparent hover:bg-[hsl(var(--interactive-hover-bg))] hover:text-[hsl(var(--interactive-hover-text))] data-[state=on]:bg-accent data-[state=on]:text-accent-foreground",
         pill:
-          "rounded-full bg-muted text-foreground hover:bg-muted/80 active:bg-muted/70 dark:bg-border dark:text-foreground dark:hover:bg-border/80 dark:active:bg-border/70 data-[state=on]:bg-primary data-[state=on]:text-primary-foreground data-[state=on]:hover:bg-primary/90 data-[state=on]:active:bg-primary/80",
+          "rounded-full border border-input bg-muted/50 text-foreground hover:bg-muted",
       },
       size: {
         default: "h-10 px-3 min-w-10",

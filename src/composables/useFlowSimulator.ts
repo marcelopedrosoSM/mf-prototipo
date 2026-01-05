@@ -241,39 +241,6 @@ export function useFlowSimulator(options: FlowSimulatorOptions) {
                     }
                     break;
 
-                case 'action':
-                    // Simular ação
-                    const actionTypeStr = (data.actionType as string) || '';
-
-                    if (actionTypeStr === 'finish_conversation') {
-                        state.value = 'ENDED';
-                        // Clear current block so it doesn't stay 'Executing'
-                        currentBlockId.value = null;
-                        onFlowComplete?.();
-                        return null;
-                    }
-                    else if (actionTypeStr === 'assign_agent') {
-                        // Tentar atribuir usando a store se tivermos contexto (mesmo que mockado)
-                        // Em produção, isso usaria o ID real da conversa. Aqui simulamos com um ID fixo ou gerado.
-                        const targetConvId = 'mock-conv-id';
-                        const assigned = data.agentId ? conversationsStore.assignAgent(targetConvId, data.agentId as string) : false;
-
-                        const statusMsg = assigned ? '✅ Sucesso' : '⚠️ Falha (agente não encontrado)';
-                        await addMessage('system', `🔄 Atribuído ao agente: ${data.agentId || 'Não especificado'} (${statusMsg})`, blockId);
-                    }
-                    else if (actionTypeStr === 'assign_team') {
-                        const targetConvId = 'mock-conv-id';
-                        const assigned = data.teamId ? conversationsStore.assignTeam(targetConvId, data.teamId as string) : false;
-
-                        const statusMsg = assigned ? '✅ Sucesso' : '⚠️ Falha (time não encontrado)';
-                        await addMessage('system', `👥 Atribuído ao time: ${data.teamId || 'Não especificado'} (${statusMsg})`, blockId);
-                    }
-                    else if (actionTypeStr === 'add_tag') {
-                        const tags = Array.isArray(data.tags) ? data.tags : [];
-                        await addMessage('system', `🏷️ Tags adicionadas: ${tags.join(', ') || 'Nenhuma'}`, blockId);
-                    }
-                    break;
-
                 case 'email':
                 case 'call':
                 case 'task':
@@ -298,6 +265,42 @@ export function useFlowSimulator(options: FlowSimulatorOptions) {
                         }
                     } else {
                         await addMessage('system', `⚠️ Atividade simulada (sem contexto de execução): ${blockType}`, blockId);
+                    }
+                    break;
+
+                case 'action':
+                    // Simular ação
+                    const actionTypeStr = (data.actionType as string) || '';
+
+                    if (actionTypeStr === 'finish_conversation') {
+                        state.value = 'ENDED';
+                        // Clear current block so it doesn't stay 'Executing'
+                        currentBlockId.value = null;
+                        onFlowComplete?.();
+                        return null;
+                    }
+                    else if (actionTypeStr === 'assign_agent') {
+                        // Tentar atribuir usando a store
+                        const targetConvId = contactId || 'mock-conv-id';
+                        const assigned = data.agentId ? conversationsStore.assignAgent(targetConvId, data.agentId as string) : false;
+
+                        const statusMsg = assigned ? '✅ Sucesso' : '⚠️ Simulada (sem ID real)';
+                        await addMessage('system', `🔄 Atribuído ao agente: ${data.agentId || 'Não especificado'} (${statusMsg})`, blockId);
+                    }
+                    else if (actionTypeStr === 'assign_team') {
+                        const targetConvId = contactId || 'mock-conv-id';
+                        const assigned = data.teamId ? conversationsStore.assignTeam(targetConvId, data.teamId as string) : false;
+
+                        const statusMsg = assigned ? '✅ Sucesso' : '⚠️ Simulada (sem ID real)';
+                        await addMessage('system', `👥 Atribuído ao time: ${data.teamId || 'Não especificado'} (${statusMsg})`, blockId);
+                    }
+                    else if (actionTypeStr === 'add_tag') {
+                        const tags = Array.isArray(data.tags) ? data.tags : [];
+                        if (tags.length > 0 && contactId) {
+                            // Tentar adicionar tags na store
+                            // TODO: Implementar método addTags na store de conversas se não existir
+                        }
+                        await addMessage('system', `🏷️ Tags adicionadas: ${tags.join(', ') || 'Nenhuma'}`, blockId);
                     }
                     break;
 

@@ -27,6 +27,20 @@ export const useLabelsStore = defineStore('labels', () => {
         }
     }
 
+    function createLabel(name: string, color: string) {
+        const newLabel: Label = {
+            id: `label-${Date.now()}`,
+            name,
+            color
+        };
+        labels.value.push(newLabel);
+        return newLabel;
+    }
+
+    function deleteLabel(id: string) {
+        labels.value = labels.value.filter(l => l.id !== id);
+    }
+
     // Initialize immediately
     initialize();
 
@@ -41,6 +55,8 @@ export const useLabelsStore = defineStore('labels', () => {
         getLabelById,
 
         // Actions
-        initialize
+        initialize,
+        createLabel,
+        deleteLabel
     };
 });

@@ -63,5 +63,8 @@ export const useTeamsStore = defineStore(
             updateTeam,
             removeTeam
         };
+    },
+    {
+        persist: true,
     }
 );

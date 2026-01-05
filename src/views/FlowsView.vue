@@ -59,26 +59,16 @@
                   @save="handleSaveAtendimento"
                 />
 
-                <AlertDialog :open="deleteDialogOpenAtendimento" @update:open="setDeleteDialogOpenAtendimento">
-                  <AlertDialogContent>
-                    <AlertDialogHeader>
-                      <AlertDialogTitle>Confirmar exclusão</AlertDialogTitle>
-                      <AlertDialogDescription>
-                        Tem certeza que deseja excluir o fluxo <strong>{{ flowToDeleteAtendimento?.nome }}</strong>?
-                        Esta ação não pode ser desfeita.
-                      </AlertDialogDescription>
-                    </AlertDialogHeader>
-                    <AlertDialogFooter>
-                      <AlertDialogCancel @click="setDeleteDialogOpenAtendimento(false)">Cancelar</AlertDialogCancel>
-                      <AlertDialogAction
-                        @click="confirmDeleteAtendimento"
-                        class="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-                      >
-                        Excluir
-                      </AlertDialogAction>
-                    </AlertDialogFooter>
-                  </AlertDialogContent>
-                </AlertDialog>
+                <ConfirmDialog
+                  :open="deleteDialogOpenAtendimento"
+                  title="Excluir fluxo"
+                  :description="`Tem certeza que deseja excluir o fluxo ${flowToDeleteAtendimento?.nome}? Esta ação não pode ser desfeita.`"
+                  confirm-text="Excluir"
+                  cancel-text="Cancelar"
+                  action-type="delete"
+                  @update:open="setDeleteDialogOpenAtendimento"
+                  @confirm="confirmDeleteAtendimento"
+                />
               </TabsContent>
 
               <!-- Tab Content: Atividades -->
@@ -109,26 +99,16 @@
                   @save="handleSaveAtividades"
                 />
 
-                <AlertDialog :open="deleteDialogOpenAtividades" @update:open="setDeleteDialogOpenAtividades">
-                  <AlertDialogContent>
-                    <AlertDialogHeader>
-                      <AlertDialogTitle>Confirmar exclusão</AlertDialogTitle>
-                      <AlertDialogDescription>
-                        Tem certeza que deseja excluir o fluxo <strong>{{ flowToDeleteAtividades?.nome }}</strong>?
-                        Esta ação não pode ser desfeita.
-                      </AlertDialogDescription>
-                    </AlertDialogHeader>
-                    <AlertDialogFooter>
-                      <AlertDialogCancel @click="setDeleteDialogOpenAtividades(false)">Cancelar</AlertDialogCancel>
-                      <AlertDialogAction
-                        @click="confirmDeleteAtividades"
-                        class="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-                      >
-                        Excluir
-                      </AlertDialogAction>
-                    </AlertDialogFooter>
-                  </AlertDialogContent>
-                </AlertDialog>
+                <ConfirmDialog
+                  :open="deleteDialogOpenAtividades"
+                  title="Excluir fluxo"
+                  :description="`Tem certeza que deseja excluir o fluxo ${flowToDeleteAtividades?.nome}? Esta ação não pode ser desfeita.`"
+                  confirm-text="Excluir"
+                  cancel-text="Cancelar"
+                  action-type="delete"
+                  @update:open="setDeleteDialogOpenAtividades"
+                  @confirm="confirmDeleteAtividades"
+                />
               </TabsContent>
             </Tabs>
             </div>
@@ -251,6 +231,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
+import { ConfirmDialog } from '@/components/ui/confirm-dialog';
 import BottomSheet from '@/components/ui/bottom-sheet/BottomSheet.vue';
 import FlowsList from '@/components/flows/FlowsList.vue';
 import FlowDialog from '@/components/flows/FlowDialog.vue';
@@ -606,8 +587,9 @@ function handleSaveAtividades(data: Omit<Flow, 'id' | 'createdAt' | 'updatedAt'>
     };
     flowsAtividades.value.push(newFlow);
     toast.success('Fluxo criado', `${data.nome} foi criado com sucesso.`);
-    // TODO: Implementar navegação para o flow builder
-    // router.push(`/flows/atividades/${newFlow.id}`);
+    
+    // Navigate to the correct builder route
+    router.push(`/configuracoes/fluxos-atividades/${newFlow.id}`);
     return;
   }
   dialogOpenAtividades.value = false;

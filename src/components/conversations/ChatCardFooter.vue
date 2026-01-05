@@ -1,5 +1,5 @@
 <template>
-  <div class="flex items-center justify-between gap-1 mt-1 flex-nowrap">
+  <div class="flex items-center justify-between gap-2">
     <!-- Lado Esquerdo: Badge WhatsApp, Labels -->
     <div class="flex items-center gap-1 flex-1 min-w-0">
       <!-- Badge WhatsApp (Canal) -->
@@ -34,28 +34,23 @@
       </div>
     </div>
 
-    <!-- Lado Direito: Avatar do Time e Usuário -->
-    <div class="flex items-center gap-1 flex-shrink-0 ml-2">
-      <!-- Avatar do Time (se houver) -->
+    <!-- Lado Direito: Avatares (Bot + Agente/Time) -->
+    <div class="flex items-center justify-end gap-1 flex-shrink-0 ml-2">
+      <!-- Bot Avatar (quando em fluxo de atendimento ativo) -->
       <div
-        v-if="chat.assignedUser?.team"
-        class="h-[25px] w-[25px] rounded-full border border-white/75 bg-muted flex items-center justify-center flex-shrink-0 -mr-[12px] z-10"
-        :title="chat.assignedUser.team.name"
+        v-if="chat.linkedServiceFlow?.status === 'active'"
+        class="h-6 w-6 rounded-full bg-violet-100 dark:bg-violet-900/30 flex items-center justify-center border-2 border-background"
+        :title="`Bot: ${chat.linkedServiceFlow.flowName}`"
       >
-        <span class="text-[10px] font-bold text-foreground">
-          {{ getInitials(chat.assignedUser.team.name) }}
-        </span>
+        <BotMessageSquare class="h-3 w-3 text-violet-600 dark:text-violet-400" />
       </div>
-      <!-- Avatar do Usuário -->
-      <div
-        v-if="chat.assignedUser?.user"
-        class="h-[25px] w-[25px] rounded-full border border-muted bg-primary/10 flex items-center justify-center flex-shrink-0"
-        :title="chat.assignedUser.user.name"
-      >
-        <span class="text-[10px] font-bold text-primary">
-          {{ getInitials(chat.assignedUser.user.name) }}
-        </span>
-      </div>
+      
+      <!-- Avatar do Agente/Time -->
+      <AssignmentAvatar
+        :user="chat.assignedUser?.user"
+        :team="chat.assignedUser?.team"
+        size="md"
+      />
     </div>
   </div>
 </template>
@@ -63,6 +58,8 @@
 <script setup lang="ts">
 import { computed } from 'vue';
 import { MessageCircle } from 'lucide-vue-next';
+import BotMessageSquare from '@/components/icons/BotMessageSquare.vue';
+import AssignmentAvatar from '@/components/ui/AssignmentAvatar.vue';
 import type { ChatSession } from '@/types/conversations';
 
 interface Props {
@@ -74,18 +71,10 @@ const props = withDefaults(defineProps<Props>(), {
   isInHistory: false,
 });
 
-const getInitials = (name: string): string => {
-  const parts = name.trim().split(' ');
-  if (parts.length >= 2) {
-    return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
-  }
-  return name.substring(0, 2).toUpperCase();
-};
-
 // Limitar labels visíveis (mostrar até 2 labels)
 const visibleLabels = computed(() => {
   if (!props.chat.labels || props.chat.labels.length === 0) return [];
-  return props.chat.labels.slice(0, 2);
+  return props.chat.labels.filter(Boolean).slice(0, 2);
 });
 
 const remainingLabelsCount = computed(() => {

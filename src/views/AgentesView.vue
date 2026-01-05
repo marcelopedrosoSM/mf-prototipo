@@ -19,7 +19,7 @@
 
         <!-- Table -->
         <AgentesTable
-          :agentes="agentes"
+          :agentes="agents"
           :times="times"
           :loading="loading"
           @edit="handleEdit"
@@ -32,7 +32,7 @@
           :open="dialogOpen"
           :agente="selectedAgente"
           :times="times"
-          :existingAgentes="agentes"
+          :existingAgentes="agents"
           @open-change="handleDialogOpenChange"
           @save="handleSave"
         />
@@ -65,7 +65,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue';
+import { ref, onMounted, computed } from 'vue';
 import { Plus } from 'lucide-vue-next';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -81,35 +81,30 @@ import {
 } from '@/components/ui/alert-dialog';
 import AgentesTable from '@/components/settings/AgentesTable.vue';
 import AgenteDialog from '@/components/settings/AgenteDialog.vue';
-import { MOCK_AGENTES, MOCK_TIMES, type Agente, type Time } from '@/mocks/data/agentes';
+import type { Agente } from '@/mocks/data/agentes';
 import { useToast } from '@/composables/useToast';
+import { useAgentsStore } from '@/stores/agents';
+import { useTeamsStore } from '@/stores/teams';
 
 const toast = useToast();
-const agentes = ref<Agente[]>([]);
-const times = ref<Time[]>([]);
-const loading = ref(false);
+const agentsStore = useAgentsStore();
+const teamsStore = useTeamsStore();
+
+// Use store state
+const agents = computed(() => agentsStore.allAgents);
+const times = computed(() => teamsStore.allTeams);
+const loading = computed(() => agentsStore.loading);
+
 const dialogOpen = ref(false);
 const selectedAgente = ref<Agente | null>(null);
 const deleteDialogOpen = ref(false);
 const agenteToDelete = ref<Agente | null>(null);
 
 onMounted(() => {
-  loadAgentes();
-  loadTimes();
+  // Initialize stores if not already
+  agentsStore.initialize();
+  teamsStore.initialize();
 });
-
-function loadAgentes() {
-  loading.value = true;
-  // Simulate API call
-  setTimeout(() => {
-    agentes.value = [...MOCK_AGENTES];
-    loading.value = false;
-  }, 500);
-}
-
-function loadTimes() {
-  times.value = [...MOCK_TIMES];
-}
 
 function handleCreate() {
   selectedAgente.value = null;
@@ -117,7 +112,7 @@ function handleCreate() {
 }
 
 function handleEdit(agente: Agente) {
-  // Criar uma cópia profunda para garantir que timesIds seja um novo array
+  // Criar uma cópia profunda
   selectedAgente.value = {
     ...agente,
     timesIds: agente.timesIds ? [...agente.timesIds] : [],
@@ -132,8 +127,12 @@ function handleDelete(agente: Agente) {
 
 function confirmDelete() {
   if (agenteToDelete.value) {
-    agentes.value = agentes.value.filter(a => a.id !== agenteToDelete.value!.id);
-    toast.success('Agente excluído', `${agenteToDelete.value.nome} foi removido com sucesso.`);
+    const success = agentsStore.removeAgent(agenteToDelete.value.id);
+    if (success) {
+      toast.success('Agente excluído', `${agenteToDelete.value.nome} foi removido com sucesso.`);
+    } else {
+      toast.error('Erro', 'Não foi possível excluir o agente.');
+    }
     agenteToDelete.value = null;
   }
   deleteDialogOpen.value = false;
@@ -149,28 +148,11 @@ function setDeleteDialogOpen(open: boolean) {
 function handleSave(data: Agente) {
   if (selectedAgente.value?.id) {
     // Update
-    const index = agentes.value.findIndex(a => a.id === selectedAgente.value!.id);
-    if (index !== -1) {
-      // Garantir que timesIds seja um novo array
-      agentes.value[index] = {
-        ...data,
-        id: selectedAgente.value.id,
-        timesIds: data.timesIds ? [...data.timesIds] : [],
-        createdAt: agentes.value[index].createdAt,
-        updatedAt: new Date().toISOString(),
-      };
-      toast.success('Agente atualizado', `${data.nome} foi atualizado com sucesso.`);
-    }
+    agentsStore.updateAgent(selectedAgente.value.id, data);
+    toast.success('Agente atualizado', `${data.nome} foi atualizado com sucesso.`);
   } else {
     // Create
-    const newAgente: Agente = {
-      ...data,
-      id: String(Date.now()),
-      timesIds: data.timesIds ? [...data.timesIds] : [],
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-    };
-    agentes.value.push(newAgente);
+    agentsStore.createAgent(data);
     toast.success('Agente criado', `${data.nome} foi criado com sucesso.`);
   }
   dialogOpen.value = false;

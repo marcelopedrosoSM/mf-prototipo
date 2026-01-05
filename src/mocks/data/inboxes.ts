@@ -34,6 +34,17 @@ export const MOCK_INBOXES: InboxDetailed[] = [
     apiKey: 'EAABwzLixnY0BO7ZC...',
     businessAccountId: '123456789',
   },
+  {
+    id: '3',
+    name: 'Engenharia',
+    phoneNumber: '+5511988887777',
+    status: 'active',
+    type: 'whatsapp',
+    unreadCount: 2,
+    phoneNumberId: '456789123',
+    apiKey: 'EAABwzLixnY0BO7ZC...',
+    businessAccountId: '321654987',
+  },
 ];
 
 export function getInboxes(): InboxDetailed[] {

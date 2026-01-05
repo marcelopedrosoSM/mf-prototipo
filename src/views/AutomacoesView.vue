@@ -63,26 +63,16 @@
           </div>
 
           <!-- Delete Confirmation Dialog -->
-          <AlertDialog :open="deleteDialogOpen" @update:open="deleteDialogOpen = $event">
-            <AlertDialogContent>
-              <AlertDialogHeader>
-                <AlertDialogTitle>Confirmar exclusão</AlertDialogTitle>
-                <AlertDialogDescription>
-                  Tem certeza que deseja excluir a automação <strong>{{ automationToDelete?.nome }}</strong>?
-                  Esta ação não pode ser desfeita.
-                </AlertDialogDescription>
-              </AlertDialogHeader>
-              <AlertDialogFooter>
-                <AlertDialogCancel @click="deleteDialogOpen = false">Cancelar</AlertDialogCancel>
-                <AlertDialogAction
-                  @click="confirmDelete"
-                  class="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-                >
-                  Excluir
-                </AlertDialogAction>
-              </AlertDialogFooter>
-            </AlertDialogContent>
-          </AlertDialog>
+          <ConfirmDialog 
+            :open="deleteDialogOpen"
+            title="Excluir automação"
+            :description="`Tem certeza que deseja excluir a automação ${automationToDelete?.nome}? Esta ação não pode ser desfeita.`"
+            confirm-text="Excluir"
+            cancel-text="Cancelar"
+            action-type="delete"
+            @update:open="deleteDialogOpen = $event"
+            @confirm="confirmDelete"
+          />
 
           <!-- Help Dialog -->
           <Dialog :open="showHelpDialog" @update:open="showHelpDialog = $event">
@@ -201,16 +191,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from '@/components/ui/alert-dialog';
+import { ConfirmDialog } from '@/components/ui/confirm-dialog';
 import {
   Dialog,
   DialogContent,
@@ -238,6 +219,7 @@ const AVAILABLE_TRIGGERS = [
   { key: 'mensagem_recebida', label: TRIGGER_CONFIG.mensagem_recebida.label },
   { key: 'mensagem_enviada', label: TRIGGER_CONFIG.mensagem_enviada.label },
   { key: 'conversa_finalizada', label: TRIGGER_CONFIG.conversa_finalizada.label },
+  { key: 'contato_criado', label: TRIGGER_CONFIG.contato_criado.label },
 ];
 
 // State

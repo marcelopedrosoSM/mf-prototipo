@@ -1,8 +1,8 @@
 <template>
   <Card>
     <CardContent class="p-0">
-      <div v-if="loading" class="flex items-center justify-center p-8">
-        <Loader2 class="h-6 w-6 animate-spin text-muted-foreground" />
+      <div v-if="loading" class="p-6">
+        <TableSkeleton :rows="5" />
       </div>
       <div v-else-if="contacts.length === 0" class="flex flex-col items-center justify-center p-8">
         <User class="h-12 w-12 text-muted-foreground mb-4" />
@@ -33,16 +33,18 @@
             </TableRow>
           </TableHeader>
           <TableBody>
-            <TableRow v-for="contact in paginatedContacts" :key="contact.id">
+            <TableRow 
+              v-for="contact in paginatedContacts" 
+              :key="contact.id"
+              class="hover:bg-muted/50 transition-colors cursor-pointer group"
+              @click="handleView(contact)"
+            >
               <TableCell class="font-medium">
                 <div class="flex items-center gap-2.5">
                   <SoftAvatar :name="contact.name" class="h-7 w-7 text-[10px]" />
-                  <button
-                    @click="handleEdit(contact)"
-                    class="text-left hover:text-primary transition-colors cursor-pointer"
-                  >
+                  <span class="text-left font-medium">
                     {{ contact.name }}
-                  </button>
+                  </span>
                 </div>
               </TableCell>
               <TableCell>
@@ -69,7 +71,7 @@
               </TableCell>
               <TableCell class="text-right">
                 <DropdownMenu>
-                  <DropdownMenuTrigger as-child>
+                  <DropdownMenuTrigger as-child @click.stop>
                     <Button variant="ghost" size="icon">
                       <MoreVertical class="h-4 w-4" />
                     </Button>
@@ -154,9 +156,10 @@
 
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue';
-import { Plus, User, Loader2, MoreVertical, Edit, Trash2, Play } from 'lucide-vue-next';
+import { Plus, User, MoreVertical, Edit, Trash2, Play } from 'lucide-vue-next';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
+import { TableSkeleton } from '@/components/ui/skeleton';
 import {
   Dialog,
   DialogContent,
@@ -205,6 +208,7 @@ const emit = defineEmits<{
   edit: [contact: Contact];
   delete: [contact: Contact];
   create: [];
+  view: [contact: Contact];
 }>();
 
 const currentPage = ref(1);
@@ -337,6 +341,10 @@ function handleSort(key: string) {
 }
 
 
+
+function handleView(contact: Contact) {
+  emit('view', contact);
+}
 
 function handleEdit(contact: Contact) {
   emit('edit', contact);

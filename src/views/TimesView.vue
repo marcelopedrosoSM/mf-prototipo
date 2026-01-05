@@ -30,7 +30,7 @@
           <!-- Table -->
           <TimesTable
             :times="times"
-            :agentes="agentes"
+            :agentes="agents"
             :loading="loading"
             @edit="handleEdit"
             @delete="handleDelete"
@@ -41,7 +41,7 @@
           <TimeDialog
             :open="dialogOpen"
             :time="selectedTime"
-            :agentes="agentes"
+            :agentes="agents"
             @open-change="handleDialogOpenChange"
             @save="handleSave"
           />
@@ -101,7 +101,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue';
+import { ref, onMounted, computed } from 'vue';
 import { Plus, HelpCircle, Info } from 'lucide-vue-next';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -124,22 +124,20 @@ import {
 } from '@/components/ui/dialog';
 import TimesTable from '@/components/settings/TimesTable.vue';
 import TimeDialog from '@/components/settings/TimeDialog.vue';
-import {
-  getTimes,
-  addTime,
-  updateTime,
-  deleteTime,
-} from '@/mocks/data/times';
-import { getAgentes } from '@/mocks/data/agentes';
 import { useToast } from '@/composables/useToast';
+import { useTeamsStore } from '@/stores/teams';
+import { useAgentsStore } from '@/stores/agents';
 import type { Time } from '@/types/times';
 import type { TimeFormData } from '@/schemas/times';
-import type { Agente } from '@/mocks/data/agentes';
 
 const toast = useToast();
-const times = ref<Time[]>([]);
-const agentes = ref<Agente[]>([]);
+const teamsStore = useTeamsStore();
+const agentsStore = useAgentsStore();
+
+const times = computed(() => teamsStore.allTeams);
+const agents = computed(() => agentsStore.allAgents);
 const loading = ref(false);
+
 const dialogOpen = ref(false);
 const selectedTime = ref<Time | null>(null);
 const deleteDialogOpen = ref(false);
@@ -147,21 +145,14 @@ const itemToDelete = ref<Time | null>(null);
 const openHelpDialog = ref(false);
 
 onMounted(() => {
-  loadTimes();
-  loadAgentes();
-});
-
-function loadTimes() {
   loading.value = true;
+  teamsStore.initialize();
+  agentsStore.initialize();
+  // Simulate loading delay for UX matching previous behavior
   setTimeout(() => {
-    times.value = [...getTimes()];
     loading.value = false;
   }, 500);
-}
-
-function loadAgentes() {
-  agentes.value = [...getAgentes()];
-}
+});
 
 function handleCreate() {
   selectedTime.value = null;
@@ -180,11 +171,12 @@ function handleDelete(time: Time) {
 
 function confirmDelete() {
   if (itemToDelete.value) {
-    deleteTime(itemToDelete.value.id);
-    times.value = times.value.filter(
-      (time) => time.id !== itemToDelete.value!.id
-    );
-    toast.success('Time excluído', `${itemToDelete.value.nome} foi removido com sucesso.`);
+    const success = teamsStore.removeTeam(itemToDelete.value.id);
+    if (success) {
+      toast.success('Time excluído', `${itemToDelete.value.nome} foi removido com sucesso.`);
+    } else {
+      toast.error('Erro', 'Não foi possível excluir o time.');
+    }
     itemToDelete.value = null;
   }
   deleteDialogOpen.value = false;
@@ -200,26 +192,17 @@ function setDeleteDialogOpen(open: boolean) {
 function handleSave(data: TimeFormData) {
   if (selectedTime.value?.id) {
     // Update
-    const updated = updateTime(selectedTime.value.id, {
+    teamsStore.updateTeam(selectedTime.value.id, {
       nome: data.name,
       users: data.users,
     });
-    if (updated) {
-      const index = times.value.findIndex(
-        (time) => time.id === selectedTime.value!.id
-      );
-      if (index !== -1) {
-        times.value[index] = updated;
-        toast.success('Time atualizado', `${data.name} foi atualizado com sucesso.`);
-      }
-    }
+    toast.success('Time atualizado', `${data.name} foi atualizado com sucesso.`);
   } else {
     // Create
-    const newTime = addTime({
+    teamsStore.createTeam({
       nome: data.name,
       users: data.users,
     });
-    times.value.push(newTime);
     toast.success('Time criado', `${data.name} foi criado com sucesso.`);
   }
   dialogOpen.value = false;

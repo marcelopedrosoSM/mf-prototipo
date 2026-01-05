@@ -99,7 +99,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue';
+import { ref, onMounted, computed } from 'vue';
 import { Plus, HelpCircle, Info } from 'lucide-vue-next';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -122,18 +122,15 @@ import {
 } from '@/components/ui/dialog';
 import MensagensRapidasTable from '@/components/settings/MensagensRapidasTable.vue';
 import MensagemRapidaDialog from '@/components/settings/MensagemRapidaDialog.vue';
-import {
-  getMensagensRapidas,
-  addMensagemRapida,
-  updateMensagemRapida,
-  deleteMensagemRapida,
-} from '@/mocks/data/mensagens-rapidas';
+import { useQuickRepliesStore } from '@/stores/quick-replies';
 import { useToast } from '@/composables/useToast';
 import type { MensagemRapida } from '@/types/mensagens-rapidas';
 import type { MensagemRapidaFormData } from '@/schemas/mensagens-rapidas';
 
 const toast = useToast();
-const mensagens = ref<MensagemRapida[]>([]);
+const store = useQuickRepliesStore();
+
+const mensagens = computed(() => store.messages);
 const loading = ref(false);
 const dialogOpen = ref(false);
 const selectedMensagem = ref<MensagemRapida | null>(null);
@@ -142,16 +139,13 @@ const itemToDelete = ref<MensagemRapida | null>(null);
 const openHelpDialog = ref(false);
 
 onMounted(() => {
-  loadMensagens();
-});
-
-function loadMensagens() {
   loading.value = true;
+  store.initialize();
+  // Simulate network delay just for feel, or remove
   setTimeout(() => {
-    mensagens.value = [...getMensagensRapidas()];
     loading.value = false;
-  }, 500);
-}
+  }, 300);
+});
 
 function handleCreate() {
   selectedMensagem.value = null;
@@ -170,10 +164,7 @@ function handleDelete(mensagem: MensagemRapida) {
 
 function confirmDelete() {
   if (itemToDelete.value) {
-    deleteMensagemRapida(itemToDelete.value.id);
-    mensagens.value = mensagens.value.filter(
-      (mensagem) => mensagem.id !== itemToDelete.value!.id
-    );
+    store.removeMessage(itemToDelete.value.id);
     toast.success('Mensagem excluída', `${itemToDelete.value.title} foi removida com sucesso.`);
     itemToDelete.value = null;
   }
@@ -190,23 +181,16 @@ function setDeleteDialogOpen(open: boolean) {
 function handleSave(data: MensagemRapidaFormData) {
   if (selectedMensagem.value?.id) {
     // Update
-    const updated = updateMensagemRapida(selectedMensagem.value.id, data);
+    const updated = store.updateMessage(selectedMensagem.value.id, data);
     if (updated) {
-      const index = mensagens.value.findIndex(
-        (mensagem) => mensagem.id === selectedMensagem.value!.id
-      );
-      if (index !== -1) {
-        mensagens.value[index] = updated;
-        toast.success('Mensagem atualizada', `${data.title} foi atualizada com sucesso.`);
-      }
+      toast.success('Mensagem atualizada', `${data.title} foi atualizada com sucesso.`);
     }
   } else {
     // Create
-    const newMensagem = addMensagemRapida({
+    store.addMessage({
       title: data.title,
       content: data.content,
     });
-    mensagens.value.push(newMensagem);
     toast.success('Mensagem criada', `${data.title} foi criada com sucesso.`);
   }
   dialogOpen.value = false;

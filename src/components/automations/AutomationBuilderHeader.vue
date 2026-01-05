@@ -48,7 +48,7 @@
       <!-- Right side - Actions and Toggle -->
       <div class="flex items-center space-x-4">
         <Button 
-          variant="outline" 
+          :variant="hasUnsavedChanges ? 'default' : 'outline'" 
           size="sm"
           :disabled="!hasUnsavedChanges"
           :class="cn(!hasUnsavedChanges && 'opacity-60')"

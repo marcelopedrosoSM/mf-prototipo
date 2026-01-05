@@ -366,19 +366,8 @@ watch(selectedNodeId, (newId) => {
   }
 });
 
-// 🆕 Handlers para FlowConfigSheet
-const handleSettings = () => {
-  configSheetOpen.value = true;
-};
+// Handlers moved to bottom of script section to consolidate logic
 
-const handleSaveConfig = (config: FlowConfigData) => {
-  flowConfig.value = config;
-  // TODO: Persistir configuração no flow/store
-  toast({
-    title: 'Configuração salva',
-    description: 'As configurações do assistente foram atualizadas.',
-  });
-};
 
 // Carregar dados do fluxo se for edição
 onMounted(() => {
@@ -1008,6 +997,27 @@ function addNodeAtPosition(block: any, position: { x: number; y: number }) {
   nodes.value = [...nodes.value, newNode];
 }
 
+// Handlers para Configuração do Fluxo
+function handleSettings() {
+  configSheetOpen.value = true;
+}
+
+function handleSaveConfig(config: any) {
+  if (currentFlow.value) {
+    currentFlow.value.nome = config.name || currentFlow.value.nome;
+    currentFlow.value.descricao = config.description || currentFlow.value.descricao;
+    // Opcionalmente atualizar status se vier na config
+    if (typeof config.isActive !== 'undefined') {
+        currentFlow.value.status = config.isActive ? 'ativo' : 'inativo';
+        isFlowActive.value = config.isActive;
+    }
+    
+    // Salvar alterações e fechar sheet
+    handleSave();
+    configSheetOpen.value = false;
+  }
+}
+
 function handleSave() {
   console.log('🔵 handleSave called');
   try {
@@ -1046,9 +1056,8 @@ function handleSave() {
         id: saveFlowId,
         nome: flowData.nome,
         descricao: flowData.descricao,
-        ativo: flowData.isActive,
+        status: flowData.isActive ? 'ativo' : 'inativo',
         tipo: 'atendimento',
-        status: 'ativo',
         createdAt: flowData.createdAt,
         updatedAt: flowData.updatedAt,
       } as Flow;
